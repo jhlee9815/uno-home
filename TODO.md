@@ -50,8 +50,12 @@ npm run figma:health
 ### Figma 추적 메커니즘 / 새 프레임 만들 때
 어떤 파일/노드가 잡히는지, 새 프레임 만들면 어떻게 되는지: [`phase-plan-6 §6-8-B`](./project-plan/phase-6/phase-plan-6.md#6-8-b-figma-추적-메커니즘--운영자가-알아야-할-것).
 
-### 관찰 끝난 뒤
-→ 우선순위 2 (task-5 Cloudflare Worker). 진입 가이드: [`phase-plan-6 §6-8-C`](./project-plan/phase-6/phase-plan-6.md#6-8-c-다음-세션-진입-가이드).
+### 관찰 끝난 뒤 (사용자 진입 우선순위 결정)
+- **(A) task-8 — DS Compliance Detection** (detached styles / image / new frames). 디자이너+개발자 양쪽 즉시 가치. 7-9시간. 설계 확정. 세부: [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md).
+- **(B) task-5 — Cloudflare Worker** (Figma webhook → 즉시 트리거). 1-2시간 + 외부 의존성. 디자이너 편집 → 결과까지 지연 단축.
+- **(C) task-6 — Resend 이메일** (현재 Slack 알림 충분, 후순위).
+
+task-5 진입 가이드: [`phase-plan-6 §6-8-C`](./project-plan/phase-6/phase-plan-6.md#6-8-c-다음-세션-진입-가이드).
 
 ## 3. 우선순위 2 — task-5 Cloudflare Worker (Figma webhook 프록시, 관찰 후)
 

@@ -67,6 +67,8 @@
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
+| 8 | DS Compliance Detection Core (detached / image / new frames) | 🛠 설계 확정 | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
+| 9 | Report UX + Labels (task-8 후속) | 🛠 설계 대기 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
 
 총 예상: ~6.5~8시간 (2~3일 분량). 현재 task-1/2/3/4/7 ✅. 잔여는 task-5/6.
 
@@ -112,6 +114,13 @@
 - phase-plan-6 §6-8-A/B/C 보강 — 매일 routine, figma:health 출력 해석, figma 추적 메커니즘 (어떤 파일/노드 잡히고 새 프레임 만들면 어떻게 되는지), 다음 세션 진입 가이드.
 - 노트북 꺼도 cron 정상 동작 명시 (GitHub 서버에서 매 2h 자동 실행).
 - 현재 모드: **운영 관찰 (~2026-05-23 권장)**. 이상 신호 없으면 task-5 진입. 운영 가이드: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8-A (매일 routine + figma:health 해석) · §6-8-B (figma 추적 메커니즘) · §6-8-C (다음 세션 진입). Slack 통합 별도: [`slack-integration.md`](./project-plan/phase-6/slack-integration.md).
+
+### 2026-05-20 22:00 KST — task-8/9 설계 확정 (DS Compliance Detection)
+
+- 사용자 요구 3종: ① detached styles (DS 토큰 안 쓰고 raw 색상/타이포로 작업) ② image/icon 교체 ③ 등록 화면 안 새 프레임 추가.
+- 코덱스 1차 설계 검증 통과 (GO). 주요 조정: task-8(detection core) + task-9(report UX) 분리 / Stage 0 필수 게이트 / schema contract 단계 추가 / deep traversal extraction / stable key diff / 시간 5-6h→7-9h 보강.
+- v1 범위 제한 명시: 등록 화면 밖 새 top-level frame은 별도 task / INSTANCE_SWAP / component path는 v2.
+- 코드 진행은 운영 관찰 기간 종료 후 사용자 승인 시 Stage 0부터. 세부: [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) · [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md).
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)
