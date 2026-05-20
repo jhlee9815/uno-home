@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-20 20:20 KST (Phase 6 task-1/2/3/7 ✅, 다음 task-4)
+> 최신 갱신: 2026-05-20 20:45 KST (Phase 6 task-1/2/3/4/7 ✅, 다음 task-5)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -14,10 +14,10 @@
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
 | **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/7 ✅, task-4/5/6 남음** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/4/7 ✅, task-5/6 남음** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: **task-4 CODEOWNERS + PR/Issue 거버넌스**. CODEOWNERS에 들어갈 GitHub username 확정 필요.
+**현재 액션**: **task-5 Cloudflare Worker Figma webhook 프록시**. Cloudflare 계정 + wrangler 설치 필요. (Slack 트리거는 이미 GitHub 공식 Slack 앱으로 가능 — `/github workflow run`)
 **블로커**: 기술 블로커 없음. Slack webhook/Cloudflare/Resend는 외부 준비가 필요할 때까지 env 미설정 skip 방식.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
@@ -63,12 +63,12 @@
 | 1 | GitHub Remote init + 초기 push | ✅ | [`task-1-github-init.md`](./project-plan/phase-6/task-1-github-init.md) |
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./project-plan/phase-6/task-2-actions-workflow.md) |
 | 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack/Email) | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
-| 4 | CODEOWNERS + PR/Issue 거버넌스 | ⏳ | [`task-4-codeowners-governance.md`](./project-plan/phase-6/task-4-codeowners-governance.md) |
+| 4 | CODEOWNERS + PR/Issue 거버넌스 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./project-plan/phase-6/task-4-codeowners-governance.md) |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
 
-총 예상: ~6.5~8시간 (2~3일 분량). 현재 task-1/2/3/7 ✅. 잔여는 task-4/5/6.
+총 예상: ~6.5~8시간 (2~3일 분량). 현재 task-1/2/3/4/7 ✅. 잔여는 task-5/6.
 
 ### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
 
@@ -88,6 +88,14 @@
 - Cleanup: Issue closed (`[verified]` prefix), PR closed, 원격 브랜치 삭제, worktree 제거. main repo dirty 변경 영향 없음.
 - 토큰은 macOS keychain에서 env-only 주입, 파일/로그/커밋 어디에도 노출 없음.
 - Not-tested (의도된 갭, task-3 비차단): PR body update on existing PR. task-4 이후 자연 cs 발생 시 재확인.
+
+### 2026-05-20 20:45 KST — task-4 ✅ 거버넌스/라벨 표준화
+
+- 사용자 결정: 단일 owner `jhlee9815` 출발 + Phase 7에서 영역 분리 재검토.
+- 새 파일 4개: `.github/CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/designer-review.md`, `.github/labels.yml`.
+- 라벨 색상/설명 표준화: GitHub API PATCH ×4 (`designer-bot` #ff8c00, `auto-apply` #0e8a16, `designer-review` #1d76db, `report-only` #fbca04). HTTP 200 ×4.
+- Branch protection rule(`require_code_owner_reviews:true`) 적용은 task-5 이후로 분리 (외부 webhook 들어올 때 의미).
+- Slack 자연어 트리거 가능성: GitHub 공식 Slack 앱(`/github workflow run jhlee9815/uno-home figma-pipeline.yml -r main`)으로 즉시 가능. Cloudflare Worker 기반 자체 슬래시 커맨드는 task-5 옵션.
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)
@@ -203,11 +211,11 @@ Phase 6/7 진입 전 외부 검증 결과:
 ## 10. 사용자가 직접 할 일 (현 시점)
 
 ### 즉시 (Phase 6 시작 전 한 번)
-- [ ] task-1 GitHub Secrets 등록 (FIGMA_TOKEN, 그 외는 task 진행 시점에)
-- [ ] CODEOWNERS에 들어갈 GitHub username 결정 (task-4)
+- [x] task-1 GitHub Secrets 등록 (FIGMA_TOKEN)
+- [x] CODEOWNERS에 들어갈 GitHub username 결정 — `jhlee9815` 단일 (task-4 완료)
 - [ ] Cloudflare 계정 + wrangler 설치 (task-5 직전)
 - [ ] Resend 계정 + 도메인 검증 시작 (task-6 직전, DNS 반영 24h 걸릴 수 있음)
-- [ ] Slack/Discord webhook URL 생성 (task-3 진행 전)
+- [ ] (선택) Slack/Discord webhook URL 생성 — 풍부한 메시지 원할 때만. 기본 알림은 GitHub 공식 Slack 앱으로 가능.
 
 ### Phase 6 진행 중
 - 각 task별 세부 문서 따라 실행

@@ -1,0 +1,18 @@
+# CODEOWNERS — phase-6 task-4 (initial)
+#
+# 현재는 단일 owner. Phase 7에서 영역별 분리 (designer / dev / infra) 재검토.
+# 매칭 우선순위: 아래 줄이 위 줄을 덮어씀 — 가장 specific한 패턴을 아래로.
+
+# 기본: 모든 경로의 코드 리뷰는 jhlee9815
+*                           @jhlee9815
+
+# 자동 변경 방어선 — 디자이너 영역 안전장치 (4겹 중 3겹)
+/scripts/                   @jhlee9815
+/.github/                   @jhlee9815
+/.github/CODEOWNERS         @jhlee9815
+/config/                    @jhlee9815
+
+# TODO(phase-7): designer / dev / infra owner 분리.
+#   /design-systems/        @jhlee9815 @<designer-handle>
+#   /src/screens/           @jhlee9815 @<frontend-dev>
+#   /.github/workflows/     @jhlee9815 @<infra-owner>

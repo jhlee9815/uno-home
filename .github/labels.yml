@@ -1,0 +1,21 @@
+# labels.yml — phase-6 task-4
+# Spec for figma-pipeline 자동 라벨 4종. 색상/설명 표준화.
+#
+# 동기화는 수동 (gh api) 또는 `crazy-max/ghaction-github-labeler` 워크플로로.
+# Phase 7에서 동기화 워크플로 추가 검토.
+
+- name: designer-bot
+  color: ff8c00
+  description: Auto-created by figma-pipeline workflow
+
+- name: auto-apply
+  color: 0e8a16
+  description: Marker-attached change that was auto-applied
+
+- name: designer-review
+  color: 1d76db
+  description: Designer change needing manual code review
+
+- name: report-only
+  color: fbca04
+  description: Detected but intentionally not auto-applied

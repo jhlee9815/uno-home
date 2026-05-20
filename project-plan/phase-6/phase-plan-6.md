@@ -2,7 +2,7 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 최신 갱신: 2026-05-20 20:20 KST — task-3 V1~V4 실검증 완료 → ✅. 다음 우선순위 task-4 CODEOWNERS.
+> 최신 갱신: 2026-05-20 20:45 KST — task-4 CODEOWNERS/PR 템플릿/라벨 표준화 완료. 다음 task-5.
 > 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
@@ -36,7 +36,7 @@
 | 1 | GitHub remote init + 초기 push | ✅ | [`task-1-github-init.md`](./task-1-github-init.md) | 30분 | 30분 |
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./task-2-actions-workflow.md) | 1시간 | 45분 |
 | 3 | `scripts/pipeline/post-run-actions.ts` 라우팅 스크립트 | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) | 2시간 | ~2시간 (claude 초안 + codex 보강 + 실검증) |
-| 4 | CODEOWNERS + PR/Issue 거버넌스 룰 | ⏳ | [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) | 30분 | — |
+| 4 | CODEOWNERS + PR/Issue 거버넌스 룰 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) | 30분 | 25분 |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
@@ -54,6 +54,7 @@
 - 2026-05-20 16:58 KST — Codex가 task-7 완료. `promote-dev.ts`, `verify.ts`, `config-loader.ts`, `.github/workflows/figma-pipeline.yml`에 extraction-friendly env override 적용. `npm run build`, `npm run lint`, `npm run figma:preflight`, env override preflight 통과.
 - 2026-05-20 17:02 KST — Codex가 Claude의 `post-run-actions.ts`를 최소 보강: `DRY_RUN=1`일 때 GitHub search/create API를 호출하지 않도록 수정하고 `cs-2026-05-20T05-48-54`로 dry-run 통과 확인. 실제 GitHub Issue/PR 생성 검증은 task-3 완료 검증으로 남김.
 - 2026-05-20 20:20 KST — Claude가 task-3을 이어서 V1~V4 실검증 완료. 코덱스 review 2회(`session 019e4514-e802`) 사이클로 doc 정합성과 evidence 둘 다 PASS. **task-3 ✅**. 세부: [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) "검증 결과" 섹션. 다음은 task-4.
+- 2026-05-20 20:45 KST — task-4 완료: `.github/CODEOWNERS`(단일 owner + Phase 7 분리 TODO), `PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/designer-review.md`, `labels.yml` 추가. task-3 자동 생성 라벨 4개 색상/설명 표준화 (GitHub API PATCH ×4). branch protection rule은 외부 webhook(task-5) 이후로 분리. 세부: [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) "완료 기록" 섹션.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
@@ -141,11 +142,12 @@ Phase 7로 넘어가려면:
 
 ## 6-9. 현재 handoff / 다음 액션
 
-2026-05-20 20:20 KST 기준:
+2026-05-20 20:45 KST 기준:
 
-- task-1/2/3/7 **완료** ✅. task-3 V1~V4 실검증 통과 (세부: `task-3-post-run-actions.md` "검증 결과" 섹션).
-- 다음 우선순위: **task-4 CODEOWNERS + PR/Issue 거버넌스**. CODEOWNERS에 들어갈 GitHub username 확정 필요(`jhlee9815` 단일 또는 추가 reviewer).
-- 그 뒤: task-5 (Cloudflare Worker webhook 프록시) → task-6 (Resend 이메일).
+- task-1/2/3/4/7 **완료** ✅. task-3 V1~V4 실검증 + task-4 거버넌스 파일/라벨 표준화 통과.
+- 다음 우선순위: **task-5 Cloudflare Worker Figma webhook 프록시**. Cloudflare 계정 + wrangler login 필요.
+- 그 뒤: task-6 (Resend 이메일).
+- task-5와 함께 처리할 부수 항목: (a) branch protection rule `require_code_owner_reviews:true` 활성화, (b) `/slack` 엔드포인트로 GitHub workflow trigger 가능하게 (사용자 옵션 — 현 단계는 Slack 공식 GitHub 앱으로 대체 가능).
 
 검증 증거 (최신 — uncommitted 상태 그대로):
 

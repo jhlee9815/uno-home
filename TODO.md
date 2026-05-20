@@ -1,7 +1,7 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-20 20:20 KST (Phase 6 task-1/2/3/7 ✅, 다음 task-4)
+> 최신 갱신: 2026-05-20 20:45 KST (Phase 6 task-1/2/3/4/7 ✅, 다음 task-5)
 
 ---
 
@@ -9,11 +9,12 @@
 
 - **현재 단계**: Phase 6 — Pesse Figma 자동 반영 파이프라인을 GitHub Actions 실서비스 형태로 운영화.
 - **GitHub**: private repo `jhlee9815/uno-home`, `main...origin/main`. Actions workflow `figma-pipeline.yml`은 수동 실행 성공 이력 있음.
-- **완료**: Phase 1~5 archive, Pesse 데모 검증, Phase 6 task-1/2/3/7 ✅.
-- **task-3 V1~V4 실검증** (2026-05-20 20:20 KST): Issue 신규+dedupe, Draft PR 신규, no-op skip 모두 PASS. Codex review 2회 PASS. Issue/PR 모두 close cleanup 완료.
-- **uncommitted 상태**: 12 modified + 2 untracked (Phase 6 task-3 + task-7 코드/문서). 아직 commit 안 함 — 사용자 승인 후 일괄 commit 예정.
-- **다음 우선순위**: task-4 CODEOWNERS/PR 템플릿 → task-5 Cloudflare Worker → task-6 Resend.
-- **선결조건**: task-4 진입 전에 CODEOWNERS에 들어갈 GitHub username 결정 (`jhlee9815` 단일 또는 +reviewer).
+- **완료**: Phase 1~5 archive, Pesse 데모 검증, Phase 6 task-1/2/3/4/7 ✅.
+- **task-3 V1~V4 실검증** (2026-05-20 20:20 KST): Issue 신규+dedupe, Draft PR 신규, no-op skip 모두 PASS. Issue/PR 모두 close cleanup 완료. Codex 2회 PASS. **3개 commit push 완료 (bfc478e, d175c35, 8697e58)**.
+- **task-4 거버넌스** (2026-05-20 20:45 KST): CODEOWNERS(단일 owner) + PR/Issue 템플릿 + labels.yml + 라벨 4개 색상/설명 표준화 완료.
+- **uncommitted 상태**: task-4 4개 신규 파일 + 관련 docs (commit 대기).
+- **다음 우선순위**: task-5 Cloudflare Worker → task-6 Resend.
+- **선결조건**: task-5 진입 전에 Cloudflare 계정 + wrangler 설치 필요. (Slack 트리거는 GitHub 공식 Slack 앱으로 즉시 가능, 별도 작업 불필요)
 
 ---
 
@@ -34,22 +35,24 @@ npx tsc --noEmit
 
 ---
 
-## 2. 우선순위 1 — task-4 CODEOWNERS/PR 템플릿
+## 2. 우선순위 1 — task-5 Cloudflare Worker (Figma webhook 프록시)
 
-- 실제 GitHub username 필요(`jhlee9815` 단일이면 그대로).
-- 목표 파일: `CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/designer-review.md`, optional `.github/labels.yml`.
-- task-3에서 만든 라벨 `designer-bot` / `auto-apply` / `designer-review` / `report-only`를 `labels.yml`로 색상/설명 표준화하면 자연스럽게 이어짐.
-- task-3 검증 중 미커버 갭(PR body update on existing PR)도 task-4 진행 중 자연 cs로 함께 확인.
+- 필요: Cloudflare 계정, `wrangler` CLI, GitHub fine-grained PAT (workflow trigger 권한), Figma webhook passcode.
+- 목표: Figma 파일 편집 → Figma webhook → Cloudflare Worker → GitHub `repository_dispatch` → workflow `figma-pipeline.yml` 자동 트리거.
+- 부수 옵션: 같은 Worker에 `/slack` 엔드포인트 추가하면 Slack 슬래시 커맨드로도 트리거 가능. (없어도 GitHub 공식 Slack 앱으로 트리거 가능)
+- task-5 끝나면 branch protection rule `require_code_owner_reviews: true` 활성화 — 외부 webhook이 자동 PR을 만들기 시작할 때부터 의미 있음.
 
 ---
 
-## 3. 우선순위 2 — task-5/6 외부 서비스
+## 3. 우선순위 2 — task-6 Resend 이메일
 
-| Task | 필요 외부 준비 | 현재 방침 |
-|---|---|---|
-| task-5 Cloudflare Worker | Cloudflare 계정, wrangler login, GitHub fine-grained PAT, Figma webhook passcode | 아직 미진행 |
-| task-6 Resend Email | Resend API key, from domain/email, recipient list | env 없으면 skip |
-| Slack/Discord | webhook URL | 아직 없음 — 코드에서는 env 없으면 skip |
+- 필요: Resend API key, from domain/email, recipient list.
+- 현재 방침: env 미설정 시 skip (코드 분기 이미 있음).
+- 도메인 DNS 검증 propagation에 24h+ 걸릴 수 있으므로 Resend 계정만 미리 만들어두면 좋음.
+
+Slack/Discord webhook은 별개:
+- GitHub 공식 Slack 앱은 webhook URL 없이 OAuth로 작동.
+- `post-run-actions.ts`의 `notifySlack`/`notifyDiscord`는 추가 풍부한 메시지 원할 때만 `SLACK_WEBHOOK_URL`/`DISCORD_WEBHOOK_URL` secret 등록.
 
 ---
 
@@ -57,9 +60,13 @@ npx tsc --noEmit
 
 V1~V4 실검증 PASS. 세부는 [`project-plan/phase-6/task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) "검증 결과" 섹션. 코덱스 review session: `019e4514-e802`.
 
-증거: Issue [#1](https://github.com/jhlee9815/uno-home/issues/1) (closed, `[verified]` prefix), PR [#2](https://github.com/jhlee9815/uno-home/pull/2) (closed). 원격 브랜치 `designer-bot/cs-fixture-2026-05-20T11-15` 삭제 완료.
+증거: Issue [#1](https://github.com/jhlee9815/uno-home/issues/1) (closed, `[verified]` prefix), PR [#2](https://github.com/jhlee9815/uno-home/pull/2) (closed). 원격 브랜치 `designer-bot/cs-fixture-2026-05-20T11-15` 삭제 완료. 3개 commit (bfc478e, d175c35, 8697e58) push 완료.
 
-Not-tested 갭: PR body update on existing PR — task-4 진행 중 자연 cs 발생 시 확인.
+Not-tested 갭: PR body update on existing PR — task-5 이후 자연 cs 발생 시 확인.
+
+### task-4 (2026-05-20 20:45 KST)
+
+`.github/CODEOWNERS` 단일 owner `jhlee9815` + Phase 7 영역 분리 TODO. PR/Issue 템플릿, `labels.yml` 추가. task-3 자동 생성 라벨 4개 색상/설명 표준화 (PATCH ×4). branch protection rule은 task-5 이후 분리.
 
 ---
 
@@ -91,7 +98,8 @@ npx tsc --noEmit
 |---|---|
 | 전체 계획 | [plan.md](./plan.md) |
 | Phase 6 계획 | [project-plan/phase-6/phase-plan-6.md](./project-plan/phase-6/phase-plan-6.md) |
-| task-3 계획 | [project-plan/phase-6/task-3-post-run-actions.md](./project-plan/phase-6/task-3-post-run-actions.md) |
+| task-3 완료 기록 | [project-plan/phase-6/task-3-post-run-actions.md](./project-plan/phase-6/task-3-post-run-actions.md) |
+| task-4 완료 기록 | [project-plan/phase-6/task-4-codeowners-governance.md](./project-plan/phase-6/task-4-codeowners-governance.md) |
 | task-7 완료 기록 | [project-plan/phase-6/task-7-bugfixes.md](./project-plan/phase-6/task-7-bugfixes.md) |
 | Phase 7 canonical 계획 | [project-plan/phase-7/phase-plan-7.md](./project-plan/phase-7/phase-plan-7.md) |
 | Phase 7 quick handoff | [project-plan/phase-7/plan-7.md](./project-plan/phase-7/plan-7.md) |
