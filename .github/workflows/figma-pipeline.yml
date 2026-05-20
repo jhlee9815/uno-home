@@ -1,0 +1,141 @@
+name: figma-pipeline
+
+on:
+  repository_dispatch:
+    types: [figma-file-update]   # task-5 Cloudflare Worker가 이걸 호출
+  schedule:
+    - cron: '0 */2 * * *'        # 2시간 cron 안전망 (webhook 누락 대비)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Manual trigger reason'
+        required: false
+        default: 'manual'
+
+concurrency:
+  group: figma-pipeline-${{ github.ref }}
+  cancel-in-progress: false      # 이전 실행 끝까지 두고 큐잉 (baseline 쓰기 race 방지)
+
+jobs:
+  figma-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write             # auto-apply branch push
+      pull-requests: write        # PR create/update (task-3)
+      issues: write               # report-only Issue (task-3)
+    env:
+      # Required
+      FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+      # Optional notifications (task-3, task-6에서 활용)
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
+      RESEND_TO_EMAILS: ${{ vars.RESEND_TO_EMAILS }}
+      # Extraction-friendly env overrides (task-7에서 본격 활용, 미설정 시 default)
+      FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
+      FIGMA_CONFIG_DIR: ${{ vars.FIGMA_CONFIG_DIR }}
+      FIGMA_VERIFY_BUILD_CMD: ${{ vars.FIGMA_VERIFY_BUILD_CMD }}
+      FIGMA_VERIFY_LINT_CMD: ${{ vars.FIGMA_VERIFY_LINT_CMD }}
+      FIGMA_SMOKE_KEYS: ${{ vars.FIGMA_SMOKE_KEYS }}
+
+    steps:
+      - name: Checkout (full history for baseline diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env from secrets
+        run: |
+          echo "FIGMA_TOKEN=${FIGMA_TOKEN}" > .env
+          chmod 600 .env
+
+      - name: Trigger summary
+        run: |
+          echo "Trigger: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Reason: ${{ github.event.inputs.reason }}"
+          fi
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "Event action: ${{ github.event.action }}"
+            echo 'Figma payload: ${{ toJson(github.event.client_payload) }}'
+          fi
+
+      - name: Run figma pipeline
+        id: pipeline
+        run: |
+          set +e
+          npm run figma:run 2>&1 | tee /tmp/pipeline.log
+          PIPELINE_EXIT=$?
+          set -e
+
+          # Capture latest cs id for downstream steps
+          CS_FILE=$(ls -t .automation/reports/cs-*.md 2>/dev/null | head -1)
+          if [ -n "$CS_FILE" ]; then
+            CS_ID=$(basename "$CS_FILE" .md)
+            echo "cs_id=$CS_ID" >> "$GITHUB_OUTPUT"
+            echo "cs_path=$CS_FILE" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Capture last "Changes: N" line from diff stage
+          AUTO_COUNT=$(grep -E "Changes: [0-9]+" /tmp/pipeline.log | tail -1 | grep -oE "[0-9]+" || echo 0)
+          echo "change_count=$AUTO_COUNT" >> "$GITHUB_OUTPUT"
+
+          # Pipeline succeeds if non-zero exit AND we still have cs report
+          if [ "$PIPELINE_EXIT" != "0" ] && [ -z "$CS_FILE" ]; then
+            echo "Pipeline failed without producing a report"
+            exit "$PIPELINE_EXIT"
+          fi
+          exit 0
+
+      - name: Pipeline summary to step summary
+        if: always()
+        run: |
+          {
+            echo "## figma-pipeline summary"
+            echo ""
+            echo "- Trigger: \`${{ github.event_name }}\`"
+            echo "- cs-id: \`${{ steps.pipeline.outputs.cs_id || 'none' }}\`"
+            echo "- Changes detected: \`${{ steps.pipeline.outputs.change_count || 'unknown' }}\`"
+            echo ""
+            if [ -n "${{ steps.pipeline.outputs.cs_path }}" ]; then
+              echo "### Change set report"
+              echo ""
+              echo '```markdown'
+              head -60 "${{ steps.pipeline.outputs.cs_path }}" || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post-run routing (PR + Issue + Notifications)
+        if: steps.pipeline.outputs.cs_id != '' && hashFiles('scripts/pipeline/post-run-actions.ts') != ''
+        run: npx tsx scripts/pipeline/post-run-actions.ts ${{ steps.pipeline.outputs.cs_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_EVENT: ${{ github.event_name }}
+
+      - name: Cleanup .env
+        if: always()
+        run: rm -f .env
+
+      - name: Upload pipeline artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: figma-pipeline-${{ github.run_id }}
+          path: |
+            .automation/reports/
+            .automation/snapshots/
+            .automation/diffs/
+          retention-days: 30
+          if-no-files-found: ignore
