@@ -35,7 +35,8 @@
     "figma:test:snapshot": "tsx scripts/pipeline/lib/snapshot-node.test.ts",
     "figma:test:marker-candidates": "tsx scripts/pipeline/lib/code-candidates.test.ts",
     "figma:promote": "tsx --env-file=.env scripts/pipeline/promote-dev.ts",
-    "figma:run": "bash scripts/pipeline/run.sh"
+    "figma:run": "bash scripts/pipeline/run.sh",
+    "figma:claude-review": "tsx scripts/pipeline/claude-review.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",

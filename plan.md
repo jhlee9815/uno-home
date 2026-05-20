@@ -1,9 +1,18 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20  
+> 최신 갱신: 2026-05-20 (Phase 1·2 완료 / Phase 3 진행 전 보완 작업 트랙 추가)  
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`  
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`  
 > 기준 전략: **기존 Figma 자동화 파이프라인은 보존하고, Apple-inspired DESIGN.md를 외부 디자인 시스템 입력값으로 등록해 토큰/컴포넌트 변환 가능성을 검증한다.**
+
+## 0-A. 현재 진행 요약 (한눈에)
+
+- **Apple-inspired DS 트랙 (Codex 진행)**: Phase 1 ✅ / Phase 2 ✅ / Phase 3 ⏳ 진입 전 (보완 ②와 통합 — Skill은 작성됨, Codex가 진행할 Phase 3는 컴포넌트 매핑·preview 검증 위주로 좁혀짐) / Phase 4·5 대기
+- **보완 작업 트랙 (Claude–Codex 합의, 2026-05-20)**: ① git init ✅ / ②-a UNO SKILL ✅ / ②-b Apple SKILL ✅ / ③ claude-review.ts wrapper ✅ / ④ BottomNav ✅ / ⑤ 모범 리포트 ✅. **5/5 완료**. 세부 §8 참조
+- **블로커**: 발표 전 해소 필요 블로커 없음 ✅
+- **전체 완료율**: 메인 트랙 5단계 중 2단계 완료 (40%), 보완 트랙 5/5 (100%)
+- **다음 액션**: Codex의 Apple Phase 3 결과 기다린 뒤 Phase 4 (Button/Card adapter) 진입. 발표 데모는 `npm run figma:claude-review` 한 줄로 시연 가능.
 
 ---
 
@@ -46,13 +55,13 @@
 
 ## 3. 단계별 진행 계획
 
-| 단계 | 폴더 | 목표 | 완료 조건 |
-|---|---|---|---|
-| 1단계 | `project-plan/phase-1/` | 현 상태 고정, 불필요 파일 정리, Apple DS 입력 등록 | 현재 상태 문서화 + Apple source index + 안전 정리 완료 |
-| 2단계 | `project-plan/phase-2/` | Apple DS 토큰 후보 추출 | `design-systems/apple/apple-tokens.json` 초안 + 토큰 매핑표 작성 |
-| 3단계 | `project-plan/phase-3/` | Apple DS Skill/운영 가이드 명시화 | `.claude/skills/apple-design-system/SKILL.md` 또는 동등 가이드 작성 |
-| 4단계 | `project-plan/phase-4/` | 대표 컴포넌트 2~3개 적용 실험 | Button/Card/Hero 중 최소 2개에 adapter 적용, build/lint 통과 |
-| 5단계 | `project-plan/phase-5/` | 발표/검증 리포트 완성 | before/after, 자동/Claude/사람검토 분류, 한계/다음 단계 리포트 작성 |
+| 단계 | 폴더 | 목표 | 완료 조건 | 상태 |
+|---|---|---|---|:-:|
+| 1단계 | `project-plan/phase-1/` | 현 상태 고정, 불필요 파일 정리, Apple DS 입력 등록 | 현재 상태 문서화 + Apple source index + 안전 정리 완료 | ✅ |
+| 2단계 | `project-plan/phase-2/` | Apple DS 토큰 후보 추출 | `design-systems/apple/apple-tokens.json` 초안 + 토큰 매핑표 작성 | ✅ |
+| 3단계 | `project-plan/phase-3/` | Apple DS Skill/운영 가이드 명시화 | `.claude/skills/apple-design-system/SKILL.md` 또는 동등 가이드 작성 | ⏳ 보완 트랙 ②와 통합 진행 예정 |
+| 4단계 | `project-plan/phase-4/` | 대표 컴포넌트 2~3개 적용 실험 | Button/Card/Hero 중 최소 2개에 adapter 적용, build/lint 통과 | ⏳ |
+| 5단계 | `project-plan/phase-5/` | 발표/검증 리포트 완성 | before/after, 자동/Claude/사람검토 분류, 한계/다음 단계 리포트 작성 | ⏳ |
 
 ---
 
@@ -108,3 +117,21 @@ npm run figma:test:designer-review
 ## 7. 발표용 최종 문장
 
 > 이 프로젝트는 Apple-inspired Markdown 디자인 시스템을 외부 입력값으로 등록하고, 이를 토큰/컴포넌트/개발 체크리스트로 변환해 기존 Figma 변경 감지 파이프라인과 연결 가능한지 검증하는 실험입니다. 완전 자동 코드 반영이 아니라, 자동 감지 가능한 항목과 Claude 요약/사람 검토가 필요한 항목을 분리해 개발 전달 비용을 줄이는 것이 목표입니다.
+
+---
+
+## 8. 보완 작업 트랙 (2026-05-20)
+
+> 세부 진행 기록: [`project-plan/supplementary-2026-05-20/README.md`](./project-plan/supplementary-2026-05-20/README.md)
+> 도출 근거: Claude–Codex 교차 검증 (기술 데모 60~65, 발표 75~80 — Skill 부재 = 블로커)
+
+| # | 작업 | 담당 | 의존 | 상태 |
+|---|---|---|---|:-:|
+| ① | `uno-home/` git init + 초기 커밋 | Claude | — | ✅ 2026-05-20 (`e499bbe`) |
+| ②-a | `.claude/skills/uno-design-system/SKILL.md` (**블로커**) | Claude | — | ✅ 2026-05-20 |
+| ②-b | `.claude/skills/apple-design-system/SKILL.md` (**블로커**) | Claude | — | ✅ 2026-05-20 |
+| ③ | `scripts/pipeline/claude-review.ts` + `npm run figma:claude-review` (**블로커**) | Claude | ② | ✅ 2026-05-20 |
+| ④ | minimal-test BottomNavBar 결정 + verifier 1패스 | Claude | 사용자 결정 | ✅ 2026-05-20 (현 상태 유지) |
+| ⑤ | `cs-{id}.md` 모범 리포트 1건 정제 | Claude | ②③ | ✅ 2026-05-20 |
+
+**다음 진입점**: 보완 트랙 종료. 메인 트랙 Phase 3 (Codex) 결과 도착 시 Phase 4로 진입.
