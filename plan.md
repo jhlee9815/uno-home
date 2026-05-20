@@ -95,7 +95,14 @@
 - 새 파일 4개: `.github/CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/designer-review.md`, `.github/labels.yml`.
 - 라벨 색상/설명 표준화: GitHub API PATCH ×4 (`designer-bot` #ff8c00, `auto-apply` #0e8a16, `designer-review` #1d76db, `report-only` #fbca04). HTTP 200 ×4.
 - Branch protection rule(`require_code_owner_reviews:true`) 적용은 task-5 이후로 분리 (외부 webhook 들어올 때 의미).
-- Slack 자연어 트리거 가능성: GitHub 공식 Slack 앱(`/github workflow run jhlee9815/uno-home figma-pipeline.yml -r main`)으로 즉시 가능. Cloudflare Worker 기반 자체 슬래시 커맨드는 task-5 옵션. 세부: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md).
+- Slack 알림: GitHub 공식 Slack 앱 + repo 구독으로 즉시 가능. 수동 트리거는 GitHub Actions UI에서 (공식 앱은 workflow_dispatch 미지원 — 정정). 슬래시 커맨드형 트리거는 Slack Workflow Builder 또는 Cloudflare Worker(task-5) 옵션. 세부: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md).
+
+### 2026-05-20 21:05 KST — task-3 V5 자연 트리거 통과
+
+- Slack에서 GitHub Actions 페이지 링크 클릭 → "Run workflow" → workflow_dispatch run `26161348247` (47s, success).
+- post-run-actions 자동 실행 → cs 변경 4건 감지 → Issue [#3](https://github.com/jhlee9815/uno-home/issues/3) 신규 생성 (`designer-review`, `report-only` 라벨 자동 부착).
+- 직전 cron 실행 (10:52, schedule)은 변경 0건이라 post-run skip — 분기도 정상.
+- task-3 doc V5 row를 ✅ + evidence로 갱신. Phase 6 task-3/4 + Slack 통합 end-to-end 운영 검증 완료. 세부: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md).
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)

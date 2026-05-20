@@ -1,7 +1,7 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-20 20:45 KST (Phase 6 task-1/2/3/4/7 ✅, 다음 task-5)
+> 최신 갱신: 2026-05-20 21:05 KST (Phase 6 task-1/2/3/4/7 ✅ + V5 자연 트리거 통과, 다음 task-5)
 
 ---
 
@@ -12,6 +12,7 @@
 - **완료**: Phase 1~5 archive, Pesse 데모 검증, Phase 6 task-1/2/3/4/7 ✅.
 - **task-3 V1~V4 실검증** (2026-05-20 20:20 KST): Issue 신규+dedupe, Draft PR 신규, no-op skip 모두 PASS. Issue/PR 모두 close cleanup 완료. Codex 2회 PASS. **3개 commit push 완료 (bfc478e, d175c35, 8697e58)**.
 - **task-4 거버넌스** (2026-05-20 20:45 KST): CODEOWNERS(단일 owner) + PR/Issue 템플릿 + labels.yml + 라벨 4개 색상/설명 표준화 완료.
+- **task-3 V5 자연 트리거** (2026-05-20 21:05 KST): Slack 핀 링크 → GitHub Actions Run workflow → Issue [#3](https://github.com/jhlee9815/uno-home/issues/3) 자동 생성 + Slack 알림. cron 10:52 변경 0건 분기도 검증. end-to-end 운영 흐름 통과.
 - **uncommitted 상태**: task-4 4개 신규 파일 + 관련 docs (commit 대기).
 - **다음 우선순위**: task-5 Cloudflare Worker → task-6 Resend.
 - **선결조건**: task-5 진입 전에 Cloudflare 계정 + wrangler 설치 필요. (Slack 트리거는 GitHub 공식 Slack 앱으로 즉시 가능, 별도 작업 불필요)

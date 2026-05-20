@@ -55,6 +55,7 @@
 - 2026-05-20 17:02 KST — Codex가 Claude의 `post-run-actions.ts`를 최소 보강: `DRY_RUN=1`일 때 GitHub search/create API를 호출하지 않도록 수정하고 `cs-2026-05-20T05-48-54`로 dry-run 통과 확인. 실제 GitHub Issue/PR 생성 검증은 task-3 완료 검증으로 남김.
 - 2026-05-20 20:20 KST — Claude가 task-3을 이어서 V1~V4 실검증 완료. 코덱스 review 2회(`session 019e4514-e802`) 사이클로 doc 정합성과 evidence 둘 다 PASS. **task-3 ✅**. 세부: [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) "검증 결과" 섹션. 다음은 task-4.
 - 2026-05-20 20:45 KST — task-4 완료: `.github/CODEOWNERS`(단일 owner + Phase 7 분리 TODO), `PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/designer-review.md`, `labels.yml` 추가. task-3 자동 생성 라벨 4개 색상/설명 표준화 (GitHub API PATCH ×4). branch protection rule은 외부 webhook(task-5) 이후로 분리. 세부: [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) "완료 기록" 섹션.
+- 2026-05-20 21:05 KST — Slack 통합 문서 추가 ([`slack-integration.md`](./slack-integration.md)). 첫 자연 트리거(workflow_dispatch run `26161348247`) → Issue [#3](https://github.com/jhlee9815/uno-home/issues/3) 생성 + Slack 채널 자동 알림. task-3 V5(워크플로 통합) 통과 evidence 확보.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
