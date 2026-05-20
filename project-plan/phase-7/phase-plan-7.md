@@ -4,6 +4,7 @@
 > 목표: "다른 팀이 fork해서 자기 Figma 파일 / 자기 React 프로젝트에 적용 가능"
 > 예상 분량: 1~2주
 > 의사결정 근거: Codex consult `019e4407-9f23`의 권고 — "GitHub template + thin CLI = MVP reusable path"
+> 최신 갱신: 2026-05-20 16:58 KST — Phase 6 task-7 env override를 Phase 7 추출 선행 조건으로 반영
 
 ## 7-0. 한 줄 요약
 
@@ -18,7 +19,7 @@ Phase 7 진입 전 모두 ✅ 되어야 함:
 - [ ] 디자이너 1명이 적어도 한 사이클(Figma 편집 → PR/Issue 생성 → 코멘트) 경험
 - [ ] 개발자 1명이 designer-bot PR 머지 경험
 - [ ] 영역 침범 우려 사후 점검 — 실제 문제 발생 없음
-- [ ] Phase 6에서 적용된 4개 env var (FIGMA_FILE_KEY, FIGMA_CONFIG_DIR, FIGMA_VERIFY_*, FIGMA_SMOKE_KEYS) 안정 동작 확인
+- [ ] Phase 6에서 적용된 env var override (`FIGMA_FILE_KEY`, `FIGMA_CONFIG_DIR`, `FIGMA_VERIFY_*`, `FIGMA_PROMOTE_PORT`, `FIGMA_SMOKE_KEYS`) 안정 동작 확인
 
 조건 미충족 시 Phase 7 진입 보류 + Phase 6 안정화 우선.
 
@@ -45,6 +46,38 @@ Phase 7 진입 전 모두 ✅ 되어야 함:
 - ❌ Figma → 코드 완전 자동 binding
 - ❌ Visual equivalence 보장
 - ❌ 네이티브 (iOS/Android) 앱 지원
+
+
+## 7-2-A. Phase 6 task-7에서 이미 선납한 추출 기반
+
+Phase 7의 canonical 문서는 `phase-plan-7.md`다. 사용자가 요청한 `plan-7.md`는 빠른 handoff/index 파일로만 유지하고, 세부 source of truth는 이 파일에 둔다.
+
+2026-05-20 task-7에서 Phase 7 비용을 줄이기 위해 다음 하드코딩을 env override로 추출했다. 이 값들은 `npx figma-design-sync init`이 생성할 설정 질문/템플릿의 1차 후보가 된다.
+
+| Env var | 현재 기본값 | Phase 7 의미 |
+|---|---|---|
+| `FIGMA_FILE_KEY` | `config/figma.yaml` 값 | 사용자의 Figma 파일 키를 CI/로컬에서 주입 |
+| `FIGMA_CONFIG_DIR` | `config/` | 템플릿/패키지 분리 후 config 위치 주입 |
+| `FIGMA_VERIFY_BUILD_CMD` | `npm run build` | Vite/Next/custom build command 설정 |
+| `FIGMA_VERIFY_LINT_CMD` | `npm run lint` | 프로젝트별 lint/typecheck command 설정 |
+| `FIGMA_VERIFY_PORT` | `4173` | preview server 포트 충돌 방지 |
+| `FIGMA_VERIFY_VIEWPORT_WIDTH` | `390` | 프로젝트별 visual diff viewport |
+| `FIGMA_VERIFY_VIEWPORT_HEIGHT` | `844` | 프로젝트별 visual diff viewport |
+| `FIGMA_PROMOTE_PORT` | `4174` | promote-dev preview 포트 충돌 방지 |
+| `FIGMA_SMOKE_KEYS` | `pesse_home,pesse_cards,pesse_send` | 프로젝트별 smoke target 선택 |
+| `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` | `true` | GitHub Actions Node 24 전환 사전 대응 |
+
+Phase 7 CLI 질문 후보:
+
+1. Figma file key 또는 URL
+2. config directory
+3. build/lint command
+4. preview/promote port
+5. viewport width/height
+6. smoke target keys
+7. default mode: report-only 또는 marker-gated auto-apply
+
+주의: task-7은 **하드코딩 해소의 일부**일 뿐이다. mapping 생성, marker 변환, package name 분리, framework별 visual target 전략은 여전히 Phase 7 본 작업이다.
 
 ## 7-3. 단계별 작업 (스케치 — Phase 6 끝나면 세부화)
 

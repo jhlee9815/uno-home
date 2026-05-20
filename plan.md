@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-20 16:47 KST (Phase 6 task-1, task-2 완료)
+> 최신 갱신: 2026-05-20 20:20 KST (Phase 6 task-1/2/3/7 ✅, 다음 task-4)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -14,11 +14,11 @@
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
 | **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **⏳ 시작 대기** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/7 ✅, task-4/5/6 남음** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) 시작.
-**블로커**: 없음.
+**현재 액션**: **task-4 CODEOWNERS + PR/Issue 거버넌스**. CODEOWNERS에 들어갈 GitHub username 확정 필요.
+**블로커**: 기술 블로커 없음. Slack webhook/Cloudflare/Resend는 외부 준비가 필요할 때까지 env 미설정 skip 방식.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
 ---
@@ -51,8 +51,8 @@
 | 단계 | 위치 | 상태 |
 |---|---|:-:|
 | Phase 1~5 (Apple-inspired DS) | [`project-plan/archive/`](./project-plan/archive/README.md) | ✅ |
-| Phase 6 — 이 repo 실서비스화 (extraction-friendly) | [`project-plan/phase-6/`](./project-plan/phase-6/phase-plan-6.md) | ⏳ |
-| Phase 7 — 재사용 GitHub 템플릿 + CLI 추출 | [`project-plan/phase-7/`](./project-plan/phase-7/phase-plan-7.md) | ⏳ 대기 |
+| Phase 6 — 이 repo 실서비스화 (extraction-friendly) | [`project-plan/phase-6/`](./project-plan/phase-6/phase-plan-6.md) | 🚧 |
+| Phase 7 — 재사용 GitHub 템플릿 + CLI 추출 | [`project-plan/phase-7/`](./project-plan/phase-7/phase-plan-7.md) | ⏳ 대기 (`plan-7.md` quick handoff 추가) |
 
 ---
 
@@ -62,13 +62,32 @@
 |:-:|---|:-:|---|
 | 1 | GitHub Remote init + 초기 push | ✅ | [`task-1-github-init.md`](./project-plan/phase-6/task-1-github-init.md) |
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./project-plan/phase-6/task-2-actions-workflow.md) |
-| 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack/Email) | ⏳ | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
+| 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack/Email) | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 | ⏳ | [`task-4-codeowners-governance.md`](./project-plan/phase-6/task-4-codeowners-governance.md) |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
-| 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ⏳ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
+| 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
 
-총 예상: ~6.5~8시간 (2~3일 분량). 진행 1.25시간 / 잔여 ~5.5시간.
+총 예상: ~6.5~8시간 (2~3일 분량). 현재 task-1/2/3/7 ✅. 잔여는 task-4/5/6.
+
+### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
+
+- Claude는 task-3 도중 토큰 소진으로 중단했다. 남은 uncommitted 변경: `package.json`, `package-lock.json`, `scripts/pipeline/post-run-actions.ts`.
+- Codex는 task-3 dry-run 안전성을 보강했고 `cs-2026-05-20T05-48-54`로 외부 호출 없는 dry-run PASS를 확인했다.
+- task-7 변경: `promote-dev.ts`, `verify.ts`, `config-loader.ts`, `.github/workflows/figma-pipeline.yml`.
+- 검증: `npm run build`, `npm run lint`, `npm run figma:preflight`, env override preflight, `npx tsc --noEmit`, post-run dry-run 모두 PASS.
+- `project-plan/phase-7/plan-7.md`는 빠른 진입 문서로 생성했고, 실제 source of truth는 `phase-plan-7.md`로 유지한다.
+
+### 2026-05-20 20:20 KST — task-3 ✅ 실검증 완료
+
+- Claude가 task-3을 이어서 V1~V4 실 GitHub API 검증 완료. Codex 2회 review (`session 019e4514-e802`) 둘 다 PASS.
+- V1: Issue `#1` 신규 생성 (report-only 4건, 라벨 `designer-review`+`report-only`).
+- V2: 동일 csId 재실행 → `existing open issue found: #1 — updating body` (dedupe).
+- V3: 격리 worktree에서 fixture로 Draft PR `#2` 생성 (라벨 `designer-bot`+`auto-apply`).
+- V4: 같은 worktree clean 상태로 재실행 → "apply is no-op" skip.
+- Cleanup: Issue closed (`[verified]` prefix), PR closed, 원격 브랜치 삭제, worktree 제거. main repo dirty 변경 영향 없음.
+- 토큰은 macOS keychain에서 env-only 주입, 파일/로그/커밋 어디에도 노출 없음.
+- Not-tested (의도된 갭, task-3 비차단): PR body update on existing PR. task-4 이후 자연 cs 발생 시 재확인.
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)

@@ -2,7 +2,8 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 의사결정 근거: Codex consult (`session 019e4407-9f23`) 검증 완료
+> 최신 갱신: 2026-05-20 20:20 KST — task-3 V1~V4 실검증 완료 → ✅. 다음 우선순위 task-4 CODEOWNERS.
+> 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
 ## 6-0. 한 줄 요약
@@ -15,7 +16,7 @@
 - ✅ Pesse 3개 화면 + 활성 mapping 5건 (`config/figma-mapping.yaml`)
 - ✅ 마커 1건 부착 (`pesse.send.cta` → node `10:62`)
 - ✅ 데모 사이클 1회 완주 (baseline → Figma 편집 → cs 리포트 생성)
-- ⚠️ local git only, GitHub remote 없음
+- ✅ GitHub remote `jhlee9815/uno-home` 연결 및 `main` push 완료
 
 ## 6-2. 완료 정의 (Done means)
 
@@ -25,8 +26,8 @@
 - [ ] auto-apply 변경 시 Draft PR이 `designer-bot` 라벨로 자동 생성 + CODEOWNERS가 dev 리뷰 강제
 - [ ] report-only 변경 시 Issue가 `designer-review` 라벨로 자동 등록
 - [ ] Slack/Discord webhook 알림 + Resend 이메일 동시 발송
-- [ ] Codex가 발견한 `promote-dev.ts` 스모크 키 버그 수정
-- [ ] **extraction-friendly 결정 4건 적용**: 6-4 참조
+- [x] Codex가 발견한 `promote-dev.ts` 스모크 키 버그 수정
+- [x] **extraction-friendly 결정 4건 적용**: 6-4 참조
 
 ## 6-3. 단계별 작업 (Task 인덱스)
 
@@ -34,11 +35,11 @@
 |:-:|---|:-:|---|---|---|
 | 1 | GitHub remote init + 초기 push | ✅ | [`task-1-github-init.md`](./task-1-github-init.md) | 30분 | 30분 |
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./task-2-actions-workflow.md) | 1시간 | 45분 |
-| 3 | `scripts/pipeline/post-run-actions.ts` 라우팅 스크립트 | ⏳ | [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) | 2시간 | — |
+| 3 | `scripts/pipeline/post-run-actions.ts` 라우팅 스크립트 | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) | 2시간 | ~2시간 (claude 초안 + codex 보강 + 실검증) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 룰 | ⏳ | [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) | 30분 | — |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
-| 7 | `promote-dev.ts` 스모크 키 버그 수정 (Codex 발견) | ⏳ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | — |
+| 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관)
 
@@ -47,7 +48,12 @@
 - 2026-05-20 16:47 KST — task-2 완료. `.github/workflows/figma-pipeline.yml` 동작 확인 (run `26148882072`, 37s).
   - 발견 이슈 1: CI에 baseline 없음 → `.automation/baseline/` git 추적으로 전환
   - 발견 이슈 2: ANSI 색상 escape가 grep에 잡혀 multiline `change_count` → `sed`로 ANSI strip + `PIPESTATUS[0]`로 exit 캡처
-  - 부수 warning: Node.js 20 actions 2026-06-02부터 deprecated → task-7에서 Node 22로 업그레이드 함께 처리
+  - 부수 warning: Node.js 20 actions 2026-06-02부터 deprecated → task-7에서 Node 24 강제 env로 선제 대응
+
+- 2026-05-20 16:55 KST — Claude가 task-3을 진행하다가 토큰 소진으로 중단. 현재 남은 변경은 `package.json`, `package-lock.json`, 신규 `scripts/pipeline/post-run-actions.ts`. Slack webhook은 아직 없으므로 코드에서는 env 미설정 시 skip하는 방향으로 결정됨. 이 변경은 task-3 완료 전까지 Codex가 덮어쓰지 않는다.
+- 2026-05-20 16:58 KST — Codex가 task-7 완료. `promote-dev.ts`, `verify.ts`, `config-loader.ts`, `.github/workflows/figma-pipeline.yml`에 extraction-friendly env override 적용. `npm run build`, `npm run lint`, `npm run figma:preflight`, env override preflight 통과.
+- 2026-05-20 17:02 KST — Codex가 Claude의 `post-run-actions.ts`를 최소 보강: `DRY_RUN=1`일 때 GitHub search/create API를 호출하지 않도록 수정하고 `cs-2026-05-20T05-48-54`로 dry-run 통과 확인. 실제 GitHub Issue/PR 생성 검증은 task-3 완료 검증으로 남김.
+- 2026-05-20 20:20 KST — Claude가 task-3을 이어서 V1~V4 실검증 완료. 코덱스 review 2회(`session 019e4514-e802`) 사이클로 doc 정합성과 evidence 둘 다 PASS. **task-3 ✅**. 세부: [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) "검증 결과" 섹션. 다음은 task-4.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
@@ -55,13 +61,13 @@ Codex가 지적한 9가지 재사용 차단점 중, Phase 6 작업 중에 어차
 
 | Codex 차단점 | Phase 6에서 다루는가 | 일반화 방식 |
 |---|:-:|---|
-| ① `config/figma.yaml` fileKey 하드코딩 | ✅ | `FIGMA_FILE_KEY` env var 우선, yaml fallback. `config-loader.ts` 수정. |
+| ① `config/figma.yaml` fileKey 하드코딩 | ✅ 완료 | `FIGMA_FILE_KEY` env var 우선, yaml fallback. `config-loader.ts` 수정. |
 | ② mapping 프로젝트별 | ❌ | Phase 7 (마이그레이션 가이드 작성) |
-| ③ config-loader `../../../config` 상대경로 | ✅ | `FIGMA_CONFIG_DIR` env var 우선, fallback to default. |
+| ③ config-loader `../../../config` 상대경로 | ✅ 완료 | `FIGMA_CONFIG_DIR` env var 우선, fallback to default. |
 | ④ apply 마커 형식 | ❌ | Phase 7 (변환 도구) |
-| ⑤ verify `npm run build/lint` 하드코딩 | ✅ | `FIGMA_VERIFY_BUILD_CMD` / `FIGMA_VERIFY_LINT_CMD` env var. 미설정 시 default. |
+| ⑤ verify `npm run build/lint` 하드코딩 | ✅ 완료 | `FIGMA_VERIFY_BUILD_CMD` / `FIGMA_VERIFY_LINT_CMD` env var. 미설정 시 default. |
 | ⑥ viewport 390x844 | ❌ | Phase 7 |
-| ⑦ promote-dev 포트/키 하드코딩 | ✅ | task-7 버그 수정 시 같이 env var로. |
+| ⑦ promote-dev 포트/키 하드코딩 | ✅ 완료 | `FIGMA_PROMOTE_PORT`, `FIGMA_SMOKE_KEYS` env var. 기본 smoke key는 Pesse 3개 화면. |
 | ⑧ launchd plist 절대경로 | ❌ | Phase 6에서 plist 안 씀 (GitHub Actions로 대체) |
 | ⑨ package.json `pesse-apple` | ❌ | Phase 7 (CLI 패키지 분리 시) |
 
@@ -132,7 +138,33 @@ Phase 7로 넘어가려면:
 
 위 조건이 안 충족되면 Phase 7는 미루고 Phase 6 안정화에 집중.
 
-## 6-9. 참고
+
+## 6-9. 현재 handoff / 다음 액션
+
+2026-05-20 20:20 KST 기준:
+
+- task-1/2/3/7 **완료** ✅. task-3 V1~V4 실검증 통과 (세부: `task-3-post-run-actions.md` "검증 결과" 섹션).
+- 다음 우선순위: **task-4 CODEOWNERS + PR/Issue 거버넌스**. CODEOWNERS에 들어갈 GitHub username 확정 필요(`jhlee9815` 단일 또는 추가 reviewer).
+- 그 뒤: task-5 (Cloudflare Worker webhook 프록시) → task-6 (Resend 이메일).
+
+검증 증거 (최신 — uncommitted 상태 그대로):
+
+```bash
+npm run build        # PASS (vite 149ms)
+npm run lint         # PASS
+npm run figma:preflight  # PASS (5/5 bindings)
+npx tsc --noEmit     # PASS
+DRY_RUN=1 GITHUB_REPOSITORY=jhlee9815/uno-home GITHUB_TOKEN=dummy npx tsx scripts/pipeline/post-run-actions.ts cs-2026-05-20T05-48-54  # PASS (auto-apply=0, report-only=4)
+# 실검증 (worktree 격리, 토큰 env-only)
+GITHUB_TOKEN=<keychain> GITHUB_REPOSITORY=jhlee9815/uno-home npx tsx scripts/pipeline/post-run-actions.ts cs-2026-05-20T05-48-54   # V1 → Issue #1
+# 동일 명령 재실행 → V2 dedupe
+# 격리 worktree + fixture + dirty file → V3 → PR #2
+# 동일 명령 재실행 → V4 no-op skip
+```
+
+검증 후 Issue #1 closed (`[verified]` prefix), PR #2 closed, 원격 브랜치 `designer-bot/cs-fixture-2026-05-20T11-15` deleted. main repo dirty 상태는 V3 전과 동일.
+
+## 6-10. 참고
 
 - 상위 마스터: [`../../plan.md`](../../plan.md)
 - 이전 작업 요약: [`../archive/README.md`](../archive/README.md)
