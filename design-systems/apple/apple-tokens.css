@@ -1,0 +1,52 @@
+/* ==========================================================================
+   Apple-inspired Design System Tokens
+   Source: design-systems/apple/apple-tokens.json
+   Generated: 2026-05-20
+   Disclaimer: Apple-inspired only. Not official Apple Design System.
+               Not affiliated with Apple Inc.
+   Namespace: All variables prefixed with --apple-* to avoid UNO collision.
+   ========================================================================== */
+
+:root {
+  /* Color primitives */
+  --apple-color-pure-black: #000000;
+  --apple-color-white: #ffffff;
+  --apple-color-light-gray: #f5f5f7;
+  --apple-color-near-black: #1d1d1f;
+  --apple-color-blue: #0071e3;
+  --apple-color-link-blue: #0066cc;
+  --apple-color-bright-blue: #2997ff;
+  --apple-color-black-80: rgba(0, 0, 0, 0.8);
+  --apple-color-black-48: rgba(0, 0, 0, 0.48);
+  --apple-color-white-80: rgba(255, 255, 255, 0.8);
+  --apple-color-white-48: rgba(255, 255, 255, 0.48);
+  --apple-color-dark-surface-1: #272729;
+  --apple-color-dark-surface-2: #28282a;
+  --apple-color-dark-surface-3: #2a2a2d;
+  --apple-color-overlay-light: rgba(210, 210, 215, 0.64);
+
+  /* Radius */
+  --apple-radius-micro: 5px;
+  --apple-radius-standard: 8px;
+  --apple-radius-comfortable: 11px;
+  --apple-radius-large: 12px;
+  --apple-radius-pill: 980px;
+
+  /* Shadow */
+  --apple-shadow-card: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+  --apple-shadow-card-dark: rgba(0, 0, 0, 0.5) 3px 5px 30px 0px;
+  --apple-shadow-focus-light: 0 0 0 3px rgba(0, 113, 227, 0.2);
+  --apple-shadow-focus-dark: 0 0 0 3px rgba(41, 151, 255, 0.25);
+
+  /* Typography — projectFallback first per SKILL.md anti-pattern policy
+     (do NOT push SF Pro / SF Pro Icons into the codebase) */
+  --apple-font-display: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                        "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --apple-font-text: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                     "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Layout */
+  --apple-layout-nav-height: 48px;
+  --apple-layout-touch-target: 44px;
+  --apple-layout-max-content-width: 980px;
+}

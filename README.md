@@ -60,9 +60,24 @@ npm run figma:promote cs-{id}
 npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name"
 npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name" --design-system-url "<design-system-figma-url-or-file-key>"
 npm run figma:run
+npm run figma:claude-review                       # 3-band 체크리스트 (UNO 트랙)
+npm run figma:claude-review -- --source apple     # Apple-inspired 트랙
 ```
 
 Use `npm run figma:run` for the normal end-to-end cycle. Use the individual commands only when debugging a specific stage.
+
+## Design System Skill (Phase 3·보완 트랙)
+
+The pipeline's deterministic classify stage is augmented by a Skill layer that produces a developer-facing checklist with three bands (Auto-applied / Claude review / Human review).
+
+| Skill | Location | Track |
+|---|---|---|
+| UNO Design System | `.claude/skills/uno-design-system/SKILL.md` | UNO Figma pipeline (main) |
+| Apple-inspired DS | `.claude/skills/apple-design-system/SKILL.md` | External Markdown DS (experiment) |
+| Wrapper | `scripts/pipeline/claude-review.ts` | both, `--source` flag |
+| Sample report | `project-plan/supplementary-2026-05-20/sample-cs-report.md` | presentation-ready model |
+
+Run `npm run figma:claude-review` to generate the Skill output. Implementation is deterministic (no API call). An `--use-claude` flag for LLM-augmented natural-language summaries is planned.
 
 ## Where To Check Results
 

@@ -8,11 +8,12 @@
 
 ## 0-A. 현재 진행 요약 (한눈에)
 
-- **Apple-inspired DS 트랙 (Codex 진행)**: Phase 1 ✅ / Phase 2 ✅ / Phase 3 ⏳ 진입 전 (보완 ②와 통합 — Skill은 작성됨, Codex가 진행할 Phase 3는 컴포넌트 매핑·preview 검증 위주로 좁혀짐) / Phase 4·5 대기
-- **보완 작업 트랙 (Claude–Codex 합의, 2026-05-20)**: ① git init ✅ / ②-a UNO SKILL ✅ / ②-b Apple SKILL ✅ / ③ claude-review.ts wrapper ✅ / ④ BottomNav ✅ / ⑤ 모범 리포트 ✅. **5/5 완료**. 세부 §8 참조
-- **블로커**: 발표 전 해소 필요 블로커 없음 ✅
-- **전체 완료율**: 메인 트랙 5단계 중 2단계 완료 (40%), 보완 트랙 5/5 (100%)
-- **다음 액션**: Codex의 Apple Phase 3 결과 기다린 뒤 Phase 4 (Button/Card adapter) 진입. 발표 데모는 `npm run figma:claude-review` 한 줄로 시연 가능.
+- **Apple-inspired DS 트랙**: Phase 1 ✅ / Phase 2 ✅ / Phase 3 ✅ (Codex outline + Claude SKILL.md + checklist-example.md 정합 완료) / Phase 4 ✅ (Button apple-variants + AppleCard + AppleDemoScreen) / Phase 5 ✅ (presentation-report.md 초안)
+- **보완 작업 트랙 (Claude–Codex 합의, 2026-05-20)**: 5/5 완료. 세부 §8 참조
+- **블로커**: 없음 ✅
+- **전체 완료율**: 메인 트랙 5/5 (100% — Phase 5는 초안 단계, Codex 결과 도착 시 §5·§9 정합성 재확인), 보완 트랙 5/5 (100%)
+- **다음 액션 (Codex 1시 이후 재개 시)**: Codex의 Apple Phase 3 산출물과 우리 SKILL.md/checklist-example.md 일치 여부 5분 검토 → 일치하면 presentation-report 확정 → 불일치하면 정합성 보정 후 확정.
+- **발표 데모 한 줄**: `npm run figma:claude-review` (UNO 트랙) / `npm run figma:claude-review -- --source apple` (Apple 트랙) / `npm run dev` → App.tsx 하단 "Phase 4 — Apple-inspired Adapter Demo" 섹션 시각 확인
 
 ---
 
@@ -59,9 +60,9 @@
 |---|---|---|---|:-:|
 | 1단계 | `project-plan/phase-1/` | 현 상태 고정, 불필요 파일 정리, Apple DS 입력 등록 | 현재 상태 문서화 + Apple source index + 안전 정리 완료 | ✅ |
 | 2단계 | `project-plan/phase-2/` | Apple DS 토큰 후보 추출 | `design-systems/apple/apple-tokens.json` 초안 + 토큰 매핑표 작성 | ✅ |
-| 3단계 | `project-plan/phase-3/` | Apple DS Skill/운영 가이드 명시화 | `.claude/skills/apple-design-system/SKILL.md` 또는 동등 가이드 작성 | ⏳ 보완 트랙 ②와 통합 진행 예정 |
-| 4단계 | `project-plan/phase-4/` | 대표 컴포넌트 2~3개 적용 실험 | Button/Card/Hero 중 최소 2개에 adapter 적용, build/lint 통과 | ⏳ |
-| 5단계 | `project-plan/phase-5/` | 발표/검증 리포트 완성 | before/after, 자동/Claude/사람검토 분류, 한계/다음 단계 리포트 작성 | ⏳ |
+| 3단계 | `project-plan/phase-3/` | Apple DS Skill/운영 가이드 명시화 | `.claude/skills/apple-design-system/SKILL.md` + `design-systems/apple/checklist-example.md` | ✅ (Codex 정합성 확인 대기) |
+| 4단계 | `project-plan/phase-4/` | 대표 컴포넌트 2~3개 적용 실험 | Button/Card/Hero 중 최소 2개에 adapter 적용, build/lint 통과 | ✅ (Button apple-primary·apple-pill-link + AppleCard 2개) |
+| 5단계 | `project-plan/phase-5/` | 발표/검증 리포트 완성 | before/after, 자동/Claude/사람검토 분류, 한계/다음 단계 리포트 작성 | ✅ (초안 — `presentation-report.md`) |
 
 ---
 

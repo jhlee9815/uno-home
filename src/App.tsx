@@ -23,6 +23,7 @@ import { NotificationsScreen } from './screens/NotificationsScreen'
 import { EnterPasscodeScreen } from './screens/EnterPasscodeScreen'
 import { ChooseHubScreen } from './screens/ChooseHubScreen'
 import { HomeHubToastScreen } from './screens/HomeHubToastScreen'
+import { AppleDemoScreen } from './screens/AppleDemoScreen'
 
 function Section({ title }: { title: string }) {
   return (
@@ -375,6 +376,20 @@ export default function App() {
       <Section title="Screen F: Home Hub + Toast (Figma 0:8379)" />
       <div style={{ width: '390px', border: '1px solid var(--border-default)', borderRadius: '24px', overflow: 'hidden' }}>
         <HomeHubToastScreen />
+      </div>
+
+      <Divider />
+
+      {/* ── Phase 4 (Apple-inspired adapter): Demo ── */}
+      <Section title="Phase 4 — Apple-inspired Adapter Demo" />
+      <div style={{
+        width: '780px',
+        maxWidth: '100%',
+        border: '1px solid var(--border-default)',
+        borderRadius: '24px',
+        overflow: 'hidden',
+      }}>
+        <AppleDemoScreen />
       </div>
 
     </div>

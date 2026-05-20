@@ -1,6 +1,13 @@
 import { type ReactNode } from 'react'
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'ghost'
+  // Apple-inspired variants (namespaced, see design-systems/apple/apple-tokens.css)
+  | 'apple-primary'
+  | 'apple-pill-link'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonProps {
@@ -39,6 +46,20 @@ const VARIANT_STYLES: Record<ButtonVariant, React.CSSProperties> = {
     color: 'var(--text-primary)',
     border: 'none',
   },
+  'apple-primary': {
+    background: 'var(--apple-color-blue)',
+    color: 'var(--apple-color-white)',
+    border: 'none',
+    borderRadius: 'var(--apple-radius-pill)',
+    fontFamily: 'var(--apple-font-text)',
+  },
+  'apple-pill-link': {
+    background: 'transparent',
+    color: 'var(--apple-color-link-blue)',
+    border: '1px solid var(--apple-color-link-blue)',
+    borderRadius: 'var(--apple-radius-pill)',
+    fontFamily: 'var(--apple-font-text)',
+  },
 }
 
 const DEFAULT_BUTTON_LABEL =
@@ -49,6 +70,9 @@ const DEFAULT_LABELS: Record<ButtonVariant, string> = {
   secondary: DEFAULT_BUTTON_LABEL,
   danger: /* figma:text id="button.delete" node="14:11395,14:11397" */ 'Delete',
   ghost: /* figma:text id="button.cancel" node="14:11399,14:11401" */ 'Cancel',
+  // Apple track defaults — these are code-only, no Figma binding
+  'apple-primary': 'Buy',
+  'apple-pill-link': 'Learn more',
 }
 
 export function Button({

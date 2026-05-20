@@ -107,7 +107,12 @@ Home·Activity·Moon·Podcast·Play (하단 내비) / Bell·BellDot·Settings·U
 
 ## 다음 세션 진입 가이드
 
-**현재 진행 중인 트랙**: Track A/B 완료. 다음은 M4 layout 자동화 보류 유지 또는 별도 신규 범위 결정.
+**먼저 읽어야 할 파일**: [`TODO.md`](./TODO.md) — 이번 세션에서 정리된 다음 작업 우선순위.
+**현재 진행 중인 트랙 (2026-05-20 갱신)**:
+- Apple-inspired DS 트랙 Phase 1~5 모두 ✅. Codex Apple Phase 3 산출물과 우리 SKILL.md/checklist-example.md 정합성 5분 검토 대기.
+- 보완 트랙 (Claude–Codex 합의 2026-05-20) 5/5 완료: `.claude/skills/{uno,apple}-design-system/SKILL.md`, `scripts/pipeline/claude-review.ts`, `project-plan/supplementary-2026-05-20/{README,sample-cs-report}.md`, git init.
+- 발표 데모: `npm run figma:claude-review` (UNO) + `npm run figma:claude-review -- --source apple` + `npm run dev` (Phase 4 데모 섹션 시각 확인).
+- 직전 Track A/B 작업은 그대로 유지. M4 layout 자동화는 영구 보류.
 
 | 항목 | 값 |
 |---|---|
