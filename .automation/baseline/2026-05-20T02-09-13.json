@@ -1,0 +1,2589 @@
+{
+  "fileKey": "9cevQvPHlQ5vZv5Pz3QaLL",
+  "fileKeys": [
+    "9cevQvPHlQ5vZv5Pz3QaLL"
+  ],
+  "timestamp": "2026-05-20T02:09:13.572Z",
+  "source": "figma-rest",
+  "tokensHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "nodes": {
+    "figma_appleInspiredDesignSystemGeneratedPreview_2_2": {
+      "id": "2:2",
+      "name": "Apple-inspired Design System / Generated Preview",
+      "lastModified": "2026-05-20T01:38:11Z",
+      "visible": true,
+      "boundingBox": {
+        "x": 120,
+        "y": 120,
+        "width": 1440,
+        "height": 2500
+      },
+      "textHash": "sha256:708b74fc0b549d8ec3a5aa0d8b9ff1bdf00799e65ffae1424d7e65bf846b645e",
+      "propsHash": "sha256:2af0953d786d5bcb4520adcecfdf5d21ae939cc985799352d9e754cca5c0a9ce",
+      "componentPropsHash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "texts": [
+        {
+          "nodeId": "2:4",
+          "nodeName": "Nav logo",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Nav logo"
+          ],
+          "value": "UNO × Apple DS"
+        },
+        {
+          "nodeId": "2:5",
+          "nodeName": "Nav item / Tokens",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Nav item / Tokens"
+          ],
+          "value": "Tokens"
+        },
+        {
+          "nodeId": "2:6",
+          "nodeName": "Nav item / Typography",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Nav item / Typography"
+          ],
+          "value": "Typography"
+        },
+        {
+          "nodeId": "2:7",
+          "nodeName": "Nav item / Components",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Nav item / Components"
+          ],
+          "value": "Components"
+        },
+        {
+          "nodeId": "2:8",
+          "nodeName": "Nav item / Review",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Nav item / Review"
+          ],
+          "value": "Review"
+        },
+        {
+          "nodeId": "2:10",
+          "nodeName": "Eyebrow",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Eyebrow"
+          ],
+          "value": "EXTERNAL DESIGN SYSTEM INPUT"
+        },
+        {
+          "nodeId": "2:11",
+          "nodeName": "Display Hero",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Display Hero"
+          ],
+          "value": "Apple-inspired\nDesign System"
+        },
+        {
+          "nodeId": "2:12",
+          "nodeName": "Hero subtitle",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Hero subtitle"
+          ],
+          "value": "Markdown 디자인 시스템을 토큰, 컴포넌트 규칙, 개발 체크리스트로 변환하기 위한 UNO HOME 실험용 미리보기입니다."
+        },
+        {
+          "nodeId": "2:14",
+          "nodeName": "CTA text / View Tokens",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "CTA text / View Tokens"
+          ],
+          "value": "View Tokens"
+        },
+        {
+          "nodeId": "2:16",
+          "nodeName": "CTA text / Component Rules",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "CTA text / Component Rules"
+          ],
+          "value": "Component Rules"
+        },
+        {
+          "nodeId": "2:17",
+          "nodeName": "Section 01 eyebrow",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Section 01 eyebrow"
+          ],
+          "value": "01 · COLOR ROLES"
+        },
+        {
+          "nodeId": "2:18",
+          "nodeName": "Color section title",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Color section title"
+          ],
+          "value": "Single accent, cinematic neutrals."
+        },
+        {
+          "nodeId": "2:20",
+          "nodeName": "Swatch name / Pure Black",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Pure Black"
+          ],
+          "value": "Pure Black"
+        },
+        {
+          "nodeId": "2:21",
+          "nodeName": "Swatch value / #000000",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #000000"
+          ],
+          "value": "#000000"
+        },
+        {
+          "nodeId": "2:23",
+          "nodeName": "Swatch name / Light Gray",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Light Gray"
+          ],
+          "value": "Light Gray"
+        },
+        {
+          "nodeId": "2:24",
+          "nodeName": "Swatch value / #f5f5f7",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #f5f5f7"
+          ],
+          "value": "#f5f5f7"
+        },
+        {
+          "nodeId": "2:26",
+          "nodeName": "Swatch name / Near Black",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Near Black"
+          ],
+          "value": "Near Black"
+        },
+        {
+          "nodeId": "2:27",
+          "nodeName": "Swatch value / #1d1d1f",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #1d1d1f"
+          ],
+          "value": "#1d1d1f"
+        },
+        {
+          "nodeId": "2:29",
+          "nodeName": "Swatch name / Apple Blue",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Apple Blue"
+          ],
+          "value": "Apple Blue"
+        },
+        {
+          "nodeId": "2:30",
+          "nodeName": "Swatch value / #0071e3",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #0071e3"
+          ],
+          "value": "#0071e3"
+        },
+        {
+          "nodeId": "2:32",
+          "nodeName": "Swatch name / Link Blue",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Link Blue"
+          ],
+          "value": "Link Blue"
+        },
+        {
+          "nodeId": "2:33",
+          "nodeName": "Swatch value / #0066cc",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #0066cc"
+          ],
+          "value": "#0066cc"
+        },
+        {
+          "nodeId": "2:35",
+          "nodeName": "Swatch name / Bright Blue",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch name / Bright Blue"
+          ],
+          "value": "Bright Blue"
+        },
+        {
+          "nodeId": "2:36",
+          "nodeName": "Swatch value / #2997ff",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Swatch value / #2997ff"
+          ],
+          "value": "#2997ff"
+        },
+        {
+          "nodeId": "2:37",
+          "nodeName": "Section 02 eyebrow",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Section 02 eyebrow"
+          ],
+          "value": "02 · TYPOGRAPHY ROLES"
+        },
+        {
+          "nodeId": "2:38",
+          "nodeName": "Typography section title",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography section title"
+          ],
+          "value": "Compressed headlines, readable body."
+        },
+        {
+          "nodeId": "2:40",
+          "nodeName": "Typography sample / 0",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography sample / 0"
+          ],
+          "value": "Display Hero"
+        },
+        {
+          "nodeId": "2:41",
+          "nodeName": "Typography meta / 0",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography meta / 0"
+          ],
+          "value": "56 / 600 / 1.07 / -0.28px"
+        },
+        {
+          "nodeId": "2:43",
+          "nodeName": "Typography sample / 1",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography sample / 1"
+          ],
+          "value": "Section Heading"
+        },
+        {
+          "nodeId": "2:44",
+          "nodeName": "Typography meta / 1",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography meta / 1"
+          ],
+          "value": "40 / 600 / 1.10 / -0.28px"
+        },
+        {
+          "nodeId": "2:46",
+          "nodeName": "Typography sample / 2",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography sample / 2"
+          ],
+          "value": "Tile Heading"
+        },
+        {
+          "nodeId": "2:47",
+          "nodeName": "Typography meta / 2",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography meta / 2"
+          ],
+          "value": "28 / 400 / 1.14 / 0.196px"
+        },
+        {
+          "nodeId": "2:49",
+          "nodeName": "Typography sample / 3",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography sample / 3"
+          ],
+          "value": "Body text converts design rules into implementation-ready guidance."
+        },
+        {
+          "nodeId": "2:50",
+          "nodeName": "Typography meta / 3",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Typography meta / 3"
+          ],
+          "value": "17 / 400 / 1.47 / -0.374px"
+        },
+        {
+          "nodeId": "2:52",
+          "nodeName": "Section 03 eyebrow",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Section 03 eyebrow"
+          ],
+          "value": "03 · COMPONENT CANDIDATES"
+        },
+        {
+          "nodeId": "2:53",
+          "nodeName": "Components section title",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Components section title"
+          ],
+          "value": "Small components first."
+        },
+        {
+          "nodeId": "2:55",
+          "nodeName": "Component card title / Button",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card title / Button"
+          ],
+          "value": "Button"
+        },
+        {
+          "nodeId": "2:56",
+          "nodeName": "Component card body / Button",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card body / Button"
+          ],
+          "value": "Primary Blue, Primary Dark, Pill Link로 분리해 UNO Button variant 실험 후보로 사용합니다."
+        },
+        {
+          "nodeId": "2:57",
+          "nodeName": "Component card link / Button",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card link / Button"
+          ],
+          "value": "Learn more >"
+        },
+        {
+          "nodeId": "2:59",
+          "nodeName": "Component card title / Product Card",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card title / Product Card"
+          ],
+          "value": "Product Card"
+        },
+        {
+          "nodeId": "2:60",
+          "nodeName": "Component card body / Product Card",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card body / Product Card"
+          ],
+          "value": "Light gray surface, rare shadow, centered content를 Card adapter 후보로 둡니다."
+        },
+        {
+          "nodeId": "2:61",
+          "nodeName": "Component card link / Product Card",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card link / Product Card"
+          ],
+          "value": "Shop >"
+        },
+        {
+          "nodeId": "2:63",
+          "nodeName": "Component card title / Hero Section",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card title / Hero Section"
+          ],
+          "value": "Hero Section"
+        },
+        {
+          "nodeId": "2:64",
+          "nodeName": "Component card body / Hero Section",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card body / Hero Section"
+          ],
+          "value": "Full-width section, 56px headline, two CTAs를 데모 전용 Hero로 검증합니다."
+        },
+        {
+          "nodeId": "2:65",
+          "nodeName": "Component card link / Hero Section",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Component card link / Hero Section"
+          ],
+          "value": "View guide >"
+        },
+        {
+          "nodeId": "2:67",
+          "nodeName": "Section 04 eyebrow",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Section 04 eyebrow"
+          ],
+          "value": "04 · DARK MODE"
+        },
+        {
+          "nodeId": "2:68",
+          "nodeName": "Dark section title",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Dark section title"
+          ],
+          "value": "Black scenes for focused moments."
+        },
+        {
+          "nodeId": "2:70",
+          "nodeName": "Dark card title",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Dark card title"
+          ],
+          "value": "Dark Surface"
+        },
+        {
+          "nodeId": "2:71",
+          "nodeName": "Dark card body",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Dark card body"
+          ],
+          "value": "#272729 to #2a2a2d"
+        },
+        {
+          "nodeId": "2:73",
+          "nodeName": "Dark CTA text",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Dark CTA text"
+          ],
+          "value": "Continue"
+        },
+        {
+          "nodeId": "3:2",
+          "nodeName": "Disclaimer / nav not official",
+          "path": [
+            "Apple-inspired Design System / Generated Preview",
+            "Disclaimer / nav not official"
+          ],
+          "value": "Apple-inspired only · not official"
+        }
+      ],
+      "componentProps": []
+    },
+    "figma_pesseAppleInspired3Screens_7_2": {
+      "id": "7:2",
+      "name": "Pesse Apple-inspired — 3 screens",
+      "lastModified": "2026-05-20T01:38:11Z",
+      "visible": true,
+      "boundingBox": {
+        "x": 1764,
+        "y": 120,
+        "width": 1450,
+        "height": 1004
+      },
+      "textHash": "sha256:4d81a7640dc95a587f81f0cc3f060b63295cf63dd3eca4ae090fd8efe087eef5",
+      "propsHash": "sha256:bae02136eb01f5b95697d744e1c84a2cbd91f7805fe3468866b04a0acfbd2a2d",
+      "componentPropsHash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "texts": [
+        {
+          "nodeId": "8:3",
+          "nodeName": "Pesse",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Header",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "8:6",
+          "nodeName": "?",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "?",
+            "?"
+          ],
+          "value": "?"
+        },
+        {
+          "nodeId": "8:8",
+          "nodeName": "🎁",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "Rewards pill",
+            "🎁"
+          ],
+          "value": "🎁"
+        },
+        {
+          "nodeId": "8:9",
+          "nodeName": "Rewards",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "Rewards pill",
+            "Rewards"
+          ],
+          "value": "Rewards"
+        },
+        {
+          "nodeId": "8:12",
+          "nodeName": "Linda's card balance",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Balance",
+            "balanceLabel",
+            "Linda's card balance"
+          ],
+          "value": "Linda's card balance"
+        },
+        {
+          "nodeId": "8:14",
+          "nodeName": "▼",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Balance",
+            "balanceLabel",
+            "▼"
+          ],
+          "value": "▼"
+        },
+        {
+          "nodeId": "8:15",
+          "nodeName": "$521,098.31",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Balance",
+            "$521,098.31"
+          ],
+          "value": "$521,098.31"
+        },
+        {
+          "nodeId": "8:17",
+          "nodeName": "Money hold $2,500",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Balance",
+            "Money hold",
+            "Money hold $2,500"
+          ],
+          "value": "Money hold $2,500"
+        },
+        {
+          "nodeId": "8:20",
+          "nodeName": "↗",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Send",
+            "↗"
+          ],
+          "value": "↗"
+        },
+        {
+          "nodeId": "8:21",
+          "nodeName": "Send",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Send",
+            "Send"
+          ],
+          "value": "Send"
+        },
+        {
+          "nodeId": "8:23",
+          "nodeName": "↙",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Receive",
+            "↙"
+          ],
+          "value": "↙"
+        },
+        {
+          "nodeId": "8:24",
+          "nodeName": "Receive",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Receive",
+            "Receive"
+          ],
+          "value": "Receive"
+        },
+        {
+          "nodeId": "8:28",
+          "nodeName": "Start sending money tax free",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Promo wrap",
+            "Promo card",
+            "promo-text",
+            "Start sending money tax free"
+          ],
+          "value": "Start sending money tax free"
+        },
+        {
+          "nodeId": "8:29",
+          "nodeName": "The best place for freelancers to receive and send money. Start saving now!",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Promo wrap",
+            "Promo card",
+            "promo-text",
+            "The best place for freelancers to receive and send money. Start saving now!"
+          ],
+          "value": "The best place for freelancers to receive\nand send money. Start saving now!"
+        },
+        {
+          "nodeId": "8:33",
+          "nodeName": "Send again",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "sa-head",
+            "Send again"
+          ],
+          "value": "Send again"
+        },
+        {
+          "nodeId": "8:34",
+          "nodeName": "+ Add",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "sa-head",
+            "+ Add"
+          ],
+          "value": "+ Add"
+        },
+        {
+          "nodeId": "8:38",
+          "nodeName": "S Rijal",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "S Rijal"
+          ],
+          "value": "S Rijal"
+        },
+        {
+          "nodeId": "8:41",
+          "nodeName": "Ferina C",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Ferina C"
+          ],
+          "value": "Ferina C"
+        },
+        {
+          "nodeId": "8:44",
+          "nodeName": "Daffa T",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Daffa T"
+          ],
+          "value": "Daffa T"
+        },
+        {
+          "nodeId": "8:47",
+          "nodeName": "Bayu S",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Bayu S"
+          ],
+          "value": "Bayu S"
+        },
+        {
+          "nodeId": "8:50",
+          "nodeName": "Christian K",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Christian K"
+          ],
+          "value": "Christian K"
+        },
+        {
+          "nodeId": "8:53",
+          "nodeName": "History transaction",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "History transaction"
+          ],
+          "value": "History transaction"
+        },
+        {
+          "nodeId": "8:54",
+          "nodeName": "see more",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "see more"
+          ],
+          "value": "see more"
+        },
+        {
+          "nodeId": "8:59",
+          "nodeName": "Dribbble Pro",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Dribbble Pro"
+          ],
+          "value": "Dribbble Pro"
+        },
+        {
+          "nodeId": "8:60",
+          "nodeName": "June 28 · 00:01 AM",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 28 · 00:01 AM"
+          ],
+          "value": "June 28 · 00:01 AM"
+        },
+        {
+          "nodeId": "8:61",
+          "nodeName": "- $573",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "- $573"
+          ],
+          "value": "- $573"
+        },
+        {
+          "nodeId": "8:66",
+          "nodeName": "Syaiful Rijal",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Syaiful Rijal"
+          ],
+          "value": "Syaiful Rijal"
+        },
+        {
+          "nodeId": "8:67",
+          "nodeName": "June 22 · 05:20 PM",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 22 · 05:20 PM"
+          ],
+          "value": "June 22 · 05:20 PM"
+        },
+        {
+          "nodeId": "8:68",
+          "nodeName": "+ $1000",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "+ $1000"
+          ],
+          "value": "+ $1000"
+        },
+        {
+          "nodeId": "8:73",
+          "nodeName": "Daffa Tritan",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Daffa Tritan"
+          ],
+          "value": "Daffa Tritan"
+        },
+        {
+          "nodeId": "8:74",
+          "nodeName": "June 12 · 07:20 AM",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 12 · 07:20 AM"
+          ],
+          "value": "June 12 · 07:20 AM"
+        },
+        {
+          "nodeId": "8:75",
+          "nodeName": "- $200",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "- $200"
+          ],
+          "value": "- $200"
+        },
+        {
+          "nodeId": "8:79",
+          "nodeName": "🏠",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "🏠"
+          ],
+          "value": "🏠"
+        },
+        {
+          "nodeId": "8:81",
+          "nodeName": "◎",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "◎"
+          ],
+          "value": "◎"
+        },
+        {
+          "nodeId": "8:83",
+          "nodeName": "💳",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "💳"
+          ],
+          "value": "💳"
+        },
+        {
+          "nodeId": "8:85",
+          "nodeName": "$",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "$"
+          ],
+          "value": "$"
+        },
+        {
+          "nodeId": "8:87",
+          "nodeName": "👤",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "👤"
+          ],
+          "value": "👤"
+        },
+        {
+          "nodeId": "9:3",
+          "nodeName": "Select Card",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Header",
+            "Select Card"
+          ],
+          "value": "Select Card"
+        },
+        {
+          "nodeId": "9:5",
+          "nodeName": "+",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Header",
+            "New card pill",
+            "+"
+          ],
+          "value": "+"
+        },
+        {
+          "nodeId": "9:6",
+          "nodeName": "New card",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Header",
+            "New card pill",
+            "New card"
+          ],
+          "value": "New card"
+        },
+        {
+          "nodeId": "9:9",
+          "nodeName": "Pesse",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:11",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:12",
+          "nodeName": "VISA",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:13",
+          "nodeName": "$112,411",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$112,411"
+          ],
+          "value": "$112,411"
+        },
+        {
+          "nodeId": "9:15",
+          "nodeName": "•••• 2451",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 2451"
+          ],
+          "value": "•••• 2451"
+        },
+        {
+          "nodeId": "9:17",
+          "nodeName": "✓",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Frame",
+            "✓"
+          ],
+          "value": "✓"
+        },
+        {
+          "nodeId": "9:18",
+          "nodeName": "Main card",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Frame",
+            "Main card"
+          ],
+          "value": "Main card"
+        },
+        {
+          "nodeId": "9:20",
+          "nodeName": "Pesse",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:22",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:23",
+          "nodeName": "VISA",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:24",
+          "nodeName": "$112,411",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$112,411"
+          ],
+          "value": "$112,411"
+        },
+        {
+          "nodeId": "9:26",
+          "nodeName": "•••• 0095",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 0095"
+          ],
+          "value": "•••• 0095"
+        },
+        {
+          "nodeId": "9:29",
+          "nodeName": "Pesse",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:31",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:32",
+          "nodeName": "VISA",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:33",
+          "nodeName": "$12,000",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$12,000"
+          ],
+          "value": "$12,000"
+        },
+        {
+          "nodeId": "9:35",
+          "nodeName": "•••• 1122",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 1122"
+          ],
+          "value": "•••• 1122"
+        },
+        {
+          "nodeId": "9:39",
+          "nodeName": "✕",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Close wrap",
+            "Close",
+            "✕"
+          ],
+          "value": "✕"
+        },
+        {
+          "nodeId": "9:40",
+          "nodeName": "Close",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Cards — Select Card",
+            "Close wrap",
+            "Close",
+            "Close"
+          ],
+          "value": "Close"
+        },
+        {
+          "nodeId": "10:4",
+          "nodeName": "←",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Header",
+            "Frame",
+            "←"
+          ],
+          "value": "←"
+        },
+        {
+          "nodeId": "10:5",
+          "nodeName": "Send money",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Header",
+            "Send money"
+          ],
+          "value": "Send money"
+        },
+        {
+          "nodeId": "10:7",
+          "nodeName": "?",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Header",
+            "Frame",
+            "?"
+          ],
+          "value": "?"
+        },
+        {
+          "nodeId": "10:10",
+          "nodeName": "Send to",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Send to"
+          ],
+          "value": "Send to"
+        },
+        {
+          "nodeId": "10:15",
+          "nodeName": "Syaiful Rijal",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Syaiful Rijal"
+          ],
+          "value": "Syaiful Rijal"
+        },
+        {
+          "nodeId": "10:16",
+          "nodeName": "8921362190",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "8921362190"
+          ],
+          "value": "8921362190"
+        },
+        {
+          "nodeId": "10:18",
+          "nodeName": "Change",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Change"
+          ],
+          "value": "Change"
+        },
+        {
+          "nodeId": "10:20",
+          "nodeName": "$19",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "$19"
+          ],
+          "value": "$19"
+        },
+        {
+          "nodeId": "10:27",
+          "nodeName": "Linda's card",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Linda's card"
+          ],
+          "value": "Linda's card"
+        },
+        {
+          "nodeId": "10:28",
+          "nodeName": "Balance $521,098.31",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Balance $521,098.31"
+          ],
+          "value": "Balance $521,098.31"
+        },
+        {
+          "nodeId": "10:30",
+          "nodeName": "Change",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Change"
+          ],
+          "value": "Change"
+        },
+        {
+          "nodeId": "10:34",
+          "nodeName": "1",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "1"
+          ],
+          "value": "1"
+        },
+        {
+          "nodeId": "10:36",
+          "nodeName": "2",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "2"
+          ],
+          "value": "2"
+        },
+        {
+          "nodeId": "10:38",
+          "nodeName": "3",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "3"
+          ],
+          "value": "3"
+        },
+        {
+          "nodeId": "10:41",
+          "nodeName": "4",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "4"
+          ],
+          "value": "4"
+        },
+        {
+          "nodeId": "10:43",
+          "nodeName": "5",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "5"
+          ],
+          "value": "5"
+        },
+        {
+          "nodeId": "10:45",
+          "nodeName": "6",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "6"
+          ],
+          "value": "6"
+        },
+        {
+          "nodeId": "10:48",
+          "nodeName": "7",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "7"
+          ],
+          "value": "7"
+        },
+        {
+          "nodeId": "10:50",
+          "nodeName": "8",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "8"
+          ],
+          "value": "8"
+        },
+        {
+          "nodeId": "10:52",
+          "nodeName": "9",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "9"
+          ],
+          "value": "9"
+        },
+        {
+          "nodeId": "10:55",
+          "nodeName": "000",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "000"
+          ],
+          "value": "000"
+        },
+        {
+          "nodeId": "10:57",
+          "nodeName": "0",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "0"
+          ],
+          "value": "0"
+        },
+        {
+          "nodeId": "10:59",
+          "nodeName": "⌫",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "⌫"
+          ],
+          "value": "⌫"
+        },
+        {
+          "nodeId": "10:62",
+          "nodeName": "Send money",
+          "path": [
+            "Pesse Apple-inspired — 3 screens",
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Send money"
+          ],
+          "value": "Send money"
+        }
+      ],
+      "componentProps": []
+    },
+    "pesse_home": {
+      "id": "7:3",
+      "name": "Phone · Home — Balance",
+      "lastModified": "2026-05-20T01:38:11Z",
+      "visible": true,
+      "boundingBox": {
+        "x": 1844,
+        "y": 200,
+        "width": 390,
+        "height": 844
+      },
+      "textHash": "sha256:86e8c28fd7d3177b91ec70bf31c77c1d717c5204082e1a5db666f6c2eef07fdf",
+      "propsHash": "sha256:908ca4fed1fe692196f2c884294a91ba6cccedb155369086702844b0d219f3b9",
+      "componentPropsHash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "texts": [
+        {
+          "nodeId": "8:3",
+          "nodeName": "Pesse",
+          "path": [
+            "Phone · Home — Balance",
+            "Header",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "8:6",
+          "nodeName": "?",
+          "path": [
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "?",
+            "?"
+          ],
+          "value": "?"
+        },
+        {
+          "nodeId": "8:8",
+          "nodeName": "🎁",
+          "path": [
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "Rewards pill",
+            "🎁"
+          ],
+          "value": "🎁"
+        },
+        {
+          "nodeId": "8:9",
+          "nodeName": "Rewards",
+          "path": [
+            "Phone · Home — Balance",
+            "Header",
+            "right",
+            "Rewards pill",
+            "Rewards"
+          ],
+          "value": "Rewards"
+        },
+        {
+          "nodeId": "8:12",
+          "nodeName": "Linda's card balance",
+          "path": [
+            "Phone · Home — Balance",
+            "Balance",
+            "balanceLabel",
+            "Linda's card balance"
+          ],
+          "value": "Linda's card balance"
+        },
+        {
+          "nodeId": "8:14",
+          "nodeName": "▼",
+          "path": [
+            "Phone · Home — Balance",
+            "Balance",
+            "balanceLabel",
+            "▼"
+          ],
+          "value": "▼"
+        },
+        {
+          "nodeId": "8:15",
+          "nodeName": "$521,098.31",
+          "path": [
+            "Phone · Home — Balance",
+            "Balance",
+            "$521,098.31"
+          ],
+          "value": "$521,098.31"
+        },
+        {
+          "nodeId": "8:17",
+          "nodeName": "Money hold $2,500",
+          "path": [
+            "Phone · Home — Balance",
+            "Balance",
+            "Money hold",
+            "Money hold $2,500"
+          ],
+          "value": "Money hold $2,500"
+        },
+        {
+          "nodeId": "8:20",
+          "nodeName": "↗",
+          "path": [
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Send",
+            "↗"
+          ],
+          "value": "↗"
+        },
+        {
+          "nodeId": "8:21",
+          "nodeName": "Send",
+          "path": [
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Send",
+            "Send"
+          ],
+          "value": "Send"
+        },
+        {
+          "nodeId": "8:23",
+          "nodeName": "↙",
+          "path": [
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Receive",
+            "↙"
+          ],
+          "value": "↙"
+        },
+        {
+          "nodeId": "8:24",
+          "nodeName": "Receive",
+          "path": [
+            "Phone · Home — Balance",
+            "Send / Receive",
+            "Receive",
+            "Receive"
+          ],
+          "value": "Receive"
+        },
+        {
+          "nodeId": "8:28",
+          "nodeName": "Start sending money tax free",
+          "path": [
+            "Phone · Home — Balance",
+            "Promo wrap",
+            "Promo card",
+            "promo-text",
+            "Start sending money tax free"
+          ],
+          "value": "Start sending money tax free"
+        },
+        {
+          "nodeId": "8:29",
+          "nodeName": "The best place for freelancers to receive and send money. Start saving now!",
+          "path": [
+            "Phone · Home — Balance",
+            "Promo wrap",
+            "Promo card",
+            "promo-text",
+            "The best place for freelancers to receive and send money. Start saving now!"
+          ],
+          "value": "The best place for freelancers to receive\nand send money. Start saving now!"
+        },
+        {
+          "nodeId": "8:33",
+          "nodeName": "Send again",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "sa-head",
+            "Send again"
+          ],
+          "value": "Send again"
+        },
+        {
+          "nodeId": "8:34",
+          "nodeName": "+ Add",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "sa-head",
+            "+ Add"
+          ],
+          "value": "+ Add"
+        },
+        {
+          "nodeId": "8:38",
+          "nodeName": "S Rijal",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "S Rijal"
+          ],
+          "value": "S Rijal"
+        },
+        {
+          "nodeId": "8:41",
+          "nodeName": "Ferina C",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Ferina C"
+          ],
+          "value": "Ferina C"
+        },
+        {
+          "nodeId": "8:44",
+          "nodeName": "Daffa T",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Daffa T"
+          ],
+          "value": "Daffa T"
+        },
+        {
+          "nodeId": "8:47",
+          "nodeName": "Bayu S",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Bayu S"
+          ],
+          "value": "Bayu S"
+        },
+        {
+          "nodeId": "8:50",
+          "nodeName": "Christian K",
+          "path": [
+            "Phone · Home — Balance",
+            "Send again",
+            "avatars",
+            "Frame",
+            "Christian K"
+          ],
+          "value": "Christian K"
+        },
+        {
+          "nodeId": "8:53",
+          "nodeName": "History transaction",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "History transaction"
+          ],
+          "value": "History transaction"
+        },
+        {
+          "nodeId": "8:54",
+          "nodeName": "see more",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "see more"
+          ],
+          "value": "see more"
+        },
+        {
+          "nodeId": "8:59",
+          "nodeName": "Dribbble Pro",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Dribbble Pro"
+          ],
+          "value": "Dribbble Pro"
+        },
+        {
+          "nodeId": "8:60",
+          "nodeName": "June 28 · 00:01 AM",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 28 · 00:01 AM"
+          ],
+          "value": "June 28 · 00:01 AM"
+        },
+        {
+          "nodeId": "8:61",
+          "nodeName": "- $573",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "- $573"
+          ],
+          "value": "- $573"
+        },
+        {
+          "nodeId": "8:66",
+          "nodeName": "Syaiful Rijal",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Syaiful Rijal"
+          ],
+          "value": "Syaiful Rijal"
+        },
+        {
+          "nodeId": "8:67",
+          "nodeName": "June 22 · 05:20 PM",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 22 · 05:20 PM"
+          ],
+          "value": "June 22 · 05:20 PM"
+        },
+        {
+          "nodeId": "8:68",
+          "nodeName": "+ $1000",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "+ $1000"
+          ],
+          "value": "+ $1000"
+        },
+        {
+          "nodeId": "8:73",
+          "nodeName": "Daffa Tritan",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Daffa Tritan"
+          ],
+          "value": "Daffa Tritan"
+        },
+        {
+          "nodeId": "8:74",
+          "nodeName": "June 12 · 07:20 AM",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "Frame",
+            "Frame",
+            "June 12 · 07:20 AM"
+          ],
+          "value": "June 12 · 07:20 AM"
+        },
+        {
+          "nodeId": "8:75",
+          "nodeName": "- $200",
+          "path": [
+            "Phone · Home — Balance",
+            "History",
+            "Frame",
+            "- $200"
+          ],
+          "value": "- $200"
+        },
+        {
+          "nodeId": "8:79",
+          "nodeName": "🏠",
+          "path": [
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "🏠"
+          ],
+          "value": "🏠"
+        },
+        {
+          "nodeId": "8:81",
+          "nodeName": "◎",
+          "path": [
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "◎"
+          ],
+          "value": "◎"
+        },
+        {
+          "nodeId": "8:83",
+          "nodeName": "💳",
+          "path": [
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "💳"
+          ],
+          "value": "💳"
+        },
+        {
+          "nodeId": "8:85",
+          "nodeName": "$",
+          "path": [
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "$"
+          ],
+          "value": "$"
+        },
+        {
+          "nodeId": "8:87",
+          "nodeName": "👤",
+          "path": [
+            "Phone · Home — Balance",
+            "Bottom nav wrap",
+            "Bottom nav",
+            "Frame",
+            "👤"
+          ],
+          "value": "👤"
+        }
+      ],
+      "componentProps": []
+    },
+    "pesse_cards": {
+      "id": "7:4",
+      "name": "Phone · Cards — Select Card",
+      "lastModified": "2026-05-20T01:38:11Z",
+      "visible": true,
+      "boundingBox": {
+        "x": 2294,
+        "y": 200,
+        "width": 390,
+        "height": 844
+      },
+      "textHash": "sha256:442febf78552e0fba221fc68d2a7ed23a0b9bdd4c88eaa8e19e81c7f00704ba1",
+      "propsHash": "sha256:908ca4fed1fe692196f2c884294a91ba6cccedb155369086702844b0d219f3b9",
+      "componentPropsHash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "texts": [
+        {
+          "nodeId": "9:3",
+          "nodeName": "Select Card",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Header",
+            "Select Card"
+          ],
+          "value": "Select Card"
+        },
+        {
+          "nodeId": "9:5",
+          "nodeName": "+",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Header",
+            "New card pill",
+            "+"
+          ],
+          "value": "+"
+        },
+        {
+          "nodeId": "9:6",
+          "nodeName": "New card",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Header",
+            "New card pill",
+            "New card"
+          ],
+          "value": "New card"
+        },
+        {
+          "nodeId": "9:9",
+          "nodeName": "Pesse",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:11",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:12",
+          "nodeName": "VISA",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:13",
+          "nodeName": "$112,411",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$112,411"
+          ],
+          "value": "$112,411"
+        },
+        {
+          "nodeId": "9:15",
+          "nodeName": "•••• 2451",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 2451"
+          ],
+          "value": "•••• 2451"
+        },
+        {
+          "nodeId": "9:17",
+          "nodeName": "✓",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Frame",
+            "✓"
+          ],
+          "value": "✓"
+        },
+        {
+          "nodeId": "9:18",
+          "nodeName": "Main card",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Frame",
+            "Main card"
+          ],
+          "value": "Main card"
+        },
+        {
+          "nodeId": "9:20",
+          "nodeName": "Pesse",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:22",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:23",
+          "nodeName": "VISA",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:24",
+          "nodeName": "$112,411",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$112,411"
+          ],
+          "value": "$112,411"
+        },
+        {
+          "nodeId": "9:26",
+          "nodeName": "•••• 0095",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 0095"
+          ],
+          "value": "•••• 0095"
+        },
+        {
+          "nodeId": "9:29",
+          "nodeName": "Pesse",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Pesse"
+          ],
+          "value": "Pesse"
+        },
+        {
+          "nodeId": "9:31",
+          "nodeName": "Linda Srikandi",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "Linda Srikandi"
+          ],
+          "value": "Linda Srikandi"
+        },
+        {
+          "nodeId": "9:32",
+          "nodeName": "VISA",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "VISA"
+          ],
+          "value": "VISA"
+        },
+        {
+          "nodeId": "9:33",
+          "nodeName": "$12,000",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "$12,000"
+          ],
+          "value": "$12,000"
+        },
+        {
+          "nodeId": "9:35",
+          "nodeName": "•••• 1122",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Cards stack",
+            "Card · Linda Srikandi",
+            "Frame",
+            "•••• 1122"
+          ],
+          "value": "•••• 1122"
+        },
+        {
+          "nodeId": "9:39",
+          "nodeName": "✕",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Close wrap",
+            "Close",
+            "✕"
+          ],
+          "value": "✕"
+        },
+        {
+          "nodeId": "9:40",
+          "nodeName": "Close",
+          "path": [
+            "Phone · Cards — Select Card",
+            "Close wrap",
+            "Close",
+            "Close"
+          ],
+          "value": "Close"
+        }
+      ],
+      "componentProps": []
+    },
+    "pesse_send": {
+      "id": "7:5",
+      "name": "Phone · Send Money",
+      "lastModified": "2026-05-20T01:38:11Z",
+      "visible": true,
+      "boundingBox": {
+        "x": 2744,
+        "y": 200,
+        "width": 390,
+        "height": 844
+      },
+      "textHash": "sha256:dc01b84a0e266a3608a1a55d4c007cee0b896825e9bc243d34b28725a9de51b5",
+      "propsHash": "sha256:908ca4fed1fe692196f2c884294a91ba6cccedb155369086702844b0d219f3b9",
+      "componentPropsHash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "texts": [
+        {
+          "nodeId": "10:4",
+          "nodeName": "←",
+          "path": [
+            "Phone · Send Money",
+            "Header",
+            "Frame",
+            "←"
+          ],
+          "value": "←"
+        },
+        {
+          "nodeId": "10:5",
+          "nodeName": "Send money",
+          "path": [
+            "Phone · Send Money",
+            "Header",
+            "Send money"
+          ],
+          "value": "Send money"
+        },
+        {
+          "nodeId": "10:7",
+          "nodeName": "?",
+          "path": [
+            "Phone · Send Money",
+            "Header",
+            "Frame",
+            "?"
+          ],
+          "value": "?"
+        },
+        {
+          "nodeId": "10:10",
+          "nodeName": "Send to",
+          "path": [
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Send to"
+          ],
+          "value": "Send to"
+        },
+        {
+          "nodeId": "10:15",
+          "nodeName": "Syaiful Rijal",
+          "path": [
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Syaiful Rijal"
+          ],
+          "value": "Syaiful Rijal"
+        },
+        {
+          "nodeId": "10:16",
+          "nodeName": "8921362190",
+          "path": [
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "8921362190"
+          ],
+          "value": "8921362190"
+        },
+        {
+          "nodeId": "10:18",
+          "nodeName": "Change",
+          "path": [
+            "Phone · Send Money",
+            "recipient wrap",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Change"
+          ],
+          "value": "Change"
+        },
+        {
+          "nodeId": "10:20",
+          "nodeName": "$19",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "$19"
+          ],
+          "value": "$19"
+        },
+        {
+          "nodeId": "10:27",
+          "nodeName": "Linda's card",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Linda's card"
+          ],
+          "value": "Linda's card"
+        },
+        {
+          "nodeId": "10:28",
+          "nodeName": "Balance $521,098.31",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Balance $521,098.31"
+          ],
+          "value": "Balance $521,098.31"
+        },
+        {
+          "nodeId": "10:30",
+          "nodeName": "Change",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "Change"
+          ],
+          "value": "Change"
+        },
+        {
+          "nodeId": "10:34",
+          "nodeName": "1",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "1"
+          ],
+          "value": "1"
+        },
+        {
+          "nodeId": "10:36",
+          "nodeName": "2",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "2"
+          ],
+          "value": "2"
+        },
+        {
+          "nodeId": "10:38",
+          "nodeName": "3",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "3"
+          ],
+          "value": "3"
+        },
+        {
+          "nodeId": "10:41",
+          "nodeName": "4",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "4"
+          ],
+          "value": "4"
+        },
+        {
+          "nodeId": "10:43",
+          "nodeName": "5",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "5"
+          ],
+          "value": "5"
+        },
+        {
+          "nodeId": "10:45",
+          "nodeName": "6",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "6"
+          ],
+          "value": "6"
+        },
+        {
+          "nodeId": "10:48",
+          "nodeName": "7",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "7"
+          ],
+          "value": "7"
+        },
+        {
+          "nodeId": "10:50",
+          "nodeName": "8",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "8"
+          ],
+          "value": "8"
+        },
+        {
+          "nodeId": "10:52",
+          "nodeName": "9",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "9"
+          ],
+          "value": "9"
+        },
+        {
+          "nodeId": "10:55",
+          "nodeName": "000",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "000"
+          ],
+          "value": "000"
+        },
+        {
+          "nodeId": "10:57",
+          "nodeName": "0",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "0"
+          ],
+          "value": "0"
+        },
+        {
+          "nodeId": "10:59",
+          "nodeName": "⌫",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Frame",
+            "⌫"
+          ],
+          "value": "⌫"
+        },
+        {
+          "nodeId": "10:62",
+          "nodeName": "Send money",
+          "path": [
+            "Phone · Send Money",
+            "Frame",
+            "Frame",
+            "Send money"
+          ],
+          "value": "Send money"
+        }
+      ],
+      "componentProps": []
+    }
+  }
+}

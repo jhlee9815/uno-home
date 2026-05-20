@@ -21,15 +21,18 @@ dist-ssr
 .env.*.backup
 *.env.backup
 
-# Pipeline artifacts (local only)
+# Pipeline artifacts — per-run state (local only)
 .automation/snapshots/
 .automation/diffs/
 .automation/reports/
 .automation/logs/
-.automation/baseline/
 .automation/backups/
 .automation/demo-compare/
 !.automation/**/.gitkeep
+
+# Note: .automation/baseline/ is intentionally tracked.
+# It is the canonical source-of-truth for diff comparison in CI.
+# Updated only via approve+promote-dev workflow.
 
 # Codex session state (local only)
 .context/
