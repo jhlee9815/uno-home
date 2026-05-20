@@ -38,17 +38,20 @@ npx tsc --noEmit
 
 ## 2. 우선순위 1 — 운영 관찰 기간 (~2026-05-23)
 
-task-3/4 첫 자연 트리거 통과 직후. cron 2시간 주기로 자연 실행되는 결과를 2-3일 관찰. 세부 가이드: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md#6-8-a-운영-관찰-기간-task-5-진입-전-2026-05-20--05-23-권장).
+task-3/4 첫 자연 트리거 통과 직후. cron 2시간 주기로 자연 실행되는 결과를 2-3일 관찰. **노트북 꺼져 있어도 cron은 GitHub 서버에서 자동 실행됨.**
 
-매일 5분 체크:
-1. Slack 채널 — figma-pipeline 알림 + 결과
-2. GitHub Actions 실행 목록 — failure 있는지
-3. designer-review 라벨 Issue 누적량
+### 매일 1초 routine
+```bash
+cd /Users/juhee/Work/Test/design-test/uno-home
+npm run figma:health
+```
+`Anomalies ✅ none detected` 보이면 끝. 출력 해석/이상 신호 대응 매뉴얼은 [`phase-plan-6 §6-8-A`](./project-plan/phase-6/phase-plan-6.md#6-8-a-운영-관찰-기간-task-5-진입-전-2026-05-20--05-23-권장).
 
-정상 신호: 대부분 cron 실행이 "변경 0건 → post-run skip", 가끔 변경 잡히면 Issue 1건.
-이상 신호: 연속 failure / 같은 노드에 대한 Issue 무한 누적 / figma 안 만졌는데 변경 계속 잡힘 → 즉시 fix.
+### Figma 추적 메커니즘 / 새 프레임 만들 때
+어떤 파일/노드가 잡히는지, 새 프레임 만들면 어떻게 되는지: [`phase-plan-6 §6-8-B`](./project-plan/phase-6/phase-plan-6.md#6-8-b-figma-추적-메커니즘--운영자가-알아야-할-것).
 
-관찰 끝나면 → 우선순위 2(task-5).
+### 관찰 끝난 뒤
+→ 우선순위 2 (task-5 Cloudflare Worker). 진입 가이드: [`phase-plan-6 §6-8-C`](./project-plan/phase-6/phase-plan-6.md#6-8-c-다음-세션-진입-가이드).
 
 ## 3. 우선순위 2 — task-5 Cloudflare Worker (Figma webhook 프록시, 관찰 후)
 

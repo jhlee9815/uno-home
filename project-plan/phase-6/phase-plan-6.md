@@ -142,42 +142,131 @@ Phase 7로 넘어가려면:
 
 ## 6-8-A. 운영 관찰 기간 (task-5 진입 전, 2026-05-20 ~ 05-23 권장)
 
-task-3/4가 첫 자연 트리거로 동작 확인됨. task-5(Cloudflare webhook 자동 트리거) 진입 전에 2-3일 cron 자연 실행 관찰로 안정성 확인.
+task-3/4가 첫 자연 트리거로 동작 확인됨 (V5 통과). task-5(Cloudflare webhook 자동 트리거) 진입 전에 2-3일 cron 자연 실행 관찰로 안정성 확인.
 
 ### 관찰 목적
 - cron이 매 2시간마다 정상 실행되는지
 - figma 파일 변경 누적이 알림 폭주로 이어지지 않는지
-- post-run-actions의 `report-only` 경로가 일관되게 동작하는지
+- post-run-actions의 report-only/auto-apply 분기가 일관되게 동작하는지
 - Slack 알림이 누락 없이 채널에 도달하는지
 
-### 매일 1번 5분 체크 (사용자)
-1. Slack 채널 — 지난 24h 동안 figma-pipeline 알림 횟수와 결과(성공/실패) 확인.
-2. GitHub Actions 페이지 — workflow 실행 목록에 실패(❌)가 있으면 로그 확인.
-3. Open Issue 수 — `gh issue list --label designer-review` 또는 https://github.com/jhlee9815/uno-home/issues 에서 designer-review 라벨 Issue 누적량.
+### 노트북 꺼져 있어도 OK
+cron은 GitHub 클라우드 서버 (`ubuntu-latest`)에서 GitHub Actions가 직접 돌립니다. 사용자 노트북과 무관:
+- 매 2시간마다 자동 실행
+- 결과는 Slack에 자동 알림 (어디서든 받음)
+- 노트북은 결과를 **볼 때만** 필요
 
-### 이상 신호 정의 (즉시 대응)
-- workflow conclusion=`failure` 가 연속 2회 이상 — figma API 또는 코드 회귀.
-- 같은 변경 노드에 대한 Issue가 매 cron마다 새로 생성됨 — cs id가 매번 달라서 dedupe가 안 먹는다는 뜻. classify-diff/snapshot 안정성 문제일 수 있음.
-- 디자이너가 figma 파일 안 만졌는데 변경 N건이 계속 잡힘 — snapshot 비결정성. fix 필요.
-- post-run-actions가 PR 경로를 한 번도 안 탐 — 정상 (현재 활성 마커는 `pesse.send.cta` 1개뿐이라 매우 드물게만 발동).
+### 매일 1초 routine
+노트북 켜면 한 번:
+```bash
+cd /Users/juhee/Work/Test/design-test/uno-home
+npm run figma:health
+```
+
+출력 해석:
+| 줄 | 의미 |
+|---|---|
+| `Runs N (schedule/manual/dispatch)` | 지난 24h 워크플로 실행 횟수와 트리거 종류. cron은 schedule, 핀에서 누른 건 manual, 외부 webhook은 dispatch (task-5 후) |
+| `Conclusion ✅ N ❌ N` | success / failure 수. failure ≥ 1이면 GitHub Actions 페이지 확인 권장 |
+| `Avg duration` | 정상은 30-60초. 90초 넘기 시작하면 figma API 응답 지연 의심 |
+| `Latest run` / `Earliest run` | 최근 실행 시각 + 결과 |
+| `Open issues N` | 미처리 designer-review Issue. 디자이너 검토 후 close 필요 |
+| `Open PRs N` | 미머지 designer-bot PR. dev 리뷰 후 머지/close |
+| `Anomalies ✅ none detected` | 정상. 매일 이거 한 줄만 확인하면 끝 |
+
+옵션 환경변수:
+- `WINDOW_HOURS=72 npm run figma:health` — 72시간 윈도우
+- `STALE_HOURS=24 npm run figma:health` — 24h 안 변동 Issue/PR을 stale로 표시
+
+### 이상 신호 + 즉시 대응
+| 신호 | 의미 | 대응 |
+|---|---|---|
+| `Anomalies ⚠️ 2 consecutive failures` | 연속 실패 (success/cancelled/skipped 없이 failure 2회+) | failure URL 클릭 → 로그 확인 → 원인 fix |
+| `Anomalies ⚠️ Issue #N unchanged for 48h` | Issue가 48h 방치 | 디자이너 검토 권유 또는 close |
+| `Anomalies ⚠️ PR #N unchanged for 48h` | PR 48h 방치 | dev 리뷰 + 머지/close |
+| (헬퍼 외) 같은 노드 변경에 대한 Issue가 매 cron마다 새로 누적 | snapshot 비결정성. cs id가 매번 달라서 dedupe 무력. | classify-diff/snapshot 안정성 fix 필요 |
+| (헬퍼 외) figma 안 만졌는데 변경 N건이 계속 잡힘 | baseline과 head 사이 환경 차이 (CI vs local Figma API 응답 결정성) | snapshot 결정성 보강 |
 
 ### 정상 신호
-- cron 12회/일 중 figma 변경 0건이라 post-run skip이 다수, 가끔 변경 잡히면 Issue 1건 생성.
-- workflow 평균 30-60초.
-- Slack 알림 누락 없음.
+- cron 12회/일 (24h ÷ 2h) 중 대부분이 변경 0건 → post-run skip → silent
+- 가끔 변경 잡히면 Issue 1건 + Slack 알림 1건
+- workflow 평균 30-60초
+- `Anomalies ✅ none detected`
 
-### 다음 세션 진입 시 첫 5분
+## 6-8-B. Figma 추적 메커니즘 — 운영자가 알아야 할 것
+
+### 추적 대상은 단 1개 파일
+- **fileKey**: `9cevQvPHlQ5vZv5Pz3QaLL` (config/figma.yaml + `FIGMA_FILE_KEY` env override)
+- 다른 figma 파일은 무시
+- 파일 안에서도 `config/figma-mapping.yaml`에 명시적으로 등록된 노드 ID만 fetch
+
+### 등록 노드 (현재)
+| key | nodeId | 추적 의미 |
+|---|---|---|
+| `figma_appleInspiredDesignSystemGeneratedPreview_2_2` | `2:2` | Codex 이전 preview frame (report-only) |
+| `figma_pesseAppleInspired3Screens_7_2` | `7:2` | Pesse 3 screens 래퍼 (report-only) |
+| `pesse_home` | `7:3` | Pesse Home (report-only) |
+| `pesse_cards` | `7:4` | Pesse Cards (report-only) |
+| `pesse_send` | `7:5` | Pesse Send (report-only) — 자손 노드 `10:62`에 `pesse.send.cta` 마커 부착 → **auto-apply 후보** |
+
+`pesse.send.cta` 한 개만 auto-apply (PR 경로). 나머지는 변경 감지 시 report-only Issue.
+
+### 새 프레임 만들면 잡히나
+Figma API call이 명시적 노드 ID 리스트에만 들어가므로 **위치에 따라 다름**:
+
+| 새 프레임 위치 | 결과 |
+|---|---|
+| 위 등록 화면(`2:2` / `7:2` / `7:3` / `7:4` / `7:5`) **안에** | ✅ 자손 트리 hash 변경 → report-only Issue 생성 |
+| 같은 figma 파일이지만 등록 안 된 위치 (다른 페이지 / 페이지 루트 옆) | ❌ 무시 |
+| 다른 figma 파일 | ❌ 무시 |
+
+**확실히 추적하려면** `config/figma-mapping.yaml`에 entry 추가:
+```yaml
+my_new_frame:
+  figmaNodeId: "X:Y"
+  figmaNodeName: ...
+  code: ../src/screens/MyNewFrame.tsx   # 또는 추적-only면 FigmaFrameTracking.ts
+  targetType: screen
+  automation:
+    apply: report-only
+    allowedClasses: [text, layout, structure]
+```
++ 그 코드 파일이 실제 존재해야 `npm run figma:preflight` 통과.
+
+### 새 프레임 감지 빠른 검증
+1. Figma 파일 열기 — Pesse Home 화면:
+   `https://www.figma.com/design/9cevQvPHlQ5vZv5Pz3QaLL/Untitled?node-id=7-3`
+2. 화면 안에 빈 프레임 또는 텍스트 한 줄 추가 (F 또는 T 키)
+3. Figma 자동 저장
+4. 다음 cron (최대 2h) 또는 채널 핀 링크에서 수동 트리거
+5. 노트북에서 `npm run figma:health` — Open issues 1 증가 + Slack 알림
+
+⚠️ **baseline 누적 주의**: baseline `.automation/baseline/2026-05-20T02-09-13.json` 고정. 새 프레임을 안 지우면 매 cron마다 같은 변경이 잡혀서 cs id가 매번 새로 부여되어 Issue 누적될 수 있음. 테스트만 할 거면 1-2시간 안에 figma에서 그 프레임 삭제 후 다시 트리거하면 깨끗.
+
+### Auto-apply 트리거 (PR 경로) 직접 시연
+1. Figma에서 Pesse Send CTA 노드로 점프:
+   `https://www.figma.com/design/9cevQvPHlQ5vZv5Pz3QaLL/Untitled?node-id=10-62`
+2. CTA 텍스트 한 단어 변경 (예: "보내기" → "전송하기")
+3. Figma 자동 저장
+4. 다음 cron 또는 수동 트리거
+5. 결과: Draft PR 1건 + `designer-bot`/`auto-apply` 라벨 + Slack 알림. task-3 doc V3.5 갭(`pulls.update` on existing PR)도 자연 발동됨.
+
+원복: figma에서 텍스트 원복 + 만들어진 PR close + 브랜치 삭제.
+
+## 6-8-C. 다음 세션 진입 가이드
+
 ```bash
 cd /Users/juhee/Work/Test/design-test/uno-home
 git pull --rebase
-gh issue list --label designer-review --state open  # 또는 GitHub UI
-# 또는 API:
-# curl -sS -H "Authorization: Bearer $(security find-internet-password -gw -s github.com)" \
-#   "https://api.github.com/repos/jhlee9815/uno-home/actions/workflows/figma-pipeline.yml/runs?per_page=20" \
-#   | python3 -c "import sys,json; [print(r['conclusion'], r['event'], r['created_at']) for r in json.load(sys.stdin)['workflow_runs']]"
+npm run figma:health
 ```
-관찰 결과가 "정상 신호" 패턴이면 → task-5 진입.
-"이상 신호" 발견이면 → 원인부터 fix.
+
+`Anomalies ✅ none detected` + 24h 동안 cron 정상 패턴이면:
+- **task-5 진입** — Cloudflare Worker (Figma webhook → repository_dispatch)
+- 이후 task-6 (Resend), branch protection rule 활성화
+
+`Anomalies ⚠️` 가 있으면:
+- 즉시 fix → 안정화 → 그 다음 task-5
 
 ### task-5 진입 사전 준비 (관찰 기간 동안 사용자가 준비)
 - [ ] Cloudflare 계정 생성 (무료) → workers.cloudflare.com

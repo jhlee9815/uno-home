@@ -102,7 +102,16 @@
 - Slack에서 GitHub Actions 페이지 링크 클릭 → "Run workflow" → workflow_dispatch run `26161348247` (47s, success).
 - post-run-actions 자동 실행 → cs 변경 4건 감지 → Issue [#3](https://github.com/jhlee9815/uno-home/issues/3) 신규 생성 (`designer-review`, `report-only` 라벨 자동 부착).
 - 직전 cron 실행 (10:52, schedule)은 변경 0건이라 post-run skip — 분기도 정상.
-- task-3 doc V5 row를 ✅ + evidence로 갱신. Phase 6 task-3/4 + Slack 통합 end-to-end 운영 검증 완료. 세부: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md).
+- task-3 doc V5 row를 ✅ + evidence로 갱신. Phase 6 task-3/4 + Slack 통합 end-to-end 운영 검증 완료.
+
+### 2026-05-20 21:30 KST — figma:health 헬퍼 + 운영 관찰 모드 진입
+
+- `scripts/pipeline/health-check.ts` + `package.json` `figma:health` 스크립트 추가. `npm run figma:health` 한 줄로 24h workflow 상태 / open Issue·PR / 이상 신호 요약.
+- 토큰: env GITHUB_TOKEN → macOS keychain(github.com) fallback. 파일/로그/커밋 어디에도 노출 없음.
+- 코덱스 review 2회 사이클(견제: 토큰 module-load 시점 / consecutive-failure 로직) → PASS.
+- phase-plan-6 §6-8-A/B/C 보강 — 매일 routine, figma:health 출력 해석, figma 추적 메커니즘 (어떤 파일/노드 잡히고 새 프레임 만들면 어떻게 되는지), 다음 세션 진입 가이드.
+- 노트북 꺼도 cron 정상 동작 명시 (GitHub 서버에서 매 2h 자동 실행).
+- 현재 모드: **운영 관찰 (~2026-05-23 권장)**. 이상 신호 없으면 task-5 진입. 운영 가이드: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8-A (매일 routine + figma:health 해석) · §6-8-B (figma 추적 메커니즘) · §6-8-C (다음 세션 진입). Slack 통합 별도: [`slack-integration.md`](./project-plan/phase-6/slack-integration.md).
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)
@@ -154,6 +163,9 @@ gh issue list --label designer-review                # 자동 Issue 확인
 | Pesse 화면 | `src/screens/Pesse{Home,Cards,Send}Screen.tsx` |
 | 파이프라인 코어 | `scripts/pipeline/*.ts` (8 stages) |
 | Wrapper | `scripts/pipeline/claude-review.ts` |
+| Post-run 라우팅 | `scripts/pipeline/post-run-actions.ts` (task-3) |
+| 운영 모니터링 | `scripts/pipeline/health-check.ts` — `npm run figma:health` |
+| 거버넌스 | `.github/CODEOWNERS`, `.github/labels.yml`, PR/Issue 템플릿 |
 
 ### Figma (활성)
 | 종류 | 위치 |

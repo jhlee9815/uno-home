@@ -2,7 +2,14 @@
 
 This project is a local React/Vite prototype connected to a Figma change-detection pipeline. The pipeline watches mapped Figma nodes, snapshots them, compares them with the approved baseline, applies safe code changes, verifies the app, and creates a designer review report when there is something to review.
 
-## Current Registration
+> 📌 **현재 활성 트랙 (2026-05-20 ~)**: 본 README의 "Current Registration"은 초기 UNO HOME 트랙 (figma `SXPVingkmqkrcLzcXYFsZd`) 기준이며 archive 트랙입니다.
+> Pesse Apple 데모 + Phase 6 운영화 진행 중인 활성 트랙은 다음 문서들 참조:
+> - **현재 상태/우선순위**: [`plan.md`](./plan.md) (master) · [`TODO.md`](./TODO.md) (다음 세션 진입)
+> - **Phase 6 운영 / 헬퍼 / Figma 추적 메커니즘**: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8
+> - **Slack 통합**: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md)
+> - **매일 1초 운영 체크**: `npm run figma:health`
+
+## Current Registration (archive — UNO HOME 트랙)
 
 | Item | Value |
 |---|---|
@@ -30,7 +37,9 @@ All top-level Figma frames in the file are registered. Frames that do not yet ha
 
 The registration change-set was `cs-2026-05-06T06-00-51`. It contained `165` report-only registration changes, no code changes, and was promoted to baseline `.automation/baseline/2026-05-06T06-00-44.json`.
 
-## Daily Workflow
+## Daily Workflow (archive — UNO HOME 트랙)
+
+> ⚠️ 본 섹션은 **archive UNO HOME 트랙** (figma `SXPVingkmqkrcLzcXYFsZd`, 21:00 launchd) 기준입니다. 활성 트랙(Phase 6 / Pesse Apple Demo)은 GitHub Actions cron + post-run routing + Slack 통합으로 대체됨. 운영자 daily routine은 [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8-A 참조 — `npm run figma:health` 한 줄.
 
 Use this path when the recipient is working with the same Figma file, `SXPVingkmqkrcLzcXYFsZd`.
 
