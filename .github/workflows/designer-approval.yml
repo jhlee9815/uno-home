@@ -17,6 +17,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      actions: read              # download original figma-pipeline artifacts for Phase B apply
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
@@ -33,6 +34,42 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Prepare approval artifact download
+        if: github.event.label.name == 'designer-approved'
+        run: |
+          node <<'NODE'
+          const { existsSync, readFileSync, appendFileSync } = require('node:fs');
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const text = [event.issue?.title ?? '', event.issue?.body ?? ''].join('\n');
+          const match = text.match(/cs-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/);
+          if (!match) {
+            console.log('No cs id found on issue; approval script will report the usage error.');
+            process.exit(0);
+          }
+          const csId = match[0];
+          const manifestPath = `.automation/cs/${csId}.json`;
+          if (!existsSync(manifestPath)) {
+            console.log(`No manifest found at ${manifestPath}; approval script will report the missing manifest.`);
+            process.exit(0);
+          }
+          const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+          if (!manifest.runId) {
+            console.log(`Manifest ${csId} has no runId; skipping artifact download.`);
+            process.exit(0);
+          }
+          appendFileSync(process.env.GITHUB_ENV, `CS_ID=${csId}\nCS_RUN_ID=${manifest.runId}\n`);
+          console.log(`Prepared artifact download for ${csId} from run ${manifest.runId}`);
+          NODE
+
+      - name: Download originating pipeline artifacts
+        if: github.event.label.name == 'designer-approved' && env.CS_RUN_ID != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: figma-pipeline-${{ env.CS_RUN_ID }}
+          run-id: ${{ env.CS_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .
 
       - name: Record designer decision
         run: npm run figma:designer-approval

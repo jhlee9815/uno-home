@@ -138,7 +138,7 @@ GO 판정. 주요 조정 사항:
 
 ## 8-9. 다음 단계
 
-1. Task 10 Phase A 권장: before/after viewer, designer-approved/rejected label workflow, immutable cs manifest를 구현해 Task 8 감지 결과를 실제 의사결정 UX로 연결.
+1. ~~Task 10 Phase A 권장~~ — 완료됨(PR #10/#16). artifact handoff fix는 구현됐고 현재 후속은 Phase B live 재검증.
 2. 운영 지연 단축이 더 급하면 task-5 Cloudflare Worker(Figma webhook → repository_dispatch)를 먼저 진행.
 3. 첫 schema-compatible baseline refresh/promote 시 compliance diff가 정상적으로 누적되는지 운영 run에서 확인.
 4. task-9는 독립 큰 작업보다 Task 10 중 label/Slack summary 보강으로 흡수하는 방향 권장.
@@ -242,4 +242,4 @@ schema-compatible 임시 baseline으로 재검증한 최종 change set:
 - PR #9: https://github.com/jhlee9815/uno-home/pull/9 — merged.
 - Main merge commit: `6d4cd94 Detect Figma compliance drift before auto-apply`.
 - Post-merge local verification: `npm run lint` PASS, `npm run build` PASS.
-- 문서 기준 다음 작업: Task 10 Phase A 권장. 운영 지연 단축이 우선이면 task-5.
+- 후속 상태(2026-05-21 16:15 KST): Task 10 Phase A 완료, Phase B 코드 merge. artifact handoff fix는 구현됐고 현재 다음은 Phase B live 재검증.

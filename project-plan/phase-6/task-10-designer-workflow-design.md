@@ -3,7 +3,7 @@
 > **목표**: 디자이너 Slack 알림 → 클릭 → before/after HTML 확인 → 승인 → 코드 자동 수정 시도 → 개발자 확인 → 머지. cron 2시간 사이클이 자동으로 끝까지 흘러가되 결정 게이트 2개(디자이너 승인, 개발자 머지)는 사람.
 >
 > **diff 감지 범위 (task-8 ✅)**: 단순 텍스트/속성 변경뿐 아니라 (a) 새 프레임 추가 (`new-frame`), (b) DS 토큰 미반영 — 타이포/색상 토큰 해제 (`detached-style`), (c) 이미지 변경 (`image-change`)도 자손 트리 깊이까지 감지. 모두 `report-only` 정책으로 자동 patch 없이 디자이너 검토 큐로 들어감.
-> **상태**: 🚧 Phase A 구현 진행/로컬 검증 중 (2026-05-21). Manifest, image bootstrap, viewer generation, designer approval label workflow 1차 구현.
+> **상태**: 🟠 Phase A live 완료, Phase B 코드 merge 완료(PR #17/#18), artifact handoff fix 구현. `designer-approved` label workflow가 manifest `runId`로 원본 pipeline artifact를 다운로드하도록 보강했으며 live 재검증 대기(2026-05-21).
 > **Codex 검증 반영 (2026-05-21)**:
 > - **A. Stage 3a 신설**: immutable cs manifest 도입 (`.automation/cs/{id}.json` git-tracked) — 라벨은 event, manifest가 state.
 > - **B. Stage 4 Tier 2 (text-matching) 드롭**: marker 없는 text 변경은 PR description에 "marker 필요" 명시, 자동 patch 안 함.
@@ -69,20 +69,28 @@ Figma 편집 → cron 2h → snapshot → diff → classify → render images
 
 | Phase | 포함 Stage | 시간 | 상태 (2026-05-21) | 디자이너 가치 |
 |---|---|---|---|---|
-| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | 🟡 코드 100% (PR #10 OPEN, race patch + task-6 SKIPPED 정리 포함). merge 대기. 라이브 검증 0/3. | `figma:images:bootstrap`, `figma:viewer:generate`, `.automation/cs/{id}.json`, `designer-approval.yml` |
-| **B** | 4 | 3-4h | ⚪ 미시작. Phase A 운영 1-2주 + marker 충분히 추가된 후 진입. | Tier 1 marker patch만 자동. marker 없으면 PR에 "marker 추가 필요" 안내 |
+| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | ✅ Live 완료. PR #10 merged, baseline seed PR #16 merged, Pages/viewer/Issue/label→manifest transition 확인. | `figma:images:bootstrap`, `figma:viewer:generate`, `.automation/cs/{id}.json`, `designer-approval.yml` |
+| **B** | 4 | 3-4h | 🟠 코드 merge 완료(PR #17/#18), artifact handoff fix 구현. Live PR 생성 재검증 대기. | Tier 1/2 marker hit PR 또는 manual-edit fallback PR |
 | **C** | 5 + 7 | 4-6h | ⚪ 미시작. Phase B 동작 확인 후 진입. | dev gate + 회귀 안전망 |
 
-Phase A 단독으로 ship 가능. Phase B는 marker가 충분히 추가된 후 진입 권장.
+Phase A는 ship 완료. Phase B는 코드가 main에 있고 artifact handoff fix도 구현됐으나, 실제 auto-edit/manual-edit PR 생성 live 재검증이 남아 있다.
 
-### Phase A merge 대기 항목 (사용자 액션)
-1. GitHub Pages 활성화 — Settings → Pages → Source `gh-pages`. private repo는 Pro/Team 플랜 필요. 안 되면 viewer publish step 실패 → fallback (Actions artifact zip) 결정.
-2. PR #10 commit (현재 6 파일 uncommitted) + push → merge.
+### Phase A live 검증 완료 (2026-05-21)
+1. `npm run figma:images:bootstrap` 결과 baseline PNG seed가 PR #16으로 main에 들어감.
+2. `figma-pipeline` run `26211009015` success, Pages run `26211035500` success, viewer `https://jhlee9815.github.io/uno-home/cs/cs-2026-05-21T07-07-04/` 생성.
+3. Issue #19에 `designer-approved` 라벨 부착 → `designer-approval.yml` run `26211056345` success → `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved` 기록.
 
-### Phase A 라이브 검증 3건 (merge 후)
-1. `npm run figma:images:bootstrap` 실제 Figma 토큰으로 1회 실행 (baseline PNG seed).
-2. 첫 cron run에서 `dist-viewer/` gh-pages publish 성공 확인.
-3. 디자이너가 Issue에 `designer-approved` 또는 `designer-rejected` 라벨 부착 → `designer-approval.yml` workflow가 manifest transition 수행 확인.
+### Phase B artifact handoff fix (구현됨, live 재검증 대기)
+- Root cause: `designer-approval.ts`는 approval workflow에서 `.automation/diffs/{timestamp}-classified.json`과 manifest의 `baseSnapshotPath` / `headSnapshotPath`를 읽는데, #19 당시 issue-label workflow checkout에는 cron runner artifacts가 없었다.
+- Fix: `designer-approval.yml`에 `actions: read` 권한을 추가하고, Issue의 `cs-*` → `.automation/cs/{csId}.json` → `runId`를 추출해 `actions/download-artifact@v4`로 `figma-pipeline-${runId}`를 checkout root에 복원한다.
+- `figma-pipeline.yml`은 이미 `.automation/reports/`, `.automation/snapshots/`, `.automation/diffs/`, `.automation/cs/`, `.automation/images/snapshots/`, `dist-viewer/`를 `figma-pipeline-${github.run_id}` artifact로 업로드한다.
+- 회귀 테스트: `npm run figma:test:workflow-artifacts`.
+- 남은 live 검증:
+  1. `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml` 재실행.
+  2. `Download originating pipeline artifacts` step 성공 확인.
+  3. `Classified diff or snapshots missing` 제거 확인.
+  4. auto-edit 또는 manual-edit fallback PR 생성 확인.
+  5. manifest `pr-open` transition 확인.
 
 ---
 
@@ -124,10 +132,13 @@ npm run figma:test:designer-approval
 npm run lint
 ```
 
-남은 실환경 확인:
+실환경 확인 결과 (2026-05-21):
 
-- `npm run figma:images:bootstrap`는 Figma network/API가 필요하므로 실제 토큰 환경에서 1회 실행 필요.
-- GitHub Pages publish, manifest commit/push, `designer-approval.yml` label event는 PR merge 후 Actions에서 확인 필요.
+- Baseline images seeded and merged via PR #16.
+- GitHub Pages publish confirmed via run `26211035500`.
+- Manifest commit/push confirmed via `0ad6775` and designer decision commit `fc3cda8`.
+- `designer-approval.yml` label event confirmed via run `26211056345`.
+- Artifact handoff fix implemented: designer approval downloads the original pipeline artifact by manifest `runId`. Live PR creation revalidation remains.
 
 ---
 
@@ -404,11 +415,11 @@ npm run lint
 
 ## 10-12. 점진적 ship 경로 (Codex 반영 후 최종)
 
-- **Phase A (8.5-11.5h)**: Stage 1 + 2 + 3 + 3a — bootstrap baseline 이미지, viewer 호스팅, 라벨 트리거, immutable cs manifest. 디자이너가 viewer 보고 라벨 붙이면 "디자이너 승인" 상태가 영구 기록됨. **이 단계까지의 "approved" 의미**: 디자이너 수락 OK, 코드 수정은 개발자가 수동 (Stage 4 후 자동).
-- **Phase B (3-4h)**: Stage 4 — marker 기반 자동 코드 수정 + AST props patch.
-- **Phase C (4-6h)**: Stage 5 + 7 — dev gate (CI required, baseline은 PR에 포함) + contract/e2e test.
+- **Phase A (8.5-11.5h)**: ✅ 완료 — Stage 1 + 2 + 3 + 3a. Bootstrap baseline 이미지, viewer 호스팅, 라벨 트리거, immutable cs manifest가 live로 확인됨.
+- **Phase B (3-4h)**: 🟠 코드 merge + artifact handoff fix 구현 — 다음 작업은 live 재검증으로 auto-edit/manual-edit PR 생성과 manifest `pr-open` 전이를 확인하는 것.
+- **Phase C (4-6h)**: ⚪ 미시작 — dev gate (CI required, baseline은 PR에 포함) + contract/e2e test.
 
-Phase A 단독 ship 권장. Phase B는 marker 추가가 충분히 진행된 후 진입.
+Phase B handoff fix 후 Phase C 진입 권장. task-5는 cron 지연이 운영상 더 큰 문제가 될 때 끼워넣는다.
 
 ## 10-13. 범위 외 (명시)
 
