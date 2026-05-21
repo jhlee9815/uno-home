@@ -1,3 +1,34 @@
+# Active Handoff — Pesse Phase 6 (2026-05-21)
+
+> 아래의 기존 UNO HOME handoff는 archive 트랙 정보가 많다. 현재 작업 기준은 이 상단 섹션과 `plan.md` / `TODO.md` / `project-plan/phase-6/phase-plan-6.md`를 우선한다.
+
+| 항목 | 현재 값 |
+|---|---|
+| 활성 repo | `jhlee9815/uno-home` (`/Users/juhee/Work/Test/design-test/uno-home`) |
+| 활성 Figma file | `9cevQvPHlQ5vZv5Pz3QaLL` (Pesse Apple Demo) |
+| 활성 mapping | `config/figma-mapping.yaml` — 5 entries (`pesse_home`, `pesse_cards`, `pesse_send` 포함) |
+| 최신 main | `6d4cd94` — Task 8 PR #9 merged |
+| 완료 | Phase 6 task-1/2/3/4/7/8 ✅ |
+| 다음 권장 | Task 10 Phase A: before/after viewer + designer approval labels + immutable cs manifest |
+| 대안 | task-5 Cloudflare Worker: Figma webhook → GitHub Actions 즉시 실행 |
+
+## 현재 디자이너/개발자 워크플로우
+
+1. Figma 변경은 GitHub Actions cron 또는 수동 workflow로 감지된다.
+2. Task 8 이후 등록 화면 내부의 `detached-style`, `new-frame`, `image-change`는 `report-only`로 구조화되어 cs report/Issue에 표시된다.
+3. 자동 patch는 여전히 명시 marker 기반 안전 후보만 PR로 간다.
+4. 디자이너 승인 UX는 아직 수동이다. 이를 해결하는 다음 작업이 Task 10 Phase A다.
+
+## 바로 읽을 문서
+
+- [`TODO.md`](./TODO.md) — 다음 세션 진입/우선순위
+- [`plan.md`](./plan.md) — 전체 상태와 산출물 인덱스
+- [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) — Phase 6 source of truth
+- [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) — 완료된 Task 8
+- [`project-plan/phase-6/task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) — 다음 권장 설계
+
+---
+
 # UNO HOME Design System — Handoff
 
 **앱**: UNO HOME — 스마트홈 가족 관리 앱 (홈 허브, 가족 상태, 수면/건강, 알림)

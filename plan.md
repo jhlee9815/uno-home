@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-20 20:45 KST (Phase 6 task-1/2/3/4/7 ✅, 다음 task-5)
+> 최신 갱신: 2026-05-21 10:50 KST (Phase 6 task-1/2/3/4/7/8 ✅, 다음 권장 task-10 Phase A)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -14,10 +14,10 @@
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
 | **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/4/7 ✅, task-5/6 남음** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/4/7/8 ✅, task-10 Phase A 권장 / task-5·6 남음** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: **운영 관찰 기간 (~2026-05-23)**. task-3/4 첫 자연 트리거 통과 직후 — cron 자연 실행을 2-3일 관찰해 안정성 확인 후 task-5 진입. 세부: [phase-plan-6 §6-8-A](./project-plan/phase-6/phase-plan-6.md#6-8-a-운영-관찰-기간-task-5-진입-전-2026-05-20--05-23-권장).
+**현재 액션**: Task 8 DS Compliance Detection은 PR #9로 `main`에 merge 완료. 다음은 **Task 10 Phase A**(viewer/approval workflow) 권장. 단, Figma 편집→실행 지연을 먼저 줄여야 하면 task-5 Cloudflare Worker를 선행한다. 세부: [phase-plan-6 §6-9](./project-plan/phase-6/phase-plan-6.md#6-9-현재-handoff--다음-액션).
 **블로커**: 기술 블로커 없음. Slack webhook/Cloudflare/Resend는 외부 준비가 필요할 때까지 env 미설정 skip 방식.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
@@ -67,10 +67,11 @@
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
-| 8 | DS Compliance Detection Core (detached / image / new frames) | 🛠 설계 확정 | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
-| 9 | Report UX + Labels (task-8 후속) | 🛠 설계 대기 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
+| 8 | DS Compliance Detection Core (detached / image / new frames) | ✅ PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
+| 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🛠 설계 완료, Phase A 권장 | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
 
-총 예상: ~6.5~8시간 (2~3일 분량). 현재 task-1/2/3/4/7 ✅. 잔여는 task-5/6.
+현재 task-1/2/3/4/7/8 ✅. 잔여 핵심은 task-10 Phase A 또는 운영 지연 해소용 task-5/6.
 
 ### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
 
@@ -119,8 +120,7 @@
 
 - 사용자 요구 3종: ① detached styles (DS 토큰 안 쓰고 raw 색상/타이포로 작업) ② image/icon 교체 ③ 등록 화면 안 새 프레임 추가.
 - 코덱스 1차 설계 검증 통과 (GO). 주요 조정: task-8(detection core) + task-9(report UX) 분리 / Stage 0 필수 게이트 / schema contract 단계 추가 / deep traversal extraction / stable key diff / 시간 5-6h→7-9h 보강.
-- v1 범위 제한 명시: 등록 화면 밖 새 top-level frame은 별도 task / INSTANCE_SWAP / component path는 v2.
-- 코드 진행은 운영 관찰 기간 종료 후 사용자 승인 시 Stage 0부터. 세부: [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) · [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md).
+- v1 범위 제한 명시: 등록 화면 밖 새 top-level frame은 별도 task / INSTANCE_SWAP / component path는 v2. 세부: [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) · [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md).
 
 ### 활성 GitHub 리소스
 - Repo: https://github.com/jhlee9815/uno-home (private)
@@ -170,10 +170,11 @@ gh issue list --label designer-review                # 자동 Issue 확인
 | UNO Skill | `.claude/skills/uno-design-system/SKILL.md` |
 | Apple demo | `src/screens/AppleDemoScreen.tsx` + `Button.tsx` + `AppleCard.tsx` |
 | Pesse 화면 | `src/screens/Pesse{Home,Cards,Send}Screen.tsx` |
-| 파이프라인 코어 | `scripts/pipeline/*.ts` (8 stages) |
+| 파이프라인 코어 | `scripts/pipeline/*.ts` (8 stages + Task 8 compliance diff/classify/report) |
 | Wrapper | `scripts/pipeline/claude-review.ts` |
 | Post-run 라우팅 | `scripts/pipeline/post-run-actions.ts` (task-3) |
 | 운영 모니터링 | `scripts/pipeline/health-check.ts` — `npm run figma:health` |
+| Task 8 compliance | `scripts/pipeline/lib/compliance-types.ts`, `snapshot-node.ts`, `diff-snapshot.ts`, `classify-diff.ts`, `designer-review.ts`, `scripts/ops/pending-review-viewer.ts` |
 | 거버넌스 | `.github/CODEOWNERS`, `.github/labels.yml`, PR/Issue 템플릿 |
 
 ### Figma (활성)
@@ -189,7 +190,7 @@ gh issue list --label designer-review                # 자동 Issue 확인
 ### 파이프라인 상태 (활성)
 | 종류 | 위치 |
 |---|---|
-| 활성 baseline | `.automation/baseline/2026-05-20T02-09-13.json` |
+| 활성 baseline | `.automation/baseline/2026-05-20T02-09-13.json` (Task 8 이전 schema; compliance diff skip guard 적용) |
 | 활성 매핑 | `config/figma-mapping.yaml` (5 entries) |
 | UNO 백업 | `.automation/backups/figma-mapping.2026-05-20T02-07-19-249Z.yaml` |
 | 데모 비교 페이지 | `.automation/demo-compare/compare.html` |
@@ -241,6 +242,8 @@ Phase 6/7 진입 전 외부 검증 결과:
 ### 즉시 (Phase 6 시작 전 한 번)
 - [x] task-1 GitHub Secrets 등록 (FIGMA_TOKEN)
 - [x] CODEOWNERS에 들어갈 GitHub username 결정 — `jhlee9815` 단일 (task-4 완료)
+- [ ] Task 10 Phase A 진행 시 GitHub Pages/private Pages 사용 여부 결정
+- [ ] Task 10 Phase A 진행 시 `.automation/images/baseline/` PNG git tracking/storage threshold 결정
 - [ ] Cloudflare 계정 + wrangler 설치 (task-5 직전)
 - [ ] Resend 계정 + 도메인 검증 시작 (task-6 직전, DNS 반영 24h 걸릴 수 있음)
 - [ ] (선택) Slack/Discord webhook URL 생성 — 풍부한 메시지 원할 때만. 기본 알림은 GitHub 공식 Slack 앱으로 가능.
@@ -267,10 +270,11 @@ Phase 6/7 진입 전 외부 검증 결과:
 | Low | (Phase 8 후보) Hosted SaaS 검토 | TBD |
 
 
-## 2026-05-21 10:33 KST — task-8 local 구현/검증 진행
+## 2026-05-21 10:50 KST — task-8 구현/검증/merge 완료
 
-- Claude/Codex가 `feature/task-8-ds-compliance`에서 Stage 0-5 local 구현/검증 완료.
+- Claude/Codex가 `feature/task-8-ds-compliance`에서 Stage 0-6 구현/검증 완료 후 PR #9를 merge. main: `6d4cd94`.
 - 핵심: Figma 자손 트리에서 detached style / descendant frame / imageRef를 수집하고, stable-key diff + classify report-only + cs report compliance sections로 연결.
 - 검증: full figma test loop, `npm run lint`, `npm run build`, Stage 6 real Figma probe PASS.
-- 상세 결과: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-12.
-- 다음: Draft PR #9 review/CI 후 merge.
+- rollout 보강: 기존 approved baseline이 Task 8 이전 schema일 때 기존 node compliance diff를 skip해 false-positive flood 방지.
+- 상세 결과: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-13.
+- 다음 권장: Task 10 Phase A. 운영 지연 단축이 우선이면 task-5.

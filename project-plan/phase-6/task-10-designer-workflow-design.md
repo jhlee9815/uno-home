@@ -1,14 +1,14 @@
 # Task 6-10 — Designer Review → Auto-Edit → Dev Merge Workflow (DESIGN)
 
 > **목표**: 디자이너 Slack 알림 → 클릭 → before/after HTML 확인 → 승인 → 코드 자동 수정 시도 → 개발자 확인 → 머지. cron 2시간 사이클이 자동으로 끝까지 흘러가되 결정 게이트 2개(디자이너 승인, 개발자 머지)는 사람.
-> **상태**: ✅ 설계 완료 (Codex `GO_WITH_CHANGES` 검증, 2026-05-21). 사용자 승인 받고 Phase A 구현 진입.
+> **상태**: ✅ 설계 완료 (Codex `GO_WITH_CHANGES` 검증, 2026-05-21). Task 8 merge 이후 문서 기준 다음 권장 구현 후보.
 > **Codex 검증 반영 (2026-05-21)**:
 > - **A. Stage 3a 신설**: immutable cs manifest 도입 (`.automation/cs/{id}.json` git-tracked) — 라벨은 event, manifest가 state.
 > - **B. Stage 4 Tier 2 (text-matching) 드롭**: marker 없는 text 변경은 PR description에 "marker 필요" 명시, 자동 patch 안 함.
 > - **C. Stage 6 알림 분산**: 별도 stage 제거, 각 transition stage(2/3/4/5)에 inline 알림 훅.
 > - 추가: Stage 1 bootstrap — 매핑된 모든 review target에 대해 baseline 이미지를 한 번에 시드 (첫 사이클 "before 없음" 문제 회피).
 > - 추가: Stage 5 baseline promote를 main 직접 push 대신 PR에 포함 또는 follow-up PR로 (branch protection 충돌 회피).
-> **선행**: task-3/4 ✅ (이미 GitHub Issue/PR 자동 생성 + 라벨), task-8 Stage 2 ✅ (detection core), `npm run figma:viewer` 즉시 viewer ✅ (오늘 만든 baseline)
+> **선행**: task-3/4 ✅ (이미 GitHub Issue/PR 자동 생성 + 라벨), task-8 ✅ merged (detection core), `npm run figma:viewer` 즉시 viewer ✅
 > **블록 해제**: 디자이너가 Figma 편집 → 코드 머지까지 ops 노이즈 없이 흐름
 
 ## 10-1. 현재 워크플로 vs 목표

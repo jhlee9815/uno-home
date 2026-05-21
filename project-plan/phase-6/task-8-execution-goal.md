@@ -1,7 +1,7 @@
 # Task 6-8 Execution Goal — DS Compliance Detection Core
 
 > 생성: 2026-05-20 KST
-> 브랜치: `feature/task-8-ds-compliance`
+> 브랜치: `feature/task-8-ds-compliance` → PR #9 merged to `main` (`6d4cd94`)
 > 공유 대상: Claude / Codex 공용 핸드오프
 > 정식 설계 문서: [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md)
 
@@ -15,7 +15,7 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 
 ## 현재 진행 지점
 
-2026-05-21 10:43 KST 기준 Stage 0-6 구현과 검증을 완료했다. Draft PR #9가 열려 있으며 merge 전 review/CI 확인만 남았다.
+2026-05-21 10:50 KST 기준 Stage 0-7 구현/검증/문서화를 완료했고 PR #9가 `main`에 merge됐다. 이 문서는 실행용 handoff에서 완료 기록으로 전환한다.
 
 ## 진행 단계
 
@@ -28,12 +28,12 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 | 4 | classify subcategories + report section 통합 | ✅ 완료 |
 | 5 | fixture/unit/full local tests | ✅ 완료 |
 | 6 | 실 Figma trigger 검증 | ✅ 완료 |
-| 7 | 문서화 + plan/TODO 갱신 | ✅ local 완료 |
+| 7 | 문서화 + plan/TODO/README/handoff 갱신 | ✅ 완료 |
 
 
-## 바로 다음 작업 — PR Review / Merge Gate
+## 바로 다음 작업 — 완료 후 후속
 
-다음 담당자가 바로 시작할 작업은 PR #9 review/CI 확인이다. Stage 6은 완료됐다.
+PR #9 review/CI/merge gate는 완료됐다. 다음 담당자가 바로 시작할 작업은 Task 10 Phase A 또는, 운영 지연 단축이 우선이면 task-5 Cloudflare Worker다.
 
 ### Stage 6 evidence
 
@@ -44,10 +44,11 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 - verify: build/lint passed
 - rollout 보강: old-schema approved baseline은 compliance diff를 skip해 첫 운영 run flood를 방지한다.
 
-### Merge 전 확인
+### Merge 후 확인
 
-- Draft PR #9 CI/review 확인
-- merge 후 schema-compatible baseline refresh/promote 운영 절차 확인
+- PR #9 merged: https://github.com/jhlee9815/uno-home/pull/9
+- main: `6d4cd94`
+- schema-compatible baseline refresh/promote는 다음 운영 run 또는 Task 10/5 진행 중 확인
 
 ## Stage 0 실행 명령
 
@@ -89,3 +90,5 @@ TASK8_SAMPLE_NODE_IDS="7:3,7:4,7:5,10:62" npm run figma:task8:stage0
 - 2026-05-21 10:33 KST — Stage 2-5 local 완료. full figma test loop(`diff classify report-only designer-review snapshot api token-css apply-token apply-code apply-report verify-report visual-diff promote-gate marker-candidates`) exit 0, `npm run lint` exit 0, `npm run build` exit 0. Stage 6 실 Figma trigger 검증 대기.
 
 - 2026-05-21 10:43 KST — Stage 6 real Figma trigger validation 완료. 최종 cs `cs-2026-05-21T01-42-28`, report-only 2건, compliance sections 확인, apply noop, verify passed. Figma probe cleanup 완료.
+
+- 2026-05-21 10:50 KST — PR #9 merge 완료. main `6d4cd94`. 다음은 Task 10 Phase A 권장, task-5는 운영 지연 단축이 우선일 때 선행.

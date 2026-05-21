@@ -2,10 +2,12 @@
 
 This project is a local React/Vite prototype connected to a Figma change-detection pipeline. The pipeline watches mapped Figma nodes, snapshots them, compares them with the approved baseline, applies safe code changes, verifies the app, and creates a designer review report when there is something to review.
 
-> 📌 **현재 활성 트랙 (2026-05-20 ~)**: 본 README의 "Current Registration"은 초기 UNO HOME 트랙 (figma `SXPVingkmqkrcLzcXYFsZd`) 기준이며 archive 트랙입니다.
-> Pesse Apple 데모 + Phase 6 운영화 진행 중인 활성 트랙은 다음 문서들 참조:
+> 📌 **현재 활성 트랙 (2026-05-21 ~)**: 본 README의 "Current Registration"은 초기 UNO HOME 트랙 (figma `SXPVingkmqkrcLzcXYFsZd`) 기준이며 archive 트랙입니다.
+> Pesse Apple 데모 + Phase 6 운영화의 활성 Figma 파일은 `9cevQvPHlQ5vZv5Pz3QaLL`입니다.
 > - **현재 상태/우선순위**: [`plan.md`](./plan.md) (master) · [`TODO.md`](./TODO.md) (다음 세션 진입)
 > - **Phase 6 운영 / 헬퍼 / Figma 추적 메커니즘**: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8
+> - **Task 8 DS compliance 감지 완료/merged**: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md)
+> - **다음 권장 작업**: [`project-plan/phase-6/task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) Phase A (viewer/approval workflow). 운영 지연 단축이 우선이면 task-5 Cloudflare Worker.
 > - **Slack 통합**: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md)
 > - **매일 1초 운영 체크**: `npm run figma:health`
 
@@ -69,11 +71,21 @@ npm run figma:promote cs-{id}
 npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name"
 npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name" --design-system-url "<design-system-figma-url-or-file-key>"
 npm run figma:run
+npm run figma:health                              # GitHub Actions/Issue/PR 운영 상태 요약
+npm run figma:task8:stage0                        # Task 8 Figma field sampler
+npm run figma:viewer                              # pending report-only local HTML viewer
 npm run figma:claude-review                       # 3-band 체크리스트 (UNO 트랙)
 npm run figma:claude-review -- --source apple     # Apple-inspired 트랙
 ```
 
 Use `npm run figma:run` for the normal end-to-end cycle. Use the individual commands only when debugging a specific stage.
+
+## Current Phase 6 Status (Pesse active track)
+
+- **Main**: `6d4cd94` — PR #9 merged; Task 8 DS Compliance Detection is on `main`.
+- **Task 8 validated**: real Figma probe on file `9cevQvPHlQ5vZv5Pz3QaLL`, screen `pesse_home` (`7:3`) detected `detached-style`, `new-frame`, and `image-change`; probe cleanup confirmed.
+- **Rollout guard**: old approved baselines that do not contain Task 8 compliance arrays are skipped for compliance diff to prevent first-run false-positive floods. New tracked nodes still report head compliance as new.
+- **Next recommended**: Task 10 Phase A for hosted before/after viewer + designer approval labels + immutable cs manifest. If immediate Figma webhook latency is more important, do Task 5 Cloudflare Worker first.
 
 ## Design System Skill (Phase 3·보완 트랙)
 

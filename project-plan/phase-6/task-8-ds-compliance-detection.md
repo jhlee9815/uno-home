@@ -4,7 +4,7 @@
 > **예상 시간**: 7-9시간 (Codex 견적, 5-6h optimistic 대비 보강)
 > **선행**: task-3/4 완료 ✅. task-5/6 무관 (병렬 가능).
 > **블록 해제**: task-9 (Report UX + Labels)
-> **상태**: ✅ Stage 6 실 Figma trigger 검증 완료 (2026-05-21 10:43 KST) — detection core 구현/검증 완료. merge 전 PR review/CI만 남음.
+> **상태**: ✅ 완료 / merged to `main` (2026-05-21 10:46 KST, PR #9, merge commit `6d4cd94`).
 > **설계 검증**: Codex `019e4xxx-xxxx` (별도 session) — `GO, 단 task-8/task-9로 분리하고 task-8 범위는 "구조화된 detection core"로 고정` 판정.
 
 ## 8-1. 배경 / 사용자 요구
@@ -89,7 +89,7 @@ interface ClassifiedChange {
 | **4** | Classify + Report integrated — classify에 `subcategories` 추가, compliance class는 모두 report-only. report에 `## Detached Styles` / `## New Frames in Tracked Screens` / `## Image Changes` 섹션 추가. **✅ 완료** | 1시간 |
 | **5** | Fixture + Unit tests — detached color/typography, nested imageRef, nested new frame, report section, classify report-only policy 검증. **✅ 완료 — local full test loop PASS** | 1시간 |
 | **6** | 실 figma 자연 트리거 검증 — Figma에 임시 probe를 만들고 snapshot→diff→classify→apply→verify→report 실행. cs report 새 섹션 확인 후 probe cleanup. **✅ 완료** | 30분 |
-| **7** | 문서화 — 본 doc 완료 기록 + phase-plan-6 갱신 + plan/TODO 갱신. **✅ local docs updated; commit/push는 사용자 명시 전 미실행** | 30분 |
+| **7** | 문서화 — 본 doc 완료 기록 + phase-plan-6 갱신 + plan/TODO/README/handoff 갱신. **✅ 완료** | 30분 |
 
 **총**: 7-9시간 (1일 작업 분량).
 
@@ -138,10 +138,10 @@ GO 판정. 주요 조정 사항:
 
 ## 8-9. 다음 단계
 
-1. Draft PR #9 review/CI 확인.
-2. merge 직후 첫 운영 run은 기존 approved baseline이 Task 8 이전 schema일 수 있으므로 compliance diff flood 방지 로직이 적용되는지 확인.
-3. schema-compatible baseline refresh/promote 후 본격 운영 monitoring.
-4. 후속은 task-9 (Report UX + Labels) 또는 task-10 Phase A(viewer/approval workflow).
+1. Task 10 Phase A 권장: before/after viewer, designer-approved/rejected label workflow, immutable cs manifest를 구현해 Task 8 감지 결과를 실제 의사결정 UX로 연결.
+2. 운영 지연 단축이 더 급하면 task-5 Cloudflare Worker(Figma webhook → repository_dispatch)를 먼저 진행.
+3. 첫 schema-compatible baseline refresh/promote 시 compliance diff가 정상적으로 누적되는지 운영 run에서 확인.
+4. task-9는 독립 큰 작업보다 Task 10 중 label/Slack summary 보강으로 흡수하는 방향 권장.
 
 ## 8-10. Stage 0 완료 기록 (2026-05-20 22:26 KST)
 
@@ -194,9 +194,9 @@ npm run build
 - `npm run lint` exit 0.
 - `npm run build` exit 0 (`tsc -b && vite build`).
 
-### 남은 Stage 6
+### Stage 6 상태
 
-아직 실 Figma 파일을 수정해 자연 trigger/수동 pipeline으로 `cs-*.md`를 생성하는 검증은 하지 않았다. 다음 담당자는 Stage 6에서 실제 Figma 변경 3종(detached style / imageRef / descendant frame)을 만들고 report 섹션의 false positive를 확인한다.
+이 시점에는 Stage 6이 남아 있었으나, 2026-05-21 10:43 KST에 실 Figma probe 검증을 완료했다. 최종 기록은 아래 §8-13을 기준으로 한다.
 
 
 ## 8-13. Stage 6 실환경 검증 완료 기록 (2026-05-21 10:43 KST)
@@ -235,3 +235,11 @@ schema-compatible 임시 baseline으로 재검증한 최종 change set:
 - apply result: noop.
 - verify result: build/lint passed.
 - cleanup: Figma probe removed; local temporary baseline file removed.
+
+
+## 8-14. Merge 완료 기록 (2026-05-21 10:50 KST)
+
+- PR #9: https://github.com/jhlee9815/uno-home/pull/9 — merged.
+- Main merge commit: `6d4cd94 Detect Figma compliance drift before auto-apply`.
+- Post-merge local verification: `npm run lint` PASS, `npm run build` PASS.
+- 문서 기준 다음 작업: Task 10 Phase A 권장. 운영 지연 단축이 우선이면 task-5.
