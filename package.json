@@ -46,7 +46,9 @@
     "figma:test:cs-manifest": "tsx scripts/pipeline/lib/cs-manifest.test.ts",
     "figma:test:figma-images": "tsx scripts/pipeline/lib/figma-images.test.ts",
     "figma:test:viewer-generator": "tsx scripts/pipeline/lib/viewer-generator.test.ts",
-    "figma:test:designer-approval": "tsx scripts/pipeline/lib/designer-approval.test.ts"
+    "figma:test:designer-approval": "tsx scripts/pipeline/lib/designer-approval.test.ts",
+    "figma:test:github-pr": "tsx scripts/pipeline/lib/github-pr.test.ts",
+    "figma:test:manual-edits": "tsx scripts/pipeline/lib/manual-edits.test.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",
