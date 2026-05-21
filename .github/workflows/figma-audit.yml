@@ -69,7 +69,7 @@ jobs:
         if: steps.register.outputs.registered_count != '0' && steps.register.outputs.registered_count != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REGISTERED_NAMES: ${{ steps.register.outputs.registered_names }}
+          REGISTERED_NAMES_B64: ${{ steps.register.outputs.registered_names_b64 }}
           REGISTERED_IDS: ${{ steps.register.outputs.registered_ids }}
           REGISTERED_COUNT: ${{ steps.register.outputs.registered_count }}
           MAPPING_PATH: ${{ steps.register.outputs.mapping_path }}
@@ -117,12 +117,16 @@ jobs:
             echo ""
             echo "**Registered:**"
             echo ""
-            # IDs are comma-separated, names are pipe-separated. The script
-            # emits them tightly packed (no whitespace around delimiters), so
-            # piping through xargs would crash on apostrophes/quotes in
-            # user-controlled Figma frame names. Read straight.
+            # IDs are comma-separated. Names are base64-of-newline-joined to
+            # survive newlines/quotes/= chars that Figma frame names can hold.
+            # `while read` instead of `mapfile` for portability across bash
+            # versions; the CI runner ships bash 5, but mapfile is a quiet
+            # builtin and the read loop is just as fast for our handful of names.
             IFS=',' read -ra IDS <<< "${REGISTERED_IDS}"
-            IFS='|' read -ra NAMES <<< "${REGISTERED_NAMES}"
+            NAMES=()
+            while IFS= read -r line; do
+              NAMES+=("$line")
+            done < <(echo "${REGISTERED_NAMES_B64}" | base64 -d 2>/dev/null || true)
             for i in "${!IDS[@]}"; do
               echo "- \`${IDS[$i]}\` — ${NAMES[$i]:-}"
             done
@@ -140,6 +144,13 @@ jobs:
             --body-file "$BODY_FILE" \
             --head "$BRANCH" \
             --base main
+
+          # PRs opened via secrets.GITHUB_TOKEN don't cascade to pr-checks (by
+          # design — prevents recursive workflow loops). The pr-checks workflow
+          # exposes a workflow_dispatch trigger so we can fire `validate`
+          # against this head branch explicitly. The resulting check report
+          # against the PR's head SHA satisfies the required-status-check gate.
+          gh workflow run pr-checks.yml --ref "$BRANCH" || true
 
       - name: Step summary
         if: always()

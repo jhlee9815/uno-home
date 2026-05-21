@@ -137,11 +137,18 @@ function isEntryPoint(): boolean {
 
 function surfaceOutput(registered: Candidate[], skipped: string[]): void {
   if (!process.env.GITHUB_OUTPUT) return;
+  // Encode names as base64 because Figma frame names are user-controlled
+  // and may contain newlines or = characters that would corrupt the simple
+  // KEY=VALUE format of $GITHUB_OUTPUT and inject ghost outputs.
+  const namesB64 = Buffer.from(
+    registered.map(c => c.name).join('\n'),
+    'utf-8'
+  ).toString('base64');
   const out = [
     `registered_count=${registered.length}`,
     `skipped_count=${skipped.length}`,
     `registered_ids=${registered.map(c => c.nodeId).join(',')}`,
-    `registered_names=${registered.map(c => c.name).join('|')}`,
+    `registered_names_b64=${namesB64}`,
     `mapping_path=${MAPPING_PATH}`,
   ].join('\n');
   try {

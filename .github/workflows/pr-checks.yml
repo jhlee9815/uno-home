@@ -3,6 +3,15 @@ name: pr-checks
 on:
   pull_request:
     branches: [main]
+  # workflow_dispatch lets other workflows (e.g. figma-audit auto-register)
+  # trigger validation explicitly. PRs opened with GITHUB_TOKEN do NOT cascade
+  # to pull_request runs by design — dispatch is the supported escape hatch.
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why is validation being dispatched'
+        required: false
+        default: 'manual'
 
 concurrency:
   group: pr-checks-${{ github.head_ref || github.run_id }}
