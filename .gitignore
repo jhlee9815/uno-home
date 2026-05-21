@@ -33,6 +33,8 @@ dist-ssr
 .automation/viewer/
 .automation/images/snapshots/
 .automation/audits/
+.automation/audit-state.json
+.automation/audit-candidates.json
 
 # Tracked pipeline state
 !.automation/cs/

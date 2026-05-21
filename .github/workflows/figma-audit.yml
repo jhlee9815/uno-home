@@ -2,8 +2,9 @@ name: figma-audit
 
 on:
   schedule:
-    # Monday 00:00 UTC = 09:00 KST (weekly DS health check)
-    - cron: '0 0 * * 1'
+    # Daily 00:00 UTC = 09:00 KST. Daily cadence keeps the auto-register
+    # 2-sighting threshold short (~24h) without spamming the channel.
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       reason:
@@ -18,10 +19,11 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
-      contents: read
-      issues: write
+      contents: write          # push auto-register branch
+      pull-requests: write     # open auto-register PR
+      issues: write            # audit Issue
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
@@ -29,21 +31,101 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+
+      - name: Restore audit state from previous run
+        uses: actions/cache@v4
+        with:
+          path: .automation/audit-state.json
+          key: audit-state-v1-${{ github.run_id }}
+          restore-keys: |
+            audit-state-v1-
+
       - name: Write .env from secrets
         run: |
           echo "FIGMA_TOKEN=${FIGMA_TOKEN}" > .env
           chmod 600 .env
+
       - name: Run figma:audit
         id: audit
         run: npm run figma:audit
+
       - name: Cleanup .env
         if: always()
         run: rm -f .env
+
+      - name: Auto-register surviving candidates
+        id: register
+        if: steps.audit.outputs.auto_register_count != '0' && steps.audit.outputs.auto_register_count != ''
+        run: npm run figma:audit:register
+
+      - name: Open auto-register PR (when registered_count > 0)
+        if: steps.register.outputs.registered_count != '0' && steps.register.outputs.registered_count != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTERED_NAMES: ${{ steps.register.outputs.registered_names }}
+          REGISTERED_IDS: ${{ steps.register.outputs.registered_ids }}
+          REGISTERED_COUNT: ${{ steps.register.outputs.registered_count }}
+          THRESHOLD: ${{ env.FIGMA_AUDIT_REGISTER_THRESHOLD }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -e
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="auto-register/audit-${DATE}"
+
+          git config user.name "designer-bot"
+          git config user.email "designer-bot@users.noreply.github.com"
+
+          # If today's branch already exists (re-run on the same day), force-update.
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git checkout -B "$BRANCH"
+            git add config/figma-mapping.yaml
+            git commit -m "chore(audit): refresh auto-register $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
+            git push -f origin "$BRANCH"
+            # Existing PR (if any) picks up the new commit automatically.
+          else
+            git checkout -b "$BRANCH"
+            git add config/figma-mapping.yaml
+            git commit -m "chore(audit): auto-register ${REGISTERED_COUNT} frame(s)"
+            git push origin "$BRANCH"
+
+            BODY_FILE=$(mktemp)
+            {
+              echo "Auto-registered **${REGISTERED_COUNT}** frame(s) after surviving the audit sighting threshold."
+              echo ""
+              echo "These top-level frames have been present in the Figma file across multiple audit cycles, so they are promoted into \`config/figma-mapping.yaml\` with \`apply: report-only\`. Once merged, future audits will track detached-style violations inside them."
+              echo ""
+              echo "**Registered:**"
+              echo ""
+              IFS=',' read -ra IDS <<< "${REGISTERED_IDS}"
+              IFS='|' read -ra NAMES <<< "${REGISTERED_NAMES}"
+              for i in "${!IDS[@]}"; do
+                ID_TRIM=$(echo "${IDS[$i]}" | xargs)
+                NAME_TRIM=$(echo "${NAMES[$i]:-}" | xargs)
+                echo "- \`${ID_TRIM}\` — ${NAME_TRIM}"
+              done
+              echo ""
+              echo "**Why a PR (not direct push):** main is protected; the \`validate\` check on this PR must pass before merge. Once it does, you can merge and detection extends automatically."
+              echo ""
+              echo "Audit run: ${RUN_URL}"
+              echo ""
+              echo "_Created by figma-audit workflow._"
+            } > "$BODY_FILE"
+
+            gh pr create \
+              --title "[auto-register] ${REGISTERED_COUNT} frame(s) — ${DATE}" \
+              --label auto-register \
+              --body-file "$BODY_FILE" \
+              --head "$BRANCH" \
+              --base main
+          fi
+
       - name: Step summary
         if: always()
         run: |
@@ -52,6 +134,8 @@ jobs:
             echo ""
             echo "- detached styles: \`${{ steps.audit.outputs.detached_total }}\`"
             echo "- unregistered top-level frames: \`${{ steps.audit.outputs.unregistered_total }}\`"
+            echo "- auto-register candidates: \`${{ steps.audit.outputs.auto_register_count }}\`"
+            echo "- registered this run: \`${{ steps.register.outputs.registered_count || '0' }}\`"
             echo "- has violations: \`${{ steps.audit.outputs.has_violations }}\`"
             if [ -f "${{ steps.audit.outputs.audit_md }}" ]; then
               echo ""
@@ -62,12 +146,14 @@ jobs:
               echo '```'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Create audit Issue when violations detected
         if: steps.audit.outputs.has_violations == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DETACHED: ${{ steps.audit.outputs.detached_total }}
           UNREG: ${{ steps.audit.outputs.unregistered_total }}
+          AUTO_REG: ${{ steps.register.outputs.registered_count || '0' }}
           AUDIT_MD: ${{ steps.audit.outputs.audit_md }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -75,7 +161,6 @@ jobs:
           DATE=$(date -u +%Y-%m-%d)
           TITLE="[audit] ${DATE} — ${DETACHED} detached styles, ${UNREG} unregistered frames"
 
-          # Capture top of the markdown report for the Issue body
           if [ -f "$AUDIT_MD" ]; then
             REPORT_HEAD=$(head -80 "$AUDIT_MD")
           else
@@ -84,10 +169,11 @@ jobs:
 
           BODY_FILE=$(mktemp)
           {
-            echo "Weekly Figma DS audit found violations."
+            echo "Daily Figma DS audit found violations."
             echo ""
             echo "- Detached styles: **${DETACHED}**"
             echo "- Unregistered top-level frames: **${UNREG}**"
+            echo "- Auto-registered this run: **${AUTO_REG}**"
             echo ""
             echo "Workflow run: ${RUN_URL}"
             echo "Full report attached as artifact \`figma-audit-${{ github.run_id }}\` (.automation/audits/audit-*.md)."
@@ -103,18 +189,21 @@ jobs:
             echo "_Created by \`figma-audit\` workflow._"
           } > "$BODY_FILE"
 
-          # Close any existing open audit issues to keep one rolling reminder
           OPEN=$(gh issue list --label audit --state open --json number --jq '.[].number' || true)
           for N in $OPEN; do
             gh issue close "$N" --comment "Superseded by latest audit run (${RUN_URL})." || true
           done
 
           gh issue create --title "$TITLE" --label audit --body-file "$BODY_FILE"
+
       - name: Upload audit artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: figma-audit-${{ github.run_id }}
-          path: .automation/audits/
+          path: |
+            .automation/audits/
+            .automation/audit-state.json
+            .automation/audit-candidates.json
           retention-days: 90
           if-no-files-found: ignore

@@ -18,10 +18,19 @@ import {
   renderAuditMarkdown,
   type TopLevelFrameRef,
 } from './lib/audit-aggregator.ts';
+import {
+  loadAuditState,
+  saveAuditState,
+  updateAuditState,
+  pickAutoRegisterCandidates,
+} from './lib/audit-state.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '../..');
 const AUDITS_DIR = resolve(REPO_ROOT, '.automation/audits');
+const AUDIT_STATE_PATH = resolve(REPO_ROOT, '.automation/audit-state.json');
+const AUTO_REGISTER_CANDIDATES_PATH = resolve(REPO_ROOT, '.automation/audit-candidates.json');
+const AUTO_REGISTER_THRESHOLD = Number(process.env.FIGMA_AUDIT_REGISTER_THRESHOLD ?? '2');
 
 const logger = createLogger('audit');
 
@@ -139,7 +148,26 @@ async function main(): Promise<void> {
     generatedAt,
   });
 
-  // 4. Write outputs
+  // 4. Update audit-state.json (sighting counter for unregistered frames)
+  const prevState = loadAuditState(AUDIT_STATE_PATH);
+  const nextState = updateAuditState(prevState, report.unregisteredTopLevelFrames, generatedAt);
+  saveAuditState(AUDIT_STATE_PATH, nextState);
+
+  const candidates = pickAutoRegisterCandidates(nextState, {
+    thresholdSightings: AUTO_REGISTER_THRESHOLD,
+  });
+  // Always write candidates file (empty array if none) so downstream steps can
+  // depend on its existence without conditional branches.
+  writeFileSync(
+    AUTO_REGISTER_CANDIDATES_PATH,
+    JSON.stringify({ generatedAt, threshold: AUTO_REGISTER_THRESHOLD, candidates }, null, 2) + '\n',
+    'utf-8'
+  );
+  logger.info(
+    `State: tracked unregistered=${Object.keys(nextState.unregisteredFrames).length}, auto-register candidates=${candidates.length} (threshold=${AUTO_REGISTER_THRESHOLD})`
+  );
+
+  // 5. Write report outputs
   mkdirSync(AUDITS_DIR, { recursive: true });
   const safeTs = generatedAt.replace(/:/g, '-').replace(/\..+$/, '');
   const mdPath = resolve(AUDITS_DIR, `audit-${safeTs}.md`);
@@ -152,14 +180,17 @@ async function main(): Promise<void> {
     `Summary: detached=${report.totalDetachedStyles}, unregistered top-level=${report.totalUnregisteredTopLevelFrames}, violations=${report.hasViolations}`
   );
 
-  // 5. Surface output paths so callers (CI / Slack) can consume
+  // 6. Surface output paths so callers (CI / Slack) can consume
   if (process.env.GITHUB_OUTPUT) {
     const out = [
       `audit_md=${mdPath}`,
       `audit_json=${jsonPath}`,
+      `audit_state=${AUDIT_STATE_PATH}`,
+      `auto_register_candidates=${AUTO_REGISTER_CANDIDATES_PATH}`,
       `has_violations=${report.hasViolations}`,
       `detached_total=${report.totalDetachedStyles}`,
       `unregistered_total=${report.totalUnregisteredTopLevelFrames}`,
+      `auto_register_count=${candidates.length}`,
     ].join('\n');
     try {
       const cur = existsSync(process.env.GITHUB_OUTPUT) ? readFileSync(process.env.GITHUB_OUTPUT, 'utf-8') : '';
