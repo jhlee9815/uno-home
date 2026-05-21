@@ -1,4 +1,3 @@
-import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,10 +33,6 @@ interface IssueEvent {
   issue?: { number?: number; title?: string; body?: string; html_url?: string };
   sender?: { login?: string };
   repository?: { full_name?: string };
-}
-
-function exec(cmd: string): string {
-  return execSync(cmd, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim();
 }
 
 async function main(): Promise<void> {
@@ -133,31 +128,30 @@ async function handleApprove(
     logger.success(`Manifest ${manifest.csId} transitioned to ${approved.state}`);
   }
 
-  // Run apply attempt
-  try {
-    const result = await runApplyAndPr({ csId, manifest, octokit, owner, repo, branch, event });
-    if (result.url) {
-      // Transition pr-open ONLY after PR succeeds.
-      transitionManifest(REPO_ROOT, csId, {
-        state: 'pr-open',
-        at: new Date().toISOString(),
-        by: 'designer-bot',
-        via: `pr:${result.url}`,
-      });
-      logger.success(`Manifest ${csId} transitioned to pr-open`);
-    } else {
-      logger.warn('PR creation skipped or failed; manifest stays at designer-approved for retry.');
-    }
-
-    await commentOnIssue(
-      event,
-      `${buildDesignerDecisionComment('designer-approved', csId)}\n\n${result.summary}`
-    );
-  } finally {
-    // Defense in depth: restore HEAD to main even if PR step throws,
-    // so the workflow's later manifest commit step finds clean main.
-    restoreMain();
+  // Run apply attempt. HEAD will be left on designer-approved/{csId} after
+  // this; the workflow's "Commit manifest transition" step uses the
+  // figma-pipeline stash pattern to preserve .automation/cs/* deltas,
+  // switch back to main, and push manifest-only. Do NOT restore main here
+  // — `git reset --hard` would wipe the transitionManifest writes before
+  // the workflow can commit them.
+  const result = await runApplyAndPr({ csId, manifest, octokit, owner, repo, branch, event });
+  if (result.url) {
+    // Transition pr-open ONLY after PR succeeds.
+    transitionManifest(REPO_ROOT, csId, {
+      state: 'pr-open',
+      at: new Date().toISOString(),
+      by: 'designer-bot',
+      via: `pr:${result.url}`,
+    });
+    logger.success(`Manifest ${csId} transitioned to pr-open`);
+  } else {
+    logger.warn('PR creation skipped or failed; manifest stays at designer-approved for retry.');
   }
+
+  await commentOnIssue(
+    event,
+    `${buildDesignerDecisionComment('designer-approved', csId)}\n\n${result.summary}`
+  );
 }
 
 interface RunApplyAndPrInput {
@@ -360,16 +354,6 @@ function resolveGithub(event: IssueEvent | null): {
     return { octokit: null, owner, repo };
   }
   return { octokit: new Octokit({ auth: token }), owner, repo };
-}
-
-function restoreMain(): void {
-  try {
-    exec('git fetch origin main');
-    exec('git checkout main');
-    exec('git reset --hard origin/main');
-  } catch (err) {
-    logger.warn(`restoreMain failed: ${String(err)}`);
-  }
 }
 
 function loadEvent(): IssueEvent | null {
