@@ -117,3 +117,165 @@ assert.match(classified.changes[3].decisionReasons[0], /No mapping/);
 
 assert.equal(classified.changes[4].decision, 'report-only');
 assert.match(classified.changes[4].decisionReasons[0], /manual-only/);
+
+// ============================================================================
+// Stage 4 — compliance classes always report-only + subcategories derivation
+// ============================================================================
+
+type Case = () => void;
+let s4Failed = 0;
+function run(label: string, fn: Case): void {
+  try {
+    fn();
+    console.log(`ok  ${label}`);
+  } catch (err) {
+    s4Failed++;
+    console.error(`FAIL ${label}`);
+    console.error(err instanceof Error ? err.stack ?? err.message : err);
+  }
+}
+
+const complianceDiff: DiffFile = {
+  stage: 'diff',
+  generatedAt: '2026-05-21T00:00:00.000Z',
+  fileKey: 'file-1',
+  comparisonMode: 'baseline',
+  baseTs: '2026-05-21T00:00:00.000Z',
+  headTs: '2026-05-21T01:00:00.000Z',
+  basePath: 'b.json',
+  headPath: 'h.json',
+  changes: [
+    {
+      key: 'home',
+      nodeId: '2:1',
+      nodeName: 'Home screen',
+      classes: ['new-frame'],
+      reasons: ['1 new descendant frame(s)'],
+      before: {},
+      after: {},
+      compliance: {
+        newDetachedStyles: [],
+        newFrames: [
+          {
+            nodeId: '99:1',
+            nodeName: 'Promo',
+            nodePath: ['Home', 'Promo'],
+            name: 'Promo',
+            parentRegisteredKey: 'home',
+          },
+        ],
+        changedImageRefs: [],
+      },
+    },
+    {
+      key: 'home',
+      nodeId: '2:1',
+      nodeName: 'Home screen',
+      classes: ['text', 'detached-style'],
+      reasons: ['textHash changed', '1 new detached style(s)'],
+      before: {},
+      after: {},
+      compliance: {
+        newDetachedStyles: [
+          {
+            nodeId: '2:1:9',
+            nodeName: 'Pill',
+            nodePath: ['Home', 'Pill'],
+            kind: 'color',
+            property: 'fill',
+            rawValue: { r: 1, g: 0, b: 0, a: 1 },
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+        ],
+        newFrames: [],
+        changedImageRefs: [],
+      },
+    },
+    {
+      key: 'button',
+      nodeId: '1:1',
+      nodeName: 'Button',
+      classes: ['image-change'],
+      reasons: ['1 image asset change(s)'],
+      before: {},
+      after: {},
+      compliance: {
+        newDetachedStyles: [],
+        newFrames: [],
+        changedImageRefs: [
+          {
+            before: {
+              nodeId: '1:1:5',
+              nodeName: 'Icon',
+              nodePath: ['Button', 'Icon'],
+              kind: 'image',
+              paintIndex: 0,
+              ref: 'img-old',
+            },
+            after: {
+              nodeId: '1:1:5',
+              nodeName: 'Icon',
+              nodePath: ['Button', 'Icon'],
+              kind: 'image',
+              paintIndex: 0,
+              ref: 'img-new',
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+
+const complianceClassified = classifyDiff(complianceDiff, mapping);
+
+run('classify: new-frame class → report-only regardless of mapping apply mode', () => {
+  const change = complianceClassified.changes[0];
+  assert.equal(change.decision, 'report-only');
+  assert.ok(
+    change.decisionReasons.some(r => /compliance|manual|allowed/i.test(r)),
+    `unexpected reasons: ${change.decisionReasons.join('|')}`
+  );
+});
+
+run('classify: derives subcategories from classes', () => {
+  // [0] = new-frame only
+  assert.deepEqual(complianceClassified.changes[0].subcategories, ['new-frame']);
+  // [1] = text + detached-style
+  assert.deepEqual(
+    [...complianceClassified.changes[1].subcategories].sort(),
+    ['detached-style', 'text-change']
+  );
+  // [2] = image-change
+  assert.deepEqual(complianceClassified.changes[2].subcategories, ['image-change']);
+});
+
+run('classify: text+detached-style → report-only (compliance is manual-only)', () => {
+  const change = complianceClassified.changes[1];
+  assert.equal(change.decision, 'report-only');
+});
+
+run('classify: image-change for component mapped as auto → still report-only', () => {
+  // button mapping is apply:'auto' with allowedClasses=['token','text','component-props']
+  // image-change is compliance class → manual-only override
+  const change = complianceClassified.changes[2];
+  assert.equal(change.decision, 'report-only');
+});
+
+run('classify: original sample (no compliance) → subcategories array still present', () => {
+  // The first 5 changes from the original sample (tokens, button text, home text, unknown, button layout)
+  for (const c of classified.changes) {
+    assert.ok(Array.isArray(c.subcategories), `change for key=${c.key} missing subcategories array`);
+  }
+  // tokens has class 'token' → no subcategory mapping → empty array
+  assert.deepEqual(classified.changes[0].subcategories, []);
+  // button text → text-change
+  assert.deepEqual(classified.changes[1].subcategories, ['text-change']);
+});
+
+if (s4Failed > 0) {
+  console.error(`\n${s4Failed} Stage 4 classify test(s) FAILED`);
+  process.exit(1);
+}
+console.log(`\nAll classify-diff tests (incl. Stage 4) passed.`);

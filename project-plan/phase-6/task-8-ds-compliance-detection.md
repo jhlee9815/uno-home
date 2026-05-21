@@ -4,7 +4,7 @@
 > **예상 시간**: 7-9시간 (Codex 견적, 5-6h optimistic 대비 보강)
 > **선행**: task-3/4 완료 ✅. task-5/6 무관 (병렬 가능).
 > **블록 해제**: task-9 (Report UX + Labels)
-> **상태**: 🛠 설계 확정 (2026-05-20 22:00 KST) — 코드 미진행. 운영 관찰 기간 종료 후 진입.
+> **상태**: ✅ Stage 6 실 Figma trigger 검증 완료 (2026-05-21 10:43 KST) — detection core 구현/검증 완료. merge 전 PR review/CI만 남음.
 > **설계 검증**: Codex `019e4xxx-xxxx` (별도 session) — `GO, 단 task-8/task-9로 분리하고 task-8 범위는 "구조화된 detection core"로 고정` 판정.
 
 ## 8-1. 배경 / 사용자 요구
@@ -82,14 +82,14 @@ interface ClassifiedChange {
 
 | Stage | 내용 | 시간 |
 |:-:|---|---|
-| **0** | **필수 게이트** — Figma REST `/v1/files/<key>/nodes?ids=7:3,7:4,7:5,10:62` 실응답 sample 수집 + 분석. `boundVariables` / `fillStyleId` / `textStyleId` / `IMAGE.imageRef` / `INSTANCE_SWAP` 필드 존재성 확인. 판정 기준 confirm. | 30분 |
-| **1** | Schema contract — `lib/compliance-types.ts` + JSON 예시 1-2개. SnapshotNodeEntry / ClassifiedChange 확장 정의. (코덱스 1차 검토 권장) | 30분 |
-| **2** | Deep traversal extraction — `snapshot-node.ts`에 `extractDetachedStyles`, `extractDescendantFrames`, `extractImageRefs` 추가. **root 노드 hash만 보는 게 아니라 자손 트리 전체 순회**. ignore list 옵션 (`_`, `wrapper`, `Auto layout`류 이름). | 1.5-2시간 |
-| **3** | Diff stable-key comparison — `diff.ts`에 `newDetachedStyles` (`nodeId+kind+property`), `newFrames` (`nodeId`), `changedImageRefs` (`nodeId+paintIndex+imageRef`). baseline vs head list comparison. | 45분 |
-| **4** | Classify + Report integrated — classify에 `subcategory` 추가, 모두 report-only. report에 `## Detached Styles` / `## New Frames in Tracked Screens` / `## Image Changes` 섹션. parent grouping ("New frame contains detached styles"). figma 직접 가는 URL 포함. | 1시간 |
-| **5** | Fixture + Unit tests — 최소 4 fixture: detached color / detached typography / nested imageRef change / nested new frame. `snapshot-node.test.ts`, `classify-diff.test.ts` 확장. | 1시간 |
-| **6** | 실 figma 자연 트리거 검증 — push 후 cron 또는 수동 트리거. cs report 새 섹션 의도대로 채워지는지 + noise/false positive 점검. | 30분 |
-| **7** | 문서화 + commit/push — 본 doc 완료 기록 + phase-plan-6 갱신 + plan/TODO 갱신. | 30분 |
+| **0** | **필수 게이트** — Figma REST `/v1/files/<key>/nodes?ids=7:3,7:4,7:5,10:62` 실응답 sample 수집 + 분석. `boundVariables` / `fillStyleId` / `textStyleId` / `IMAGE.imageRef` / `INSTANCE_SWAP` 필드 존재성 확인. 판정 기준 confirm. **✅ 완료 — [`task-8-stage0-field-summary.md`](./task-8-stage0-field-summary.md)** | 30분 |
+| **1** | Schema contract — `lib/compliance-types.ts` + JSON 예시 1-2개. SnapshotNodeEntry / ClassifiedChange 확장 정의. **✅ 완료 — [`task-8-schema-contract.md`](./task-8-schema-contract.md)** | 30분 |
+| **2** | Deep traversal extraction — `snapshot-node.ts`에 `collectDetachedStyles`, `collectDescendantFrames`, `collectAssetRefs` 추가. **root 노드 hash만 보는 게 아니라 자손 트리 전체 순회**. wrapper ignore list 적용. **✅ 완료** | 1.5-2시간 |
+| **3** | Diff stable-key comparison — `diff-snapshot.ts`에 `newDetachedStyles` (`nodeId+kind+property`), `newFrames` (`nodeId`), `changedImageRefs` (`nodeId+paintIndex`). baseline vs head list comparison. **✅ 완료** | 45분 |
+| **4** | Classify + Report integrated — classify에 `subcategories` 추가, compliance class는 모두 report-only. report에 `## Detached Styles` / `## New Frames in Tracked Screens` / `## Image Changes` 섹션 추가. **✅ 완료** | 1시간 |
+| **5** | Fixture + Unit tests — detached color/typography, nested imageRef, nested new frame, report section, classify report-only policy 검증. **✅ 완료 — local full test loop PASS** | 1시간 |
+| **6** | 실 figma 자연 트리거 검증 — Figma에 임시 probe를 만들고 snapshot→diff→classify→apply→verify→report 실행. cs report 새 섹션 확인 후 probe cleanup. **✅ 완료** | 30분 |
+| **7** | 문서화 — 본 doc 완료 기록 + phase-plan-6 갱신 + plan/TODO 갱신. **✅ local docs updated; commit/push는 사용자 명시 전 미실행** | 30분 |
 
 **총**: 7-9시간 (1일 작업 분량).
 
@@ -138,8 +138,100 @@ GO 판정. 주요 조정 사항:
 
 ## 8-9. 다음 단계
 
-1. 운영 관찰 기간 (~2026-05-23) 통과 확인.
-2. 사용자 진입 승인 시 Stage 0 시작 (figma API 실응답 sample 수집).
-3. Stage 1 schema contract 확정 후 코덱스 2차 검증 권장.
-4. Stage 2-7 진행.
-5. task-9 (Report UX + Labels)로 이어짐.
+1. Draft PR #9 review/CI 확인.
+2. merge 직후 첫 운영 run은 기존 approved baseline이 Task 8 이전 schema일 수 있으므로 compliance diff flood 방지 로직이 적용되는지 확인.
+3. schema-compatible baseline refresh/promote 후 본격 운영 monitoring.
+4. 후속은 task-9 (Report UX + Labels) 또는 task-10 Phase A(viewer/approval workflow).
+
+## 8-10. Stage 0 완료 기록 (2026-05-20 22:26 KST)
+
+- 실행 명령: `npm run figma:task8:stage0`
+- 요청 node: `7:3`, `7:4`, `7:5`, `10:62`
+- 결과 요약: `boundVariables` 142건, styleId 계열 0건, `imageRef` 10건, `INSTANCE_SWAP` 0건.
+- 판정: detached-style v1은 `boundVariables` 부재 기반 보수 판정 가능. image-change v1은 `IMAGE.imageRef` 기준 구현 가능. INSTANCE_SWAP은 v1 제외 유지.
+- 상세: [`task-8-stage0-field-summary.md`](./task-8-stage0-field-summary.md)
+
+## 8-11. Stage 1 완료 기록 (2026-05-20 22:34 KST)
+
+- 추가 코드: `scripts/pipeline/lib/compliance-types.ts`
+- 추가 문서: [`task-8-schema-contract.md`](./task-8-schema-contract.md)
+- stable key: detached `nodeId::kind::property`, frame `nodeId`, image `nodeId::paintIndex`.
+- 다음: Stage 2 `snapshot-node.ts` deep traversal extractor. (2026-05-21 현재 완료)
+
+## 8-12. Stage 2-5 local 완료 기록 (2026-05-21 10:33 KST)
+
+### 구현
+
+- `scripts/pipeline/lib/snapshot-node.ts`
+  - 자손 트리 전체 순회로 `detachedStyles`, `descendantFrames`, `assetRefs` 수집.
+  - root frame은 descendant frame에서 제외. `_`, `Wrapper`, `Auto layout`, `Container`류 wrapper noise 제외.
+  - detached-style v1은 raw SOLID fill/stroke 또는 TEXT style 값이 있고 해당 paint/property bound evidence나 styleId가 없을 때만 기록.
+- `scripts/pipeline/lib/diff-snapshot.ts`
+  - `diffCompliance()` 추가. stable key 기준으로 새 detached style, 새 frame, imageRef 변경 비교.
+  - compliance-only 변경도 `DiffChange`로 emit.
+- `scripts/pipeline/lib/classify-diff.ts`
+  - compliance class는 모두 `report-only`로 고정.
+  - `subcategories` 배열 추가.
+- `scripts/pipeline/lib/designer-review.ts`, `scripts/pipeline/report.ts`, `scripts/pipeline/lib/report-only-guidance.ts`
+  - cs report에 `## Detached Styles`, `## New Frames in Tracked Screens`, `## Image Changes` 섹션과 manual guidance 추가.
+- 운영 보조
+  - `scripts/pipeline/task-8-stage0-sample.ts` — Stage 0 Figma field sampler.
+  - `scripts/ops/pending-review-viewer.ts` — pending report-only 변경을 로컬 HTML로 확인하는 viewer.
+
+### 검증 evidence
+
+2026-05-21 10:33 KST 기준 local verification:
+
+```bash
+for t in diff classify report-only designer-review snapshot api token-css apply-token apply-code apply-report verify-report visual-diff promote-gate marker-candidates; do npm run figma:test:$t; done
+npm run lint
+npm run build
+```
+
+결과:
+
+- full figma test loop exit 0.
+- `npm run lint` exit 0.
+- `npm run build` exit 0 (`tsc -b && vite build`).
+
+### 남은 Stage 6
+
+아직 실 Figma 파일을 수정해 자연 trigger/수동 pipeline으로 `cs-*.md`를 생성하는 검증은 하지 않았다. 다음 담당자는 Stage 6에서 실제 Figma 변경 3종(detached style / imageRef / descendant frame)을 만들고 report 섹션의 false positive를 확인한다.
+
+
+## 8-13. Stage 6 실환경 검증 완료 기록 (2026-05-21 10:43 KST)
+
+### 절차
+
+1. Figma file `9cevQvPHlQ5vZv5Pz3QaLL`, tracked screen `pesse_home` (`7:3`) 아래에 임시 probe 생성.
+   - frame: `OMX Stage6 Compliance Probe`
+   - raw color rectangle: `OMX Stage6 Raw Color`
+   - image fill rectangle: `OMX Stage6 Image Fill`
+2. `npm run figma:snapshot && npm run figma:diff && npm run figma:classify && npm run figma:apply && npm run figma:verify && npm run figma:report` 실행.
+3. 검증 후 Figma probe 삭제. 최종 확인: `probeCount: 0`.
+
+### 발견한 rollout 이슈와 보강
+
+- 첫 Stage 6 시도에서 기존 approved baseline이 Task 8 이전 schema라 compliance 배열이 없었다.
+- 이 상태에서 missing arrays를 empty로 취급하면 기존 디자인 전체가 `new detached-style/new-frame/image-change`로 잡히는 flood가 난다.
+- 보강: `diffCompliance()`는 **기존 base node는 존재하지만 compliance fields가 없는 old-schema baseline**이면 compliance diff를 skip한다.
+- 단, base node 자체가 없는 신규 tracked node는 기존대로 head compliance를 new로 잡는다.
+
+### 최종 evidence
+
+schema-compatible 임시 baseline으로 재검증한 최종 change set:
+
+- `cs-2026-05-21T01-42-28`
+- classified summary: `total=2`, `autoApply=0`, `reportOnly=2`, `unknown=0`
+- `pesse_home`: `detached-style`, `new-frame`, `image-change`
+  - `3 new detached style(s)`
+  - `1 new descendant frame(s)`
+  - `1 image asset change(s)`
+- wrapper tracking node `figma_pesseAppleInspired3Screens_7_2`에도 동일 probe가 중첩 감지됨. 이는 현재 mapping이 wrapper와 child screen을 둘 다 추적하기 때문이며 자동 patch는 없음.
+- report sections confirmed:
+  - `## Detached Styles`
+  - `## New Frames in Tracked Screens`
+  - `## Image Changes`
+- apply result: noop.
+- verify result: build/lint passed.
+- cleanup: Figma probe removed; local temporary baseline file removed.

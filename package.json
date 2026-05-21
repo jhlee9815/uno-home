@@ -37,7 +37,9 @@
     "figma:promote": "tsx --env-file=.env scripts/pipeline/promote-dev.ts",
     "figma:run": "bash scripts/pipeline/run.sh",
     "figma:claude-review": "tsx scripts/pipeline/claude-review.ts",
-    "figma:health": "tsx scripts/pipeline/health-check.ts"
+    "figma:health": "tsx scripts/pipeline/health-check.ts",
+    "figma:task8:stage0": "tsx --env-file=.env scripts/pipeline/task-8-stage0-sample.ts",
+    "figma:viewer": "tsx --env-file=.env scripts/ops/pending-review-viewer.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",

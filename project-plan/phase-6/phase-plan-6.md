@@ -40,7 +40,7 @@
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
 | 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
-| 8 | DS Compliance Detection Core (detached styles / image / new frames) | 🛠 설계 확정, 코드 대기 | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | — |
+| 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 실 Figma 검증 완료, Draft PR #9 | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |
 | 9 | Report UX + Labels (task-8 후속) | 🛠 설계 대기 | [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md) | 2-3시간 | — |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관). 8은 3 완료 후 진입 가능, 9는 8 schema 안정화 후.
@@ -58,7 +58,11 @@
 - 2026-05-20 20:20 KST — Claude가 task-3을 이어서 V1~V4 실검증 완료. 코덱스 review 2회(`session 019e4514-e802`) 사이클로 doc 정합성과 evidence 둘 다 PASS. **task-3 ✅**. 세부: [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) "검증 결과" 섹션. 다음은 task-4.
 - 2026-05-20 20:45 KST — task-4 완료: `.github/CODEOWNERS`(단일 owner + Phase 7 분리 TODO), `PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/designer-review.md`, `labels.yml` 추가. task-3 자동 생성 라벨 4개 색상/설명 표준화 (GitHub API PATCH ×4). branch protection rule은 외부 webhook(task-5) 이후로 분리. 세부: [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) "완료 기록" 섹션.
 - 2026-05-20 21:05 KST — Slack 통합 문서 추가 ([`slack-integration.md`](./slack-integration.md)). 첫 자연 트리거(workflow_dispatch run `26161348247`) → Issue [#3](https://github.com/jhlee9815/uno-home/issues/3) 생성 + Slack 채널 자동 알림. task-3 V5(워크플로 통합) 통과 evidence 확보.
-- 2026-05-20 22:00 KST — task-8 (DS Compliance Detection Core) + task-9 (Report UX + Labels) 설계 확정. Codex 1차 검증 GO. task-8: deep traversal extraction + detached-style/new-frame/image-change subcategory + report parent grouping. 7-9시간 견적. task-9는 task-8 schema 안정화 후 진입. 운영 관찰 기간 종료(~2026-05-23) 후 사용자 승인 시 Stage 0부터 시작. 세부: [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md), [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md).
+- 2026-05-20 22:00 KST — task-8 (DS Compliance Detection Core) + task-9 (Report UX + Labels) 설계 확정. Codex 1차 검증 GO. task-8: deep traversal extraction + detached-style/new-frame/image-change subcategory + report parent grouping. 7-9시간 견적. task-9는 task-8 schema 안정화 후 진입. 세부: [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md), [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md).
+- 2026-05-20 22:26 KST — task-8 Stage 0 완료. Figma Nodes API 실응답에서 `boundVariables` 142건, styleId 0건, `imageRef` 10건, `INSTANCE_SWAP` 0건 확인. Stage 1 schema contract 진행 가능. 상세: [`task-8-stage0-field-summary.md`](./task-8-stage0-field-summary.md).
+- 2026-05-20 22:34 KST — task-8 Stage 1 완료. `scripts/pipeline/lib/compliance-types.ts`와 [`task-8-schema-contract.md`](./task-8-schema-contract.md) 추가. 다음은 Stage 2 deep traversal extractor.
+- 2026-05-21 10:33 KST — task-8 Stage 2-5 local 구현/검증 완료. `snapshot-node.ts` deep traversal extractor, `diffCompliance`, classify `subcategories`, cs report compliance sections, local pending viewer 추가. full figma test loop + `npm run lint` + `npm run build` PASS.
+- 2026-05-21 10:43 KST — task-8 Stage 6 실 Figma 검증 완료. 임시 probe로 detached-style/new-frame/image-change가 `cs-2026-05-21T01-42-28` report에 반영됨. 기존 old-schema baseline flood 이슈 발견 후 `diffCompliance()` skip guard 추가. probe cleanup 완료. Draft PR #9: https://github.com/jhlee9815/uno-home/pull/9
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 

@@ -41,6 +41,7 @@ function main(): void {
   const classified = JSON.parse(classifiedJson) as {
     generatedAt?: string;
     summary?: DesignerReportInput['classifiedSummary'];
+    changes?: Array<{ compliance?: DesignerReportInput['complianceSummary'] }>;
   };
   const classifiedSummary = classified.summary ?? {
     total: 0,
@@ -56,6 +57,8 @@ function main(): void {
   const reportOnlyReportPath = findReportOnlyReport(classified.generatedAt);
   const reportOnlyMarkdown = reportOnlyReportPath ? readFileSync(reportOnlyReportPath, 'utf-8') : '';
 
+  const complianceSummary = aggregateCompliance(classified.changes ?? []);
+
   const report = buildDesignerReport({
     changeSetId,
     classifiedPath,
@@ -70,6 +73,7 @@ function main(): void {
     verificationRows: extractVerifyRows(verifyMarkdown),
     generatedAt: new Date().toISOString(),
     artifactsSha256: hashArtifacts([classifiedJson, applyMarkdown, verifyMarkdown, reportOnlyMarkdown]),
+    complianceSummary,
   });
 
   const outputPath = resolve(REPORTS_DIR, `${changeSetId}.md`);
@@ -169,6 +173,24 @@ function extractVerifyRows(markdown: string): DesignerReportInput['verificationR
     });
   }
   return rows;
+}
+
+function aggregateCompliance(
+  changes: Array<{ compliance?: DesignerReportInput['complianceSummary'] }>
+): DesignerReportInput['complianceSummary'] | undefined {
+  const newDetachedStyles: NonNullable<DesignerReportInput['complianceSummary']>['newDetachedStyles'] = [];
+  const newFrames: NonNullable<DesignerReportInput['complianceSummary']>['newFrames'] = [];
+  const changedImageRefs: NonNullable<DesignerReportInput['complianceSummary']>['changedImageRefs'] = [];
+  for (const change of changes) {
+    if (!change.compliance) continue;
+    newDetachedStyles.push(...change.compliance.newDetachedStyles);
+    newFrames.push(...change.compliance.newFrames);
+    changedImageRefs.push(...change.compliance.changedImageRefs);
+  }
+  if (newDetachedStyles.length === 0 && newFrames.length === 0 && changedImageRefs.length === 0) {
+    return undefined;
+  }
+  return { newDetachedStyles, newFrames, changedImageRefs };
 }
 
 function notifyDesigner(changeSetId: string, outputPath: string): void {

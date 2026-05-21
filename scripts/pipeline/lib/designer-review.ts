@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import type { ComplianceDiffSummary } from './compliance-types.ts';
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
 
@@ -36,6 +37,7 @@ export interface DesignerReportInput {
   }>;
   generatedAt: string;
   artifactsSha256: string;
+  complianceSummary?: ComplianceDiffSummary;
 }
 
 export interface ParsedReviewReport {
@@ -159,12 +161,82 @@ function renderDesignerReportBody(input: DesignerReportInput): string {
         .replace(/$/, ' |')
     ),
     '',
+    ...renderComplianceSections(input.complianceSummary),
     '## 디자이너 액션',
     '',
     `- 승인: \`npm run figma:approve ${input.changeSetId}\``,
     `- 반려: \`npm run figma:reject ${input.changeSetId} "사유"\``,
     '',
   ].join('\n');
+}
+
+function renderComplianceSections(summary: ComplianceDiffSummary | undefined): string[] {
+  if (!summary) return [];
+  const lines: string[] = [];
+
+  if (summary.newDetachedStyles.length > 0) {
+    lines.push('## Detached Styles', '');
+    lines.push('| Node | Kind | Property | Raw value |', '|---|---|---|---|');
+    for (const e of summary.newDetachedStyles) {
+      const path = e.nodePath.join(' › ');
+      const raw = typeof e.rawValue === 'object' ? JSON.stringify(e.rawValue) : String(e.rawValue);
+      lines.push(
+        [
+          `${e.nodeName} (${e.nodeId})<br><sub>${path}</sub>`,
+          e.kind,
+          e.property,
+          raw,
+        ]
+          .map(escapeTableCell)
+          .join(' | ')
+          .replace(/^/, '| ')
+          .replace(/$/, ' |')
+      );
+    }
+    lines.push('');
+  }
+
+  if (summary.newFrames.length > 0) {
+    lines.push('## New Frames in Tracked Screens', '');
+    lines.push('| Frame | Parent screen | Path |', '|---|---|---|');
+    for (const f of summary.newFrames) {
+      lines.push(
+        [
+          `${f.name} (${f.nodeId})`,
+          f.parentRegisteredKey,
+          f.nodePath.join(' › '),
+        ]
+          .map(escapeTableCell)
+          .join(' | ')
+          .replace(/^/, '| ')
+          .replace(/$/, ' |')
+      );
+    }
+    lines.push('');
+  }
+
+  if (summary.changedImageRefs.length > 0) {
+    lines.push('## Image Changes', '');
+    lines.push('| Node | paintIndex | Before ref | After ref |', '|---|---|---|---|');
+    for (const c of summary.changedImageRefs) {
+      const node = c.after;
+      lines.push(
+        [
+          `${node.nodeName} (${node.nodeId})<br><sub>${node.nodePath.join(' › ')}</sub>`,
+          String(node.paintIndex),
+          c.before?.ref ?? '(none)',
+          c.after.ref,
+        ]
+          .map(escapeTableCell)
+          .join(' | ')
+          .replace(/^/, '| ')
+          .replace(/$/, ' |')
+      );
+    }
+    lines.push('');
+  }
+
+  return lines;
 }
 
 function serializeReport(frontmatter: ReviewFrontmatter, body: string): string {
