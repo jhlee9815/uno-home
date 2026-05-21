@@ -1,5 +1,6 @@
 import type { FigmaMapping, MappingEntry } from './config-loader.ts';
 import type { ChangeClass, DiffChange, DiffFile } from './diff-snapshot.ts';
+import type { ComplianceSubcategory } from './compliance-types.ts';
 
 export type Decision = 'auto-apply' | 'report-only';
 
@@ -15,6 +16,7 @@ export interface ClassifiedChange extends DiffChange {
   decision: Decision;
   decisionReasons: string[];
   target: TargetMetadata;
+  subcategories: ComplianceSubcategory[];
 }
 
 export interface ClassifiedDiffFile extends Omit<DiffFile, 'stage' | 'changes'> {
@@ -29,8 +31,37 @@ export interface ClassifiedDiffFile extends Omit<DiffFile, 'stage' | 'changes'> 
   changes: ClassifiedChange[];
 }
 
-const MANUAL_ONLY_CLASSES = new Set<ChangeClass>(['asset', 'layout', 'structure', 'unknown']);
+const MANUAL_ONLY_CLASSES = new Set<ChangeClass>([
+  'asset',
+  'layout',
+  'structure',
+  'unknown',
+  'detached-style',
+  'new-frame',
+  'image-change',
+]);
 const AUTO_SUPPORTED_CLASSES = new Set<ChangeClass>(['token', 'text', 'component-props']);
+
+const CLASS_TO_SUBCATEGORY: Partial<Record<ChangeClass, ComplianceSubcategory>> = {
+  text: 'text-change',
+  'component-props': 'props-change',
+  'image-change': 'image-change',
+  'detached-style': 'detached-style',
+  'new-frame': 'new-frame',
+};
+
+function deriveSubcategories(classes: ChangeClass[]): ComplianceSubcategory[] {
+  const seen = new Set<ComplianceSubcategory>();
+  const out: ComplianceSubcategory[] = [];
+  for (const cls of classes) {
+    const sub = CLASS_TO_SUBCATEGORY[cls];
+    if (sub !== undefined && !seen.has(sub)) {
+      seen.add(sub);
+      out.push(sub);
+    }
+  }
+  return out;
+}
 
 export function classifyDiff(diff: DiffFile, mapping: FigmaMapping): ClassifiedDiffFile {
   const targetMap = buildTargetMap(mapping);
@@ -56,9 +87,10 @@ function classifyChange(
 ): ClassifiedChange {
   const target = targetMap.get(change.key);
   if (!target) {
+    const classes: ChangeClass[] = ['unknown', ...change.classes.filter(cls => cls !== 'unknown')];
     return {
       ...change,
-      classes: ['unknown', ...change.classes.filter(cls => cls !== 'unknown')],
+      classes,
       decision: 'report-only',
       decisionReasons: [`No mapping found for key '${change.key}'`],
       target: {
@@ -68,6 +100,7 @@ function classifyChange(
         code: null,
         targetType: 'unknown',
       },
+      subcategories: deriveSubcategories(classes),
     };
   }
 
@@ -102,6 +135,7 @@ function classifyChange(
     decision: canAutoApply ? 'auto-apply' : 'report-only',
     decisionReasons: canAutoApply ? ['Mapped target allows all changed classes'] : decisionReasons,
     target,
+    subcategories: deriveSubcategories(change.classes),
   };
 }
 

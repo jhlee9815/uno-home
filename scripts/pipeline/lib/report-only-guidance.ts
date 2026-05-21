@@ -7,6 +7,7 @@ interface Guidance {
 }
 
 const DEFERRED_CLASSES = new Set(['asset', 'layout', 'structure', 'unknown']);
+const COMPLIANCE_CLASSES = new Set(['detached-style', 'new-frame', 'image-change']);
 
 export function renderReportOnlyMarkdown(
   classified: ClassifiedDiffFile,
@@ -66,6 +67,17 @@ export function describeReportOnlyChange(change: ClassifiedChange): Guidance {
       label: 'Deferred class',
       detail: `${deferred.join(', ')} changes are outside the current M1-M3 apply engine.`,
       action: 'Handle manually for now. M4 layout automation is deferred.',
+    };
+  }
+
+  const compliance = change.classes.filter(cls => COMPLIANCE_CLASSES.has(cls));
+  if (compliance.length > 0) {
+    return {
+      label: 'Compliance signal',
+      detail: `${compliance.join(', ')} detected. See the cs report sections (## Detached Styles / ## New Frames in Tracked Screens / ## Image Changes).`,
+      action: change.target.code
+        ? `Review Figma node + \`${change.target.code}\` manually. Compliance signals never auto-patch (v1 policy).`
+        : 'Review Figma node manually and decide whether to map/add a new screen or accept the change.',
     };
   }
 

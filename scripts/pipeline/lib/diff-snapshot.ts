@@ -1,4 +1,15 @@
 import type { SnapshotNodeEntry } from './snapshot-node.ts';
+import type {
+  AssetRefChange,
+  ComplianceDiffSummary,
+  DescendantFrameEntry,
+  DetachedStyleEntry,
+} from './compliance-types.ts';
+import {
+  assetRefStableKey,
+  detachedStyleStableKey,
+  frameStableKey,
+} from './compliance-types.ts';
 
 export type ChangeClass =
   | 'token'
@@ -7,7 +18,10 @@ export type ChangeClass =
   | 'asset'
   | 'layout'
   | 'structure'
-  | 'unknown';
+  | 'unknown'
+  | 'detached-style'
+  | 'new-frame'
+  | 'image-change';
 
 export type ComparisonMode = 'baseline' | 'bootstrap-latest-two';
 
@@ -34,6 +48,7 @@ export interface DiffChange {
   reasons: string[];
   before: Record<string, unknown>;
   after: Record<string, unknown>;
+  compliance?: ComplianceDiffSummary;
 }
 
 export interface DiffFile {
@@ -165,8 +180,26 @@ export function diffSnapshots(
       reasons.push('boundingBox changed');
     }
 
+    const compliance = diffCompliance(beforeNode, afterNode);
+    if (compliance.newDetachedStyles.length > 0) {
+      classes.push('detached-style');
+      reasons.push(`${compliance.newDetachedStyles.length} new detached style(s)`);
+    }
+    if (compliance.newFrames.length > 0) {
+      classes.push('new-frame');
+      reasons.push(`${compliance.newFrames.length} new descendant frame(s)`);
+    }
+    if (compliance.changedImageRefs.length > 0) {
+      classes.push('image-change');
+      reasons.push(`${compliance.changedImageRefs.length} image asset change(s)`);
+    }
+    const hasCompliance =
+      compliance.newDetachedStyles.length > 0 ||
+      compliance.newFrames.length > 0 ||
+      compliance.changedImageRefs.length > 0;
+
     if (classes.length > 0) {
-      changes.push({
+      const change: DiffChange = {
         key,
         nodeId: afterNode.id,
         nodeName: afterNode.name,
@@ -174,7 +207,9 @@ export function diffSnapshots(
         reasons,
         before: summarizeNode(beforeNode),
         after: summarizeNode(afterNode),
-      });
+      };
+      if (hasCompliance) change.compliance = compliance;
+      changes.push(change);
     }
   }
 
@@ -233,4 +268,54 @@ function dedupeClasses(classes: ChangeClass[]): ChangeClass[] {
 
 function isJsonFile(file: string): boolean {
   return file.endsWith('.json') && !file.endsWith('-classified.json');
+}
+
+type ComplianceSnapshot = Pick<
+  SnapshotNodeEntry,
+  'detachedStyles' | 'descendantFrames' | 'assetRefs'
+>;
+
+function emptyComplianceFields(): ComplianceSnapshot {
+  return { detachedStyles: [], descendantFrames: [], assetRefs: [] };
+}
+
+function getCompliance(node: Partial<SnapshotNodeEntry> | undefined): ComplianceSnapshot {
+  if (!node) return emptyComplianceFields();
+  return {
+    detachedStyles: node.detachedStyles ?? [],
+    descendantFrames: node.descendantFrames ?? [],
+    assetRefs: node.assetRefs ?? [],
+  };
+}
+
+export function diffCompliance(
+  base: Partial<SnapshotNodeEntry> | undefined,
+  head: Partial<SnapshotNodeEntry> | undefined
+): ComplianceDiffSummary {
+  const b = getCompliance(base);
+  const h = getCompliance(head);
+
+  const baseDetachedKeys = new Set(b.detachedStyles.map(detachedStyleStableKey));
+  const newDetachedStyles: DetachedStyleEntry[] = h.detachedStyles.filter(
+    entry => !baseDetachedKeys.has(detachedStyleStableKey(entry))
+  );
+
+  const baseFrameKeys = new Set(b.descendantFrames.map(frameStableKey));
+  const newFrames: DescendantFrameEntry[] = h.descendantFrames.filter(
+    entry => !baseFrameKeys.has(frameStableKey(entry))
+  );
+
+  const baseAssetByKey = new Map(b.assetRefs.map(entry => [assetRefStableKey(entry), entry]));
+  const changedImageRefs: AssetRefChange[] = [];
+  for (const headEntry of h.assetRefs) {
+    const key = assetRefStableKey(headEntry);
+    const baseEntry = baseAssetByKey.get(key);
+    if (!baseEntry) {
+      changedImageRefs.push({ before: null, after: headEntry });
+    } else if (baseEntry.ref !== headEntry.ref) {
+      changedImageRefs.push({ before: baseEntry, after: headEntry });
+    }
+  }
+
+  return { newDetachedStyles, newFrames, changedImageRefs };
 }

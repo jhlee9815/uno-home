@@ -265,3 +265,12 @@ Phase 6/7 진입 전 외부 검증 결과:
 | Low | Pesse 토큰 자동 반영 (Figma variables → `apple-tokens.css`) | 1~2h |
 | Low | minimal-test에 동일 wrapper 이식 | 2h |
 | Low | (Phase 8 후보) Hosted SaaS 검토 | TBD |
+
+
+## 2026-05-21 10:33 KST — task-8 local 구현/검증 진행
+
+- Claude/Codex가 `feature/task-8-ds-compliance`에서 Stage 0-5 local 구현/검증 완료.
+- 핵심: Figma 자손 트리에서 detached style / descendant frame / imageRef를 수집하고, stable-key diff + classify report-only + cs report compliance sections로 연결.
+- 검증: full figma test loop, `npm run lint`, `npm run build` PASS.
+- 상세 결과: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-12.
+- 다음: Stage 6 실 Figma trigger 검증.

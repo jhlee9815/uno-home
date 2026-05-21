@@ -128,3 +128,12 @@ npx tsc --noEmit
 | Phase 7 quick handoff | [project-plan/phase-7/plan-7.md](./project-plan/phase-7/plan-7.md) |
 | 운영 가이드 | [README.md](./README.md) |
 | 디자이너 핸드오프 | [handoff.md](./handoff.md) |
+
+
+## Task 8 진행 메모 (2026-05-21 10:33 KST)
+
+- `feature/task-8-ds-compliance` 브랜치에서 Stage 0-5 local 완료.
+- 구현: snapshot deep traversal compliance 수집, stable-key diff, classify report-only policy, cs report compliance sections, pending local viewer.
+- 검증: full figma test loop, `npm run lint`, `npm run build` PASS.
+- 상세: [project-plan/phase-6/task-8-ds-compliance-detection.md](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-12.
+- 다음: Stage 6 실 Figma trigger 검증(detached style / imageRef / descendant frame) 후 task-9 또는 task-10 Phase A 진입.

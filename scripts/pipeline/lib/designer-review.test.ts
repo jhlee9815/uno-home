@@ -69,3 +69,96 @@ assert.equal(
   shouldCreateDesignerReport({ total: 1, autoApply: 0, reportOnly: 1, unknown: 0 }),
   true
 );
+
+// ============================================================================
+// Stage 4 — compliance sections in cs report
+// ============================================================================
+
+const complianceSummary: ComplianceDiffSummary = {
+  newDetachedStyles: [
+    {
+      nodeId: '7:3:9',
+      nodeName: 'Pill',
+      nodePath: ['Phone · Home', 'Pill'],
+      kind: 'color',
+      property: 'fill',
+      rawValue: { r: 1, g: 0, b: 0, a: 1 },
+      suggestedToken: null,
+      evidence: { hasNodeBoundVariables: false, styleId: null },
+    },
+  ],
+  newFrames: [
+    {
+      nodeId: '99:1',
+      nodeName: 'Promo Banner',
+      nodePath: ['Phone · Home', 'Promo Banner'],
+      name: 'Promo Banner',
+      parentRegisteredKey: 'pesse_home',
+    },
+  ],
+  changedImageRefs: [
+    {
+      before: {
+        nodeId: '7:4:7',
+        nodeName: 'Card art',
+        nodePath: ['Phone · Cards', 'Card art'],
+        kind: 'image',
+        paintIndex: 0,
+        ref: 'img-old',
+      },
+      after: {
+        nodeId: '7:4:7',
+        nodeName: 'Card art',
+        nodePath: ['Phone · Cards', 'Card art'],
+        kind: 'image',
+        paintIndex: 0,
+        ref: 'img-new',
+      },
+    },
+  ],
+};
+
+const reportWithCompliance = buildDesignerReport({
+  changeSetId: 'cs-compliance',
+  classifiedPath: '/tmp/c.json',
+  applyReportPath: '/tmp/a.md',
+  verifyReportPath: '/tmp/v.md',
+  classifiedSummary: { total: 3, autoApply: 0, reportOnly: 3, unknown: 0 },
+  applyStatus: 'noop',
+  verifyStatus: 'passed',
+  changedFiles: [],
+  verificationRows: [],
+  generatedAt: '2026-05-21T00:00:00.000Z',
+  artifactsSha256: 'sha256:x',
+  complianceSummary,
+});
+
+assert.match(reportWithCompliance, /## Detached Styles/);
+assert.match(reportWithCompliance, /Pill/);
+assert.match(reportWithCompliance, /fill/);
+assert.match(reportWithCompliance, /## New Frames in Tracked Screens/);
+assert.match(reportWithCompliance, /Promo Banner/);
+assert.match(reportWithCompliance, /pesse_home/);
+assert.match(reportWithCompliance, /## Image Changes/);
+assert.match(reportWithCompliance, /img-old/);
+assert.match(reportWithCompliance, /img-new/);
+
+// Empty compliance summary → sections NOT present
+const reportNoCompliance = buildDesignerReport({
+  changeSetId: 'cs-no-compliance',
+  classifiedPath: '/tmp/c.json',
+  applyReportPath: '/tmp/a.md',
+  verifyReportPath: '/tmp/v.md',
+  classifiedSummary: { total: 1, autoApply: 1, reportOnly: 0, unknown: 0 },
+  applyStatus: 'applied',
+  verifyStatus: 'passed',
+  changedFiles: ['src/foo.tsx'],
+  verificationRows: [],
+  generatedAt: '2026-05-21T00:00:00.000Z',
+  artifactsSha256: 'sha256:x',
+});
+assert.doesNotMatch(reportNoCompliance, /## Detached Styles/);
+assert.doesNotMatch(reportNoCompliance, /## New Frames/);
+assert.doesNotMatch(reportNoCompliance, /## Image Changes/);
+
+console.log('Stage 4 compliance report sections PASS');

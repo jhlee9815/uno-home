@@ -213,7 +213,7 @@ async function main(): Promise<void> {
 
     const doc = nodeData.document;
     // Nodes API doesn't expose per-node lastModified; use file-level value.
-    snapshotNodes[key] = buildSnapshotNodeEntry(doc, fileLastModified);
+    snapshotNodes[key] = buildSnapshotNodeEntry(doc, fileLastModified, key);
     fetchedCount++;
   }
 

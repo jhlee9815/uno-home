@@ -28,6 +28,8 @@ dist-ssr
 .automation/logs/
 .automation/backups/
 .automation/demo-compare/
+.automation/task-8-stage0/
+.automation/viewer/
 !.automation/**/.gitkeep
 
 # Note: .automation/baseline/ is intentionally tracked.
