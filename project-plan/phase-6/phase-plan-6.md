@@ -42,7 +42,7 @@
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 | 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 검증 + PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md) | 2-3시간 | — |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🛠 설계 완료, Phase A 권장 | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | — |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🚧 Phase A 구현 브랜치 진행 중 | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | — |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관). 8은 완료. 9의 report/label 범위는 10 Phase A에 대부분 흡수됐으므로 필요 시 label/Slack summary 보강만 분리한다.
 
@@ -65,6 +65,7 @@
 - 2026-05-21 10:33 KST — task-8 Stage 2-5 local 구현/검증 완료. `snapshot-node.ts` deep traversal extractor, `diffCompliance`, classify `subcategories`, cs report compliance sections, local pending viewer 추가. full figma test loop + `npm run lint` + `npm run build` PASS.
 - 2026-05-21 10:43 KST — task-8 Stage 6 실 Figma 검증 완료. 임시 probe로 detached-style/new-frame/image-change가 `cs-2026-05-21T01-42-28` report에 반영됨. 기존 old-schema baseline flood 이슈 발견 후 `diffCompliance()` skip guard 추가. probe cleanup 완료. PR #9: https://github.com/jhlee9815/uno-home/pull/9
 - 2026-05-21 10:46 KST — PR #9 merged to main (`6d4cd94`). Post-merge local `npm run lint` / `npm run build` PASS.
+- 2026-05-21 11:15 KST — task-10 Phase A 1차 구현 진행: cs manifest, baseline/snapshot image helpers, viewer generator, designer approval label workflow, pipeline viewer publish + manifest persist step 추가. 로컬 신규 tests, full figma test loop, lint, build PASS.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 

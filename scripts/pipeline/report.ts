@@ -9,6 +9,7 @@ import {
   shouldCreateDesignerReport,
   type DesignerReportInput,
 } from './lib/designer-review.ts';
+import { createManifest, sha256File } from './lib/cs-manifest.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '../..');
@@ -40,6 +41,9 @@ function main(): void {
   const classifiedJson = readFileSync(classifiedPath, 'utf-8');
   const classified = JSON.parse(classifiedJson) as {
     generatedAt?: string;
+    fileKey?: string;
+    basePath?: string;
+    headPath?: string;
     summary?: DesignerReportInput['classifiedSummary'];
     changes?: Array<{ compliance?: DesignerReportInput['complianceSummary'] }>;
   };
@@ -79,6 +83,22 @@ function main(): void {
   const outputPath = resolve(REPORTS_DIR, `${changeSetId}.md`);
   writeFileSync(outputPath, report, 'utf-8');
   logger.success(`Designer review report written: ${outputPath}`);
+
+  createManifest(REPO_ROOT, {
+    csId: changeSetId,
+    createdAt: new Date().toISOString(),
+    fileKey: classified.fileKey ?? 'unknown',
+    baseSnapshotPath: classified.basePath ?? '',
+    headSnapshotPath: classified.headPath ?? '',
+    classifiedDiffPath: classifiedPath,
+    reportPath: outputPath,
+    classifiedDiffSha256: sha256File(classifiedPath),
+    headSnapshotSha256: existsSync(classified.headPath ?? '') ? sha256File(classified.headPath as string) : 'sha256:missing',
+    runId: process.env.GITHUB_RUN_ID ?? null,
+    actor: process.env.GITHUB_ACTOR ?? process.env.USER ?? 'local',
+  });
+  logger.info(`CS manifest written: ${resolve(REPO_ROOT, '.automation/cs', `${changeSetId}.json`)}`);
+
   notifyDesigner(changeSetId, outputPath);
   logger.info(`Approve: npm run figma:approve ${changeSetId}`);
   logger.info(`Reject:  npm run figma:reject ${changeSetId} "reason"`);

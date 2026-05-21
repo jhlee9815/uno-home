@@ -69,7 +69,7 @@
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
 | 8 | DS Compliance Detection Core (detached / image / new frames) | ✅ PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🛠 설계 완료, Phase A 권장 | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🚧 Phase A 구현 브랜치 진행 중 | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
 
 현재 task-1/2/3/4/7/8 ✅. 잔여 핵심은 task-10 Phase A 또는 운영 지연 해소용 task-5/6.
 
@@ -174,6 +174,7 @@ gh issue list --label designer-review                # 자동 Issue 확인
 | Wrapper | `scripts/pipeline/claude-review.ts` |
 | Post-run 라우팅 | `scripts/pipeline/post-run-actions.ts` (task-3) |
 | 운영 모니터링 | `scripts/pipeline/health-check.ts` — `npm run figma:health` |
+| Task 10 Phase A | `scripts/pipeline/images-bootstrap.ts`, `viewer-gen.ts`, `designer-approval.ts`, `lib/{cs-manifest,figma-images,viewer-generator,designer-approval}.ts`, `.github/workflows/designer-approval.yml` |
 | Task 8 compliance | `scripts/pipeline/lib/compliance-types.ts`, `snapshot-node.ts`, `diff-snapshot.ts`, `classify-diff.ts`, `designer-review.ts`, `scripts/ops/pending-review-viewer.ts` |
 | 거버넌스 | `.github/CODEOWNERS`, `.github/labels.yml`, PR/Issue 템플릿 |
 

@@ -74,6 +74,8 @@ npm run figma:run
 npm run figma:health                              # GitHub Actions/Issue/PR 운영 상태 요약
 npm run figma:task8:stage0                        # Task 8 Figma field sampler
 npm run figma:viewer                              # pending report-only local HTML viewer
+npm run figma:images:bootstrap                    # Task 10 Phase A baseline PNG seed
+npm run figma:viewer:generate -- cs-{id}          # Task 10 Phase A before/after viewer
 npm run figma:claude-review                       # 3-band 체크리스트 (UNO 트랙)
 npm run figma:claude-review -- --source apple     # Apple-inspired 트랙
 ```
@@ -85,7 +87,7 @@ Use `npm run figma:run` for the normal end-to-end cycle. Use the individual comm
 - **Main**: `6d4cd94` — PR #9 merged; Task 8 DS Compliance Detection is on `main`.
 - **Task 8 validated**: real Figma probe on file `9cevQvPHlQ5vZv5Pz3QaLL`, screen `pesse_home` (`7:3`) detected `detached-style`, `new-frame`, and `image-change`; probe cleanup confirmed.
 - **Rollout guard**: old approved baselines that do not contain Task 8 compliance arrays are skipped for compliance diff to prevent first-run false-positive floods. New tracked nodes still report head compliance as new.
-- **Next recommended**: Task 10 Phase A for hosted before/after viewer + designer approval labels + immutable cs manifest. If immediate Figma webhook latency is more important, do Task 5 Cloudflare Worker first.
+- **Task 10 Phase A**: implementation branch adds baseline image bootstrap, before/after viewer generation, immutable cs manifest, and designer approval/rejection label workflow. If immediate Figma webhook latency is more important, do Task 5 Cloudflare Worker first.
 
 ## Design System Skill (Phase 3·보완 트랙)
 

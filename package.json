@@ -39,7 +39,14 @@
     "figma:claude-review": "tsx scripts/pipeline/claude-review.ts",
     "figma:health": "tsx scripts/pipeline/health-check.ts",
     "figma:task8:stage0": "tsx --env-file=.env scripts/pipeline/task-8-stage0-sample.ts",
-    "figma:viewer": "tsx --env-file=.env scripts/ops/pending-review-viewer.ts"
+    "figma:viewer": "tsx --env-file=.env scripts/ops/pending-review-viewer.ts",
+    "figma:images:bootstrap": "tsx --env-file=.env scripts/pipeline/images-bootstrap.ts",
+    "figma:viewer:generate": "tsx --env-file=.env scripts/pipeline/viewer-gen.ts",
+    "figma:designer-approval": "tsx scripts/pipeline/designer-approval.ts",
+    "figma:test:cs-manifest": "tsx scripts/pipeline/lib/cs-manifest.test.ts",
+    "figma:test:figma-images": "tsx scripts/pipeline/lib/figma-images.test.ts",
+    "figma:test:viewer-generator": "tsx scripts/pipeline/lib/viewer-generator.test.ts",
+    "figma:test:designer-approval": "tsx scripts/pipeline/lib/designer-approval.test.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",

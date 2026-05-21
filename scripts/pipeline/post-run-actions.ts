@@ -19,6 +19,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Octokit } from 'octokit';
+import { loadManifest, updateManifest } from './lib/cs-manifest.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -52,6 +53,8 @@ if (!existsSync(csPath)) {
   process.exit(1);
 }
 const csReport = readFileSync(csPath, 'utf-8');
+const manifest = loadManifestIfPresent(csId);
+const csReportWithViewer = prependViewerLink(csReport, manifest?.viewerUrl);
 
 // classified diff lives at .automation/diffs/<timestamp>-classified.json
 // cs-id format: cs-<timestamp> -> classified file: <timestamp>-classified.json
@@ -113,6 +116,34 @@ function truncateBody(body: string, maxLen = 60000): string {
   return body.slice(0, maxLen) + `\n\n---\n_Report truncated — see workflow artifact for full content._`;
 }
 
+
+function loadManifestIfPresent(id: string): { viewerUrl?: string } | null {
+  try {
+    return loadManifest(process.cwd(), id);
+  } catch {
+    return null;
+  }
+}
+
+function prependViewerLink(body: string, viewerUrl: string | undefined): string {
+  if (!viewerUrl) return body;
+  return `> 🔎 Before/after viewer: ${viewerUrl}
+
+${body}`;
+}
+
+function updateManifestIssue(id: string, issueNumber: number, issueUrl: string): void {
+  try {
+    updateManifest(process.cwd(), id, current => ({
+      ...current,
+      githubIssueNumber: issueNumber,
+      githubIssueUrl: issueUrl,
+    }));
+  } catch {
+    // Manifest is best-effort for legacy change sets.
+  }
+}
+
 // ----- notify channels -----
 
 async function notifySlack(): Promise<void> {
@@ -162,17 +193,19 @@ async function createOrUpdateIssue(): Promise<{ url?: string }> {
     if (!DRY_RUN) {
       await octokit.rest.issues.update({
         owner, repo, issue_number: existing.number,
-        body: truncateBody(csReport),
+        body: truncateBody(csReportWithViewer),
       });
     }
+    updateManifestIssue(csId, existing.number, existing.html_url);
     return { url: existing.html_url };
   }
   const created = await octokit.rest.issues.create({
     owner, repo,
     title,
-    body: truncateBody(csReport),
+    body: truncateBody(csReportWithViewer),
     labels: ['designer-review', 'report-only'],
   });
+  updateManifestIssue(csId, created.data.number, created.data.html_url);
   console.log(`[issue] created: #${created.data.number} ${created.data.html_url}`);
   return { url: created.data.html_url };
 }
@@ -221,7 +254,7 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     if (!DRY_RUN) {
       await octokit.rest.pulls.update({
         owner, repo, pull_number: pr.number,
-        body: truncateBody(csReport),
+        body: truncateBody(csReportWithViewer),
       });
     }
     return { url: pr.html_url };
@@ -232,7 +265,7 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     head: branchName,
     base: 'main',
     title: `[designer-bot] ${csId} — ${autoApplyChanges.length} auto-apply change(s)`,
-    body: truncateBody(csReport),
+    body: truncateBody(csReportWithViewer),
     draft: true,
   });
   await octokit.rest.issues.addLabels({

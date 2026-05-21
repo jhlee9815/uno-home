@@ -130,6 +130,35 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Generate designer review viewer
+        if: steps.pipeline.outputs.cs_id != ''
+        run: npm run figma:viewer:generate -- ${{ steps.pipeline.outputs.cs_id }}
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_VIEWER_BASE_URL: ${{ vars.FIGMA_VIEWER_BASE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+
+      - name: Publish designer review viewer
+        if: steps.pipeline.outputs.cs_id != '' && hashFiles('dist-viewer/**') != ''
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist-viewer
+          keep_files: true
+          commit_message: "Publish designer review viewer for ${{ steps.pipeline.outputs.cs_id }}"
+
+      - name: Persist CS manifest
+        if: steps.pipeline.outputs.cs_id != '' && hashFiles('.automation/cs/*.json') != ''
+        run: |
+          if git diff --quiet -- .automation/cs; then
+            echo "No CS manifest change to commit"
+            exit 0
+          fi
+          git config user.name "designer-bot"
+          git config user.email "designer-bot@users.noreply.github.com"
+          git add .automation/cs
+          git commit -m "Record CS manifest for ${{ steps.pipeline.outputs.cs_id }}"
+          git push
+
       - name: Post-run routing (PR + Issue + Notifications)
         if: steps.pipeline.outputs.cs_id != '' && hashFiles('scripts/pipeline/post-run-actions.ts') != ''
         run: npx tsx scripts/pipeline/post-run-actions.ts ${{ steps.pipeline.outputs.cs_id }}
@@ -150,5 +179,8 @@ jobs:
             .automation/reports/
             .automation/snapshots/
             .automation/diffs/
+            .automation/cs/
+            .automation/images/snapshots/
+            dist-viewer/
           retention-days: 30
           if-no-files-found: ignore
