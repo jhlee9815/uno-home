@@ -34,6 +34,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Don't leave the write-capable GITHUB_TOKEN in .git/config across
+          # npm ci / npm run figma:audit / npm run figma:audit:register so
+          # dependency lifecycle scripts and audit code can't reach it.
+          # The push/PR step re-injects the token via git remote URL.
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -94,6 +99,9 @@ jobs:
           BRANCH="auto-register/audit-${DATE}"
           git config user.name "designer-bot"
           git config user.email "designer-bot@users.noreply.github.com"
+          # Inject the write-capable token here (checkout ran with
+          # persist-credentials: false). Scoped to the push/PR window only.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
           # No open auto-register PR. If today's branch exists from an earlier
           # run on the same day with no PR (rare — e.g. PR was force-closed),
