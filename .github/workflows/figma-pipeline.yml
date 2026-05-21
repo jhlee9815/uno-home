@@ -27,12 +27,9 @@ jobs:
     env:
       # Required
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-      # Optional notifications (task-3, task-6에서 활용)
+      # Optional notifications (task-3)
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
-      RESEND_TO_EMAILS: ${{ vars.RESEND_TO_EMAILS }}
       # Extraction-friendly env overrides (task-7에서 본격 활용, 미설정 시 default)
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}

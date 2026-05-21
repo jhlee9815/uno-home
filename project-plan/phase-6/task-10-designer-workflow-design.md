@@ -1,6 +1,8 @@
 # Task 6-10 — Designer Review → Auto-Edit → Dev Merge Workflow (DESIGN)
 
 > **목표**: 디자이너 Slack 알림 → 클릭 → before/after HTML 확인 → 승인 → 코드 자동 수정 시도 → 개발자 확인 → 머지. cron 2시간 사이클이 자동으로 끝까지 흘러가되 결정 게이트 2개(디자이너 승인, 개발자 머지)는 사람.
+>
+> **diff 감지 범위 (task-8 ✅)**: 단순 텍스트/속성 변경뿐 아니라 (a) 새 프레임 추가 (`new-frame`), (b) DS 토큰 미반영 — 타이포/색상 토큰 해제 (`detached-style`), (c) 이미지 변경 (`image-change`)도 자손 트리 깊이까지 감지. 모두 `report-only` 정책으로 자동 patch 없이 디자이너 검토 큐로 들어감.
 > **상태**: 🚧 Phase A 구현 진행/로컬 검증 중 (2026-05-21). Manifest, image bootstrap, viewer generation, designer approval label workflow 1차 구현.
 > **Codex 검증 반영 (2026-05-21)**:
 > - **A. Stage 3a 신설**: immutable cs manifest 도입 (`.automation/cs/{id}.json` git-tracked) — 라벨은 event, manifest가 state.
@@ -65,13 +67,22 @@ Figma 편집 → cron 2h → snapshot → diff → classify → render images
 
 ### Phase 분할 (incremental ship)
 
-| Phase | 포함 Stage | 시간 | 디자이너 가치 |
-|---|---|---|---|
-| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | 🚧 1차 구현: `figma:images:bootstrap`, `figma:viewer:generate`, `.automation/cs/{id}.json`, `designer-approval.yml` |
-| **B** | 4 | 3-4h | Tier 1 marker patch만 자동. marker 없으면 PR에 "marker 추가 필요" 안내 |
-| **C** | 5 + 7 | 4-6h | dev gate + 회귀 안전망 |
+| Phase | 포함 Stage | 시간 | 상태 (2026-05-21) | 디자이너 가치 |
+|---|---|---|---|---|
+| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | 🟡 코드 100% (PR #10 OPEN, race patch + task-6 SKIPPED 정리 포함). merge 대기. 라이브 검증 0/3. | `figma:images:bootstrap`, `figma:viewer:generate`, `.automation/cs/{id}.json`, `designer-approval.yml` |
+| **B** | 4 | 3-4h | ⚪ 미시작. Phase A 운영 1-2주 + marker 충분히 추가된 후 진입. | Tier 1 marker patch만 자동. marker 없으면 PR에 "marker 추가 필요" 안내 |
+| **C** | 5 + 7 | 4-6h | ⚪ 미시작. Phase B 동작 확인 후 진입. | dev gate + 회귀 안전망 |
 
 Phase A 단독으로 ship 가능. Phase B는 marker가 충분히 추가된 후 진입 권장.
+
+### Phase A merge 대기 항목 (사용자 액션)
+1. GitHub Pages 활성화 — Settings → Pages → Source `gh-pages`. private repo는 Pro/Team 플랜 필요. 안 되면 viewer publish step 실패 → fallback (Actions artifact zip) 결정.
+2. PR #10 commit (현재 6 파일 uncommitted) + push → merge.
+
+### Phase A 라이브 검증 3건 (merge 후)
+1. `npm run figma:images:bootstrap` 실제 Figma 토큰으로 1회 실행 (baseline PNG seed).
+2. 첫 cron run에서 `dist-viewer/` gh-pages publish 성공 확인.
+3. 디자이너가 Issue에 `designer-approved` 또는 `designer-rejected` 라벨 부착 → `designer-approval.yml` workflow가 manifest transition 수행 확인.
 
 ---
 

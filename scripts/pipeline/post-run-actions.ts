@@ -286,10 +286,6 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     ]);
     await notifySlack();
     await notifyDiscord();
-    // Resend email is wired in task-6 — placeholder noop here
-    if (process.env.RESEND_API_KEY) {
-      console.log('[email] RESEND_API_KEY detected — implementation arrives in task-6');
-    }
     console.log('[post-run] done');
     if (issueRes.url) console.log(`  issue: ${issueRes.url}`);
     if (prRes.url) console.log(`  pr:    ${prRes.url}`);
