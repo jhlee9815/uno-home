@@ -86,7 +86,9 @@ jobs:
           sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/pipeline.log > /tmp/pipeline.clean.log
 
           # Capture latest cs id for downstream steps
-          CS_FILE=$(ls -t .automation/reports/cs-*.md 2>/dev/null | head -1)
+          # `|| true` masks pipefail when the glob has no match — happens on
+          # "Changes: 0" runs because `.automation/reports/` is gitignored.
+          CS_FILE=$(ls -t .automation/reports/cs-*.md 2>/dev/null | head -1 || true)
           if [ -n "$CS_FILE" ]; then
             CS_ID=$(basename "$CS_FILE" .md)
             echo "cs_id=$CS_ID" >> "$GITHUB_OUTPUT"
@@ -97,7 +99,8 @@ jobs:
           fi
 
           # Capture last "Changes: N" line from diff stage (clean log, single line)
-          AUTO_COUNT=$(grep -E "Changes: [0-9]+" /tmp/pipeline.clean.log | tail -1 | sed -E 's/.*Changes:[[:space:]]*([0-9]+).*/\1/' | head -1)
+          # `|| true` masks pipefail when grep finds no match.
+          AUTO_COUNT=$(grep -E "Changes: [0-9]+" /tmp/pipeline.clean.log | tail -1 | sed -E 's/.*Changes:[[:space:]]*([0-9]+).*/\1/' | head -1 || true)
           AUTO_COUNT=${AUTO_COUNT:-0}
           echo "change_count=$AUTO_COUNT" >> "$GITHUB_OUTPUT"
 
