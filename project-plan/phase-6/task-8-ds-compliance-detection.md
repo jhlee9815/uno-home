@@ -140,7 +140,7 @@ GO 판정. 주요 조정 사항:
 
 1. ~~Task 10 Phase A 권장~~ — 완료됨(PR #10/#16). artifact handoff fix는 구현됐고 현재 후속은 Phase B live 재검증.
 2. 운영 지연 단축이 더 급하면 task-5 Cloudflare Worker(Figma webhook → repository_dispatch)를 먼저 진행.
-3. 첫 schema-compatible baseline refresh/promote 시 compliance diff가 정상적으로 누적되는지 운영 run에서 확인.
+3. ~~첫 schema-compatible baseline refresh/promote 시 compliance diff가 정상적으로 누적되는지 운영 run에서 확인.~~ — 2026-05-21 16:44 KST 완료. `.automation/baseline/2026-05-21T07-43-40.json`을 시드했고 baseline=head diff `Changes: 0` 확인.
 4. task-9는 독립 큰 작업보다 Task 10 중 label/Slack summary 보강으로 흡수하는 방향 권장.
 
 ## 8-10. Stage 0 완료 기록 (2026-05-20 22:26 KST)
@@ -243,3 +243,11 @@ schema-compatible 임시 baseline으로 재검증한 최종 change set:
 - Main merge commit: `6d4cd94 Detect Figma compliance drift before auto-apply`.
 - Post-merge local verification: `npm run lint` PASS, `npm run build` PASS.
 - 후속 상태(2026-05-21 16:15 KST): Task 10 Phase A 완료, Phase B 코드 merge. artifact handoff fix는 구현됐고 현재 다음은 Phase B live 재검증.
+
+## 8-15. Schema-compatible baseline refresh 완료 (2026-05-21 16:44 KST)
+
+- 새 Figma snapshot 생성: `.automation/snapshots/2026-05-21T07-43-40.json`
+- baseline 승급: `.automation/baseline/2026-05-21T07-43-40.json`
+- schema 확인: 5개 tracked node 모두 `detachedStyles`, `descendantFrames`, `assetRefs` 배열 포함.
+- diff 검증: `npm run figma:diff` → base/head 모두 `2026-05-21T07-43-40.json`, `Changes: 0`.
+- 효과: 다음 scheduled run부터 기존 등록 node도 old-schema skip guard에 걸리지 않고 `detached-style` / `new-frame` / `image-change`가 baseline 이후 증분으로 누적된다.

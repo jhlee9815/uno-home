@@ -2,7 +2,7 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 최신 갱신: 2026-05-21 16:55 KST — Phase B live 검증 1-2 완료. #19 라벨 재적용으로 run `26212122539` 실행, 원본 `figma-pipeline-26211009015` artifact 다운로드 성공. 다음 병목은 GitHub Actions PR 생성 권한.
+> 최신 갱신: 2026-05-21 16:55 KST — Phase B live 검증 1-2 완료. #19 라벨 재적용으로 run `26212122539` 실행, 원본 `figma-pipeline-26211009015` artifact 다운로드 성공. 추가로 schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json` 시드 및 diff `Changes: 0` 확인. 다음 병목은 GitHub Actions PR 생성 권한.
 > 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
@@ -254,7 +254,7 @@ my_new_frame:
 4. 다음 cron (최대 2h) 또는 채널 핀 링크에서 수동 트리거
 5. 노트북에서 `npm run figma:health` — Open issues 1 증가 + Slack 알림
 
-⚠️ **baseline / schema 주의**: 현재 approved baseline `.automation/baseline/2026-05-20T02-09-13.json`은 Task 8 이전 schema다. 기존 등록 node는 compliance diff를 skip해 첫 run flood를 막지만, 새 tracked node나 schema-compatible baseline 이후에는 `detached-style` / `new-frame` / `image-change`가 정상 누적된다. 테스트용 프레임은 1-2시간 안에 삭제 후 다시 트리거해 정리한다.
+✅ **baseline / schema 상태**: schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json`을 2026-05-21 16:44 KST에 시드했다. 다음 scheduled run부터 기존 등록 node도 `detached-style` / `new-frame` / `image-change`가 baseline 이후 증분으로 정상 누적된다. 감지 범위는 등록된 tracked root 내부로 제한된다. 테스트용 프레임은 1-2시간 안에 삭제 후 다시 트리거해 정리한다.
 
 ### Auto-apply 트리거 (PR 경로) 직접 시연
 1. Figma에서 Pesse Send CTA 노드로 점프:

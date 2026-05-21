@@ -48,7 +48,7 @@ PR #9 review/CI/merge gate는 완료됐다. 다음 담당자가 바로 시작할
 
 - PR #9 merged: https://github.com/jhlee9815/uno-home/pull/9
 - main: `6d4cd94`
-- schema-compatible baseline refresh/promote는 다음 운영 run 또는 Task 10/5 진행 중 확인
+- schema-compatible baseline refresh 완료: `.automation/baseline/2026-05-21T07-43-40.json` 시드, `npm run figma:diff` 기준 `Changes: 0` 확인(2026-05-21 16:44 KST).
 
 ## Stage 0 실행 명령
 
