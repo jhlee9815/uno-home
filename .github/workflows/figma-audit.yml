@@ -33,6 +33,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Always operate against main regardless of which ref the workflow
+          # was dispatched from. Otherwise a manual `workflow_dispatch` from
+          # a feature branch would audit that branch's mapping and open the
+          # auto-register PR from a non-main base, pulling in unrelated diff.
+          ref: main
           fetch-depth: 0
           # Don't leave the write-capable GITHUB_TOKEN in .git/config across
           # npm ci / npm run figma:audit / npm run figma:audit:register so
@@ -102,6 +107,13 @@ jobs:
           # Inject the write-capable token here (checkout ran with
           # persist-credentials: false). Scoped to the push/PR window only.
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Ensure the `auto-register` label exists. If a fresh-clone repo
+          # gets the workflow before the label is provisioned, `gh pr create
+          # --label auto-register` would fail and leak the branch.
+          gh label create auto-register \
+            --description "Auto-register PR from figma-audit (mapping update)" \
+            --color "5319e7" 2>/dev/null || true
 
           # No open auto-register PR. If today's branch exists from an earlier
           # run on the same day with no PR (rare — e.g. PR was force-closed),
