@@ -100,15 +100,30 @@ async function postWebhook(url: string, payload: object, label: string): Promise
     console.log(`[dry-run ${label}] POST ${url.replace(/[A-Za-z0-9_-]{20,}/g, '<redacted>')}`);
     return;
   }
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    console.warn(`[${label}] webhook returned ${res.status} ${res.statusText}`);
-  } else {
-    console.log(`[${label}] notified`);
+  // Guard a malformed secret (whitespace, missing scheme, paste of an
+  // OAuth token instead of an Incoming Webhook URL) from killing the
+  // entire post-run step. Notification failures must not roll back PR
+  // creation, issue creation, or manifest persistence.
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    console.warn(`[${label}] skipped — webhook URL is not a valid URL. Fix the secret.`);
+    return;
+  }
+  try {
+    const res = await fetch(parsed, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.warn(`[${label}] webhook returned ${res.status} ${res.statusText}`);
+    } else {
+      console.log(`[${label}] notified`);
+    }
+  } catch (err) {
+    console.warn(`[${label}] webhook fetch failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
