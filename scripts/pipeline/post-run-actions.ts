@@ -21,6 +21,7 @@ import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Octokit } from 'octokit';
 import { loadManifest, updateManifest } from './lib/cs-manifest.ts';
+import { createOrUpdateDesignerPr, selectPathsForPrBranch } from './lib/github-pr.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -238,68 +239,35 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     return {};
   }
 
-  const branchName = `designer-bot/${csId}`;
-  if (DRY_RUN) {
-    console.log(`[pr dry-run] would create or update Draft PR for ${branchName}`);
-    return {};
-  }
-
   // Filter out manifest/viewer artifacts — those belong on main only.
-  // The figma-pipeline workflow persists .automation/cs/ separately;
-  // committing them into the designer-bot PR branch would orphan the
-  // main-branch audit trail (the Persist CS manifest step would no-op
-  // because the manifest commit already landed on the PR branch).
-  const dirtyAll = exec('git status --porcelain');
-  const codeChanges = dirtyAll
-    .split('\n')
-    .map(line => line.slice(3))
-    .filter(path => path && !path.startsWith('.automation/') && !path.startsWith('dist-viewer/'));
+  const codeChanges = selectPathsForPrBranch(
+    exec('git status --porcelain'),
+    ['.automation/', 'dist-viewer/']
+  );
   if (codeChanges.length === 0) {
     console.log('[pr] skipped — apply.ts produced no code changes (apply is no-op)');
     return {};
   }
 
-  // commit to branch — explicit code-only paths, leave .automation/cs/ for main.
-  exec('git config user.name "designer-bot"');
-  exec('git config user.email "designer-bot@users.noreply.github.com"');
-  exec(`git checkout -B ${branchName}`);
-  for (const path of codeChanges) {
-    exec(`git add ${JSON.stringify(path)}`);
-  }
-  exec(`git commit -m "design: ${csId} auto-apply" || true`);
-  exec(`git push origin ${branchName} --force-with-lease`);
-
-  // find existing open PR for branch
-  const prs = await octokit.rest.pulls.list({
-    owner, repo, head: `${owner}:${branchName}`, state: 'open',
-  });
-
-  if (prs.data.length > 0) {
-    const pr = prs.data[0];
-    console.log(`[pr] existing PR #${pr.number} — updating body`);
-    if (!DRY_RUN) {
-      await octokit.rest.pulls.update({
-        owner, repo, pull_number: pr.number,
-        body: truncateBody(csReportWithViewer),
-      });
-    }
-    return { url: pr.html_url };
-  }
-
-  const pr = await octokit.rest.pulls.create({
-    owner, repo,
-    head: branchName,
-    base: 'main',
+  const result = await createOrUpdateDesignerPr({
+    octokit,
+    owner,
+    repo,
+    branch: `designer-bot/${csId}`,
     title: `[designer-bot] ${csId} — ${autoApplyChanges.length} auto-apply change(s)`,
     body: truncateBody(csReportWithViewer),
-    draft: true,
-  });
-  await octokit.rest.issues.addLabels({
-    owner, repo, issue_number: pr.data.number,
     labels: ['designer-bot', 'auto-apply'],
+    commitMessage: `design: ${csId} auto-apply`,
+    paths: codeChanges,
+    dryRun: DRY_RUN,
   });
-  console.log(`[pr] created Draft PR #${pr.data.number} ${pr.data.html_url}`);
-  return { url: pr.data.html_url };
+
+  if (result.url) {
+    console.log(`[pr] ${result.prNumber ? `#${result.prNumber}` : ''} ${result.url}`);
+  } else if (result.skipped) {
+    console.log(`[pr] skipped (${result.skipped})`);
+  }
+  return { url: result.url };
 }
 
 // ----- main -----
