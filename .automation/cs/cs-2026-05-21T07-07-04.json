@@ -27,7 +27,7 @@
     }
   },
   "runId": "26211009015",
-  "state": "designer-approved",
+  "state": "pr-open",
   "stateHistory": [
     {
       "state": "pending",
@@ -37,10 +37,16 @@
     },
     {
       "state": "designer-approved",
-      "at": "2026-05-21T07:08:11.481Z",
+      "at": "2026-05-21T12:22:22.428Z",
       "by": "jhlee9815",
       "via": "label:designer-approved",
       "note": "https://github.com/jhlee9815/uno-home/issues/19"
+    },
+    {
+      "state": "pr-open",
+      "at": "2026-05-21T12:22:25.821Z",
+      "by": "designer-bot",
+      "via": "pr:https://github.com/jhlee9815/uno-home/pull/20"
     }
   ],
   "viewerUrl": "https://jhlee9815.github.io/uno-home/cs/cs-2026-05-21T07-07-04/",
