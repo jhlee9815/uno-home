@@ -19,3 +19,11 @@
 - name: report-only
   color: fbca04
   description: Detected but intentionally not auto-applied
+
+- name: designer-approved
+  color: 0e8a16
+  description: Designer accepted the change set; workflow may continue
+
+- name: designer-rejected
+  color: d73a4a
+  description: Designer rejected the change set; baseline and code stay unchanged

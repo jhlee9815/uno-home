@@ -25,7 +25,7 @@
 - [ ] Figma webhook → Cloudflare Worker → GitHub `repository_dispatch` → 워크플로 실행 동작
 - [ ] auto-apply 변경 시 Draft PR이 `designer-bot` 라벨로 자동 생성 + CODEOWNERS가 dev 리뷰 강제
 - [ ] report-only 변경 시 Issue가 `designer-review` 라벨로 자동 등록
-- [ ] Slack/Discord webhook 알림 + Resend 이메일 동시 발송
+- [x] Slack/Discord webhook 알림 (Resend 이메일은 task-6 SKIPPED — Slack 도달로 충분)
 - [x] Codex가 발견한 `promote-dev.ts` 스모크 키 버그 수정
 - [x] **extraction-friendly 결정 4건 적용**: 6-4 참조
 
@@ -38,11 +38,11 @@
 | 3 | `scripts/pipeline/post-run-actions.ts` 라우팅 스크립트 | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) | 2시간 | ~2시간 (claude 초안 + codex 보강 + 실검증) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 룰 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) | 30분 | 25분 |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
-| 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
+| 6 | Resend 이메일 통합 | ⏭ SKIPPED (Slack 알림 + GitHub 공식 Slack 앱으로 충분) | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 | 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 검증 + PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md) | 2-3시간 | — |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🛠 설계 완료, Phase A 권장 | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | — |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟡 Phase A 코드 100% (PR #10 merge 대기). Phase B/C 미시작. | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | A: ~8h |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관). 8은 완료. 9의 report/label 범위는 10 Phase A에 대부분 흡수됐으므로 필요 시 label/Slack summary 보강만 분리한다.
 
@@ -65,6 +65,7 @@
 - 2026-05-21 10:33 KST — task-8 Stage 2-5 local 구현/검증 완료. `snapshot-node.ts` deep traversal extractor, `diffCompliance`, classify `subcategories`, cs report compliance sections, local pending viewer 추가. full figma test loop + `npm run lint` + `npm run build` PASS.
 - 2026-05-21 10:43 KST — task-8 Stage 6 실 Figma 검증 완료. 임시 probe로 detached-style/new-frame/image-change가 `cs-2026-05-21T01-42-28` report에 반영됨. 기존 old-schema baseline flood 이슈 발견 후 `diffCompliance()` skip guard 추가. probe cleanup 완료. PR #9: https://github.com/jhlee9815/uno-home/pull/9
 - 2026-05-21 10:46 KST — PR #9 merged to main (`6d4cd94`). Post-merge local `npm run lint` / `npm run build` PASS.
+- 2026-05-21 11:15 KST — task-10 Phase A 1차 구현 진행: cs manifest, baseline/snapshot image helpers, viewer generator, designer approval label workflow, pipeline viewer publish + manifest persist step 추가. 로컬 신규 tests, full figma test loop, lint, build PASS.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
@@ -126,7 +127,7 @@ gh run watch
 gh pr list --label designer-bot
 gh issue list --label designer-review
 
-# Slack/Email 수신 확인 — 수동
+# Slack 수신 확인 — 수동 (notifySlack webhook + GitHub 공식 앱)
 ```
 
 ## 6-7. 리스크 / 한계
@@ -274,7 +275,7 @@ npm run figma:preflight
 권장 선택:
 - **Task 10 Phase A 진입** — before/after viewer + designer-approved/rejected labels + immutable cs manifest. Task 8의 감지 결과를 디자이너 의사결정 UX로 연결한다.
 - **task-5 선행** — Figma 편집 후 최대 2h 대기가 더 큰 문제면 Cloudflare Worker(Figma webhook → repository_dispatch)를 먼저 한다.
-- **task-6** — Slack 외 이메일 수신이 실제 필요할 때만 진행.
+- **task-6** — ⏭ SKIPPED. Slack 알림(`notifySlack` webhook) + GitHub 공식 Slack 앱이 이미 디자이너/PM에 도달하고 있어 이메일 채널 불필요.
 
 `Anomalies ⚠️` 가 있으면:
 - 즉시 fix → 안정화 → 그 다음 Task 10 또는 task-5
@@ -295,12 +296,20 @@ npm run figma:preflight
 - Stage 6 실환경 검증: Figma file `9cevQvPHlQ5vZv5Pz3QaLL`, `pesse_home` (`7:3`) 아래 임시 probe → `cs-2026-05-21T01-42-28`에서 3종 감지 → apply noop → verify build/lint PASS → probe 삭제 확인.
 - rollout 보강: old-schema approved baseline에서 기존 node compliance diff를 skip해 첫 운영 run false-positive flood를 방지한다.
 
-### 다음 작업 선택
+### 다음 작업 선택 (2026-05-21 갱신)
 
-1. **권장: Task 10 Phase A** — hosted/local before-after viewer, designer approval labels, immutable cs manifest. Task 8 결과를 디자이너가 실제로 승인/반려할 수 있는 UX로 연결한다.
-2. **운영 지연이 더 급하면: task-5 Cloudflare Worker** — Figma webhook으로 GitHub Actions를 즉시 실행한다.
-3. **후순위: task-6 Resend** — Slack 외 이메일 알림이 꼭 필요할 때 진행.
-4. **Task 9** — 독립 큰 작업보다는 Task 10 중 label/Slack summary 보강으로 흡수하는 편이 낫다.
+전체 목표 (Figma 편집 → diff 감지 → Slack 알림 → 디자이너 확인 → 개발 변경 → 개발자 머지) 가중 진척 ≈ **65%**. 잔여 가치는 단계 3 마무리 + 단계 4 자동화 확장에 집중.
+
+**diff 감지 범위 (단계 2, task-8 ✅)**: 텍스트/속성 변경 + 새 프레임 추가(`new-frame`) + DS 토큰 미반영 — 타이포/색상(`detached-style`) + 이미지 변경(`image-change`). 모두 자손 트리 깊이까지. 자동 patch는 marker가 매핑된 텍스트만 (Tier 1), 나머지는 `report-only`로 디자이너 검토.
+
+**권장 순서: A → B → C → (필요시) task-5**
+
+1. **A. PR #10 merge + 라이브 검증** — 단계 3 (디자이너 확인) 완성. 사용자 액션: Pages 활성화 + commit/push. ~30분.
+2. **B. Task 10 Phase B (Stage 4)** — 단계 4 (개발 코드 변경) 자동화 확장. Tier 2 AST props patch + Tier 3 fallback. 3-4h. 진입 조건: Phase A 운영 1-2주 + marker 추가.
+3. **C. Task 10 Phase C (Stage 5+7)** — 단계 5 (개발자 머지) 안전망. visual diff + branch protection + auto-promote + e2e. 4-6h.
+4. **(끼워넣기) task-5 Cloudflare Worker** — 단계 2 (2h cron 대기) 해소. 디자이너가 2h 대기에 답답해할 때 1-2h.
+5. ~~**task-6 Resend**~~ — ⏭ SKIPPED (Slack로 충분, 2026-05-21).
+6. ~~**Task 9**~~ — Task 10에 흡수됨. label/Slack summary 보강만 필요 시 분리.
 
 검증 증거 (최신):
 

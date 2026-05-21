@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-viewer/
 dist-dev
 dist-ssr
 *.local
@@ -30,6 +31,14 @@ dist-ssr
 .automation/demo-compare/
 .automation/task-8-stage0/
 .automation/viewer/
+.automation/images/snapshots/
+
+# Tracked pipeline state
+!.automation/cs/
+!.automation/cs/**
+!.automation/images/
+!.automation/images/baseline/
+!.automation/images/baseline/**
 !.automation/**/.gitkeep
 
 # Note: .automation/baseline/ is intentionally tracked.

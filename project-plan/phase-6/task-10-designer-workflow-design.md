@@ -1,7 +1,9 @@
 # Task 6-10 — Designer Review → Auto-Edit → Dev Merge Workflow (DESIGN)
 
 > **목표**: 디자이너 Slack 알림 → 클릭 → before/after HTML 확인 → 승인 → 코드 자동 수정 시도 → 개발자 확인 → 머지. cron 2시간 사이클이 자동으로 끝까지 흘러가되 결정 게이트 2개(디자이너 승인, 개발자 머지)는 사람.
-> **상태**: ✅ 설계 완료 (Codex `GO_WITH_CHANGES` 검증, 2026-05-21). Task 8 merge 이후 문서 기준 다음 권장 구현 후보.
+>
+> **diff 감지 범위 (task-8 ✅)**: 단순 텍스트/속성 변경뿐 아니라 (a) 새 프레임 추가 (`new-frame`), (b) DS 토큰 미반영 — 타이포/색상 토큰 해제 (`detached-style`), (c) 이미지 변경 (`image-change`)도 자손 트리 깊이까지 감지. 모두 `report-only` 정책으로 자동 patch 없이 디자이너 검토 큐로 들어감.
+> **상태**: 🚧 Phase A 구현 진행/로컬 검증 중 (2026-05-21). Manifest, image bootstrap, viewer generation, designer approval label workflow 1차 구현.
 > **Codex 검증 반영 (2026-05-21)**:
 > - **A. Stage 3a 신설**: immutable cs manifest 도입 (`.automation/cs/{id}.json` git-tracked) — 라벨은 event, manifest가 state.
 > - **B. Stage 4 Tier 2 (text-matching) 드롭**: marker 없는 text 변경은 PR description에 "marker 필요" 명시, 자동 patch 안 함.
@@ -65,13 +67,67 @@ Figma 편집 → cron 2h → snapshot → diff → classify → render images
 
 ### Phase 분할 (incremental ship)
 
-| Phase | 포함 Stage | 시간 | 디자이너 가치 |
-|---|---|---|---|
-| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | 진정한 before/after viewer + 라벨로 결정 기록. "approved" = 디자이너 수락 (코드는 사람이 함, 명시) |
-| **B** | 4 | 3-4h | Tier 1 marker patch만 자동. marker 없으면 PR에 "marker 추가 필요" 안내 |
-| **C** | 5 + 7 | 4-6h | dev gate + 회귀 안전망 |
+| Phase | 포함 Stage | 시간 | 상태 (2026-05-21) | 디자이너 가치 |
+|---|---|---|---|---|
+| **A** | 1 + 2 + 3 + 3a | 8.5-11.5h | 🟡 코드 100% (PR #10 OPEN, race patch + task-6 SKIPPED 정리 포함). merge 대기. 라이브 검증 0/3. | `figma:images:bootstrap`, `figma:viewer:generate`, `.automation/cs/{id}.json`, `designer-approval.yml` |
+| **B** | 4 | 3-4h | ⚪ 미시작. Phase A 운영 1-2주 + marker 충분히 추가된 후 진입. | Tier 1 marker patch만 자동. marker 없으면 PR에 "marker 추가 필요" 안내 |
+| **C** | 5 + 7 | 4-6h | ⚪ 미시작. Phase B 동작 확인 후 진입. | dev gate + 회귀 안전망 |
 
 Phase A 단독으로 ship 가능. Phase B는 marker가 충분히 추가된 후 진입 권장.
+
+### Phase A merge 대기 항목 (사용자 액션)
+1. GitHub Pages 활성화 — Settings → Pages → Source `gh-pages`. private repo는 Pro/Team 플랜 필요. 안 되면 viewer publish step 실패 → fallback (Actions artifact zip) 결정.
+2. PR #10 commit (현재 6 파일 uncommitted) + push → merge.
+
+### Phase A 라이브 검증 3건 (merge 후)
+1. `npm run figma:images:bootstrap` 실제 Figma 토큰으로 1회 실행 (baseline PNG seed).
+2. 첫 cron run에서 `dist-viewer/` gh-pages publish 성공 확인.
+3. 디자이너가 Issue에 `designer-approved` 또는 `designer-rejected` 라벨 부착 → `designer-approval.yml` workflow가 manifest transition 수행 확인.
+
+---
+
+
+
+## 10-2a. Phase A 구현 기록 (2026-05-21)
+
+1차 구현 범위:
+
+- **Baseline image bootstrap**: `npm run figma:images:bootstrap`
+  - mapping의 components/compositions/screens node를 Figma `/v1/images`로 렌더링.
+  - `.automation/images/baseline/{nodeId}.png` 저장.
+  - `.automation/reports/images-bootstrap-{ts}.md` 리포트 생성.
+- **Viewer generation**: `npm run figma:viewer:generate -- <cs-id>`
+  - classified diff의 changed node를 렌더링해 `.automation/images/snapshots/{csId}/`에 저장.
+  - baseline/snapshot 이미지를 `dist-viewer/cs/{csId}/images/`로 복사.
+  - before/after HTML을 `dist-viewer/cs/{csId}/index.html`로 생성.
+  - `FIGMA_VIEWER_BASE_URL`이 있으면 manifest에 hosted URL 기록.
+- **Immutable cs manifest**: `.automation/cs/{csId}.json`
+  - `report.ts`가 cs report 생성 시 manifest를 생성.
+  - `viewer-gen.ts`가 image hash와 viewer URL을 갱신.
+  - `figma-pipeline.yml`이 viewer 생성 직후 manifest를 git에 commit/push해 label workflow가 재현 가능한 상태 파일을 읽을 수 있게 한다.
+  - `post-run-actions.ts`가 생성/갱신한 GitHub Issue 번호와 URL을 manifest에 best-effort로 기록한다(동일 run artifact에는 포함, repo 영구 상태의 필수 입력은 아님).
+- **Designer approval label flow**:
+  - `.github/labels.yml`에 `designer-approved`, `designer-rejected` 추가.
+  - `.github/workflows/designer-approval.yml`이 Issue label event를 받아 manifest state를 `designer-approved` / `designer-rejected`로 transition.
+  - Phase A는 결정을 기록하고 Issue에 comment한다. marker 기반 코드 자동 수정은 Phase B에서 진행.
+- **Pipeline integration**:
+  - `figma-pipeline.yml`이 cs 생성 후 viewer를 만들고 `gh-pages`에 publish한 뒤 manifest를 persist하고 post-run Issue/PR routing을 실행.
+  - post-run Issue body 상단에 viewer URL을 추가한다.
+
+로컬 검증:
+
+```bash
+npm run figma:test:cs-manifest
+npm run figma:test:figma-images
+npm run figma:test:viewer-generator
+npm run figma:test:designer-approval
+npm run lint
+```
+
+남은 실환경 확인:
+
+- `npm run figma:images:bootstrap`는 Figma network/API가 필요하므로 실제 토큰 환경에서 1회 실행 필요.
+- GitHub Pages publish, manifest commit/push, `designer-approval.yml` label event는 PR merge 후 Actions에서 확인 필요.
 
 ---
 
@@ -357,7 +413,7 @@ Phase A 단독 ship 권장. Phase B는 marker 추가가 충분히 진행된 후 
 ## 10-13. 범위 외 (명시)
 
 - Real-time Figma webhook 트리거 — task-5 (Cloudflare Worker)
-- Resend 이메일 알림 — task-6
+- Resend 이메일 알림 — task-6 ⏭ SKIPPED (Slack 도달로 대체, 2026-05-21)
 - INSTANCE_SWAP 감지 — task-8 v2
 - LLM 기반 코드 생성 — 후속 task
 - 디자인 시스템 일관성 자동 fixup (예: hex 색상 → 토큰 자동 변환) — task-10 v2

@@ -1,4 +1,9 @@
-# Task 6-6 — Resend Email 통합
+# Task 6-6 — Resend Email 통합 ⏭ SKIPPED (2026-05-21)
+
+> **상태**: 영구 스킵. Slack 알림 두 채널 (`notifySlack()` webhook + GitHub 공식 Slack 앱)이 이미 디자이너/PM에 도달하고 있어 이메일 백업 채널 불필요.
+> **부활 조건**: Slack 도달이 끊기거나 이메일 수신이 명시적 요구사항이 될 때. 아래 설계 그대로 복원 가능.
+
+---
 
 > **목표**: cs 리포트 요약을 디자이너/PM에 메일 발송
 > **예상 시간**: 1시간

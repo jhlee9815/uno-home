@@ -1,20 +1,38 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-21 10:50 KST (Task 8 DS Compliance Detection ✅ PR #9 merge 완료, 다음 권장: Task 10 Phase A)
+> 최신 갱신: 2026-05-21 13:45 KST (Task 10 Phase A 코드 100% + race patch + task-6 SKIPPED. 다음: PR #10 merge → 라이브 검증 → Phase B)
 
 ---
 
 ## 0. 현재 상태 (30초 요약)
 
-- **현재 단계**: Phase 6 — Pesse Figma 자동 반영 파이프라인을 GitHub Actions 실서비스 형태로 운영화 중.
-- **GitHub**: private repo `jhlee9815/uno-home`, `main...origin/main`, 최신 main `6d4cd94` (`Detect Figma compliance drift before auto-apply`). PR #9 merged.
-- **완료**: Phase 1~5 archive, Pesse 데모 검증, Phase 6 task-1/2/3/4/7/8 ✅.
-- **Task 8 완료 내용**: Figma 자손 트리에서 DS compliance signal(`detached-style`, `new-frame`, `image-change`)을 수집·diff·classify·report에 연결. 모두 `report-only`이며 자동 patch 없음.
-- **Task 8 실환경 검증**: Figma file `9cevQvPHlQ5vZv5Pz3QaLL`, tracked screen `pesse_home` (`7:3`)에 임시 probe 생성 → `cs-2026-05-21T01-42-28`에서 3종 감지 → apply noop → verify build/lint PASS → probe 삭제 확인(`probeCount: 0`).
-- **rollout 보강**: Task 8 이전 old-schema baseline에는 compliance 배열이 없으므로 기존 node의 compliance diff는 skip해 첫 운영 run flood를 방지. 신규 tracked node는 head compliance를 정상 보고.
-- **다음 권장**: **Task 10 Phase A** — hosted before/after viewer + designer-approved/rejected label workflow + immutable cs manifest. 디자이너가 Slack/Issue에서 실제 변경을 1-click로 판단할 수 있게 만드는 작업.
-- **대안 우선순위**: 운영 지연(2h cron)이 가장 불편하면 **Task 5 Cloudflare Worker**를 먼저 진행. **Task 6 Resend**는 Slack 알림이 충분하므로 후순위.
+전체 목표 `Figma 편집 → diff (텍스트/속성 + 새 프레임 + DS 미반영 감지) → Slack 알림 → 디자이너 확인 → 개발 변경 → 개발자 머지`의 5단계 진척:
+
+| # | 단계 | 진척 | 비고 |
+|:-:|---|:-:|---|
+| 1 | Figma 편집 | 100% | 도구 외부 |
+| 2 | 스케쥴 diff | 95% | cron 2h 동작. 감지 범위: (a) 텍스트/속성 변경 (b) 새 프레임 추가 (`new-frame`) (c) DS 미반영 — 타이포/색상 토큰 해제 (`detached-style`) (d) 이미지 변경 (`image-change`). task-8 ✅. task-5 webhook은 optional. |
+| 3 | Slack 알림 + 디자이너 확인 | 70% | 알림 ✅, viewer/라벨 코드 ✅ (PR #10), Pages 미활성, 라이브 검증 0/3 |
+| 4 | 개발 코드 변경 | 30% | Tier 1 marker patch만 자동. Phase B 필요 |
+| 5 | 개발자 머지 | 50% | PR 생성 + 기본 CI 동작. Phase C 안전망 필요 |
+
+**가중 진척 ≈ 65%.** 가장 큰 잔여 가치: 단계 3 마무리 + 단계 4 자동화 확장.
+
+### 단계 2 감지 매트릭스 (task-8 구현, report-only 정책)
+
+| 감지 종류 | class | 트리거 | 자동 patch | 디자이너 검토 필요 |
+|---|---|---|---|---|
+| 텍스트 변경 (marker 있음) | `text-change` | 매핑된 텍스트 노드 변경 | ✅ Tier 1 marker patch | (auto-apply) |
+| 속성/스타일 변경 (매핑 외) | (다양) | 매핑 외 속성 변경 | ❌ | ✅ Issue |
+| **새 프레임 추가** | `new-frame` | snapshot에 없던 frame 노드 추가 | ❌ | ✅ Issue |
+| **DS 토큰 미반영 (타이포/색상)** | `detached-style` | Figma 변수/스타일 해제 (로컬 hex/font) | ❌ | ✅ Issue |
+| 이미지 변경 | `image-change` | image fill의 ref hash 변경 | ❌ | ✅ Issue |
+
+- **현재 브랜치**: `feature/task-10-phase-a`. PR #10 OPEN.
+- **uncommitted (6 파일)**: race patch (2 workflow) + task-6 SKIPPED 정리 (4 파일).
+- **다음 권장**: **PR #10 commit/push → Pages 활성화 → merge → 라이브 검증 → Phase B 진입**.
+- **세부 권장 순서**: A (Phase A 마무리) → B (Phase B 자동화 확장) → C (Phase C 안전망) → (optional) task-5.
 
 ---
 
@@ -35,43 +53,73 @@ Task 8 code merge 직후 local 검증(`npm run lint`, `npm run build`)은 PASS. 
 
 ---
 
-## 2. 우선순위 1 — Task 10 Phase A (디자이너 리뷰 워크플로우)
+## 2. 우선순위 1 — Phase A merge + 라이브 검증 (단계 3 완성)
 
-Task 8로 “무엇이 어긋났는지”는 구조화됐다. 다음 병목은 디자이너가 Issue/Markdown/Figma를 오가며 수동 판단해야 한다는 점이다.
+코드는 PR #10에 100% 들어가 있음. uncommitted 6 파일은 race patch + task-6 SKIPPED 정리. 남은 일은 commit/push + 사용자 액션 + 라이브 검증.
 
-### 목표
-- baseline/snapshot 이미지를 저장해 before/after를 보여준다.
-- `cs-{id}` viewer HTML을 생성하고 GitHub Pages(또는 대체 호스팅)에 올린다.
-- GitHub Issue 라벨 `designer-approved` / `designer-rejected`로 디자이너 결정을 기록한다.
-- `.automation/cs/{id}.json` manifest를 git-tracked로 남겨 label/workflow/artifact 상태를 재현 가능하게 만든다.
+### 2-A. 사용자 액션 (merge 전)
+- [ ] **GitHub Pages 활성화** — repo Settings → Pages → Source `gh-pages`. private repo는 Pro/Team 플랜 필요. 안 되면 viewer publish step 실패 → fallback (Actions artifact zip) 결정.
+- [ ] (선택) Slack Workflow Builder 셋업 — 채널에서 1클릭으로 figma-pipeline 수동 트리거. 알림은 이미 동작 중이라 optional.
+
+### 2-B. commit + push + merge
+- [ ] uncommitted 6 파일 commit (race patch + task-6 SKIPPED)
+- [ ] push to `feature/task-10-phase-a`
+- [ ] PR #10 review 확인 (Codex가 2차 SAFE_TO_MERGE 판정함) → merge
+
+### 2-C. merge 후 라이브 검증 (3건)
+- [ ] `npm run figma:images:bootstrap`를 실제 Figma 토큰 환경에서 1회 실행 → baseline PNG seed
+- [ ] 첫 cron run에서 `dist-viewer/` gh-pages publish 성공 확인
+- [ ] 디자이너가 Issue에 `designer-approved` 또는 `designer-rejected` 라벨 부착 → `designer-approval.yml` workflow가 manifest transition 수행 확인
 
 세부 설계: [`project-plan/phase-6/task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md).
 
-### Phase A 시작 전 확인
-- GitHub Pages를 private repo에서 사용할지, 아니면 Actions artifact/local viewer만 유지할지 결정.
-- `.automation/images/baseline/` PNG를 git-tracked로 둘지 storage threshold를 둘지 결정.
-- Task 8 compliance report 섹션이 실제 Issue body에서 충분히 읽히는지 한 번 확인.
+---
+
+## 2-9. 우선순위 2 — Task 10 Phase B (단계 4 자동화 확장)
+
+진입 조건: Phase A 라이브 검증 완료 + 운영 1-2주 안정 + Figma에 marker 충분히 추가됨.
+
+### 목표
+- Tier 1 marker-based text patch (기존, 변화 없음)
+- **Tier 2 신규**: AST-driven component-props patch — code-adjacent marker 기반 (`// figma-prop: pesse_send.Variant -> variant` 주석 위 JSX attribute 자동 patch). ts-morph 의존성 추가.
+- **Tier 3 fallback**: Tier 1/2 모두 실패 → PR description에 "수동 편집 필요" + 변경 사항 요약 + viewer URL 명시 (PR은 여전히 생성).
+
+예상 3-4h. 세부: task-10-designer-workflow-design.md §10-6.
 
 ---
 
-## 3. 우선순위 2 — Task 5 Cloudflare Worker (Figma webhook 프록시)
+## 3. 우선순위 3 — Task 10 Phase C (단계 5 안전망)
 
-Task 10보다 “Figma 편집 후 2시간 기다리는 문제”가 더 크면 Task 5를 먼저 한다.
+진입 조건: Phase B 동작 확인 후.
+
+### 목표
+- visual diff (Playwright pixel diff) — 변경 화면 실제 렌더 vs baseline image
+- branch protection rule — CODEOWNERS review + visual-diff CI 강제
+- post-merge baseline auto-promote — PR에 baseline 갱신 commit 포함 (방법 A 권장)
+- e2e fixture test + 롤백 시나리오 문서화
+
+예상 4-6h. 세부: task-10-designer-workflow-design.md §10-7, §10-9.
+
+---
+
+## 4. 끼워넣기 옵션 — Task 5 Cloudflare Worker (단계 2 즉시 트리거)
+
+디자이너가 "Figma 편집 후 2시간 기다리는 문제"에 답답해할 때 1-2h로 추가.
 
 - 필요: Cloudflare 계정, `wrangler` CLI, GitHub fine-grained PAT 또는 repository dispatch 권한, Figma webhook passcode/signature 검증.
 - 목표: Figma 편집 → Figma webhook → Cloudflare Worker → GitHub `repository_dispatch` → `figma-pipeline.yml` 즉시 실행.
-- 부수 옵션: 같은 Worker에 `/slack` 엔드포인트 추가하면 Slack slash command 트리거 가능.
+- 부수 옵션: 같은 Worker에 `/slack` 엔드포인트 추가하면 Slack slash command 트리거 가능 (Slack Workflow Builder 대체).
 - Task 5 후 branch protection rule `require_code_owner_reviews: true` 활성화.
 
 문서: [`project-plan/phase-6/task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md), [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md).
 
 ---
 
-## 3-1. 우선순위 3 — Task 6 Resend 이메일
+## 3-1. ~~우선순위 3 — Task 6 Resend 이메일~~ ⏭ SKIPPED
 
-- 필요: Resend API key, from domain/email, recipient list.
-- 현재 방침: env 미설정 시 skip.
-- Slack 경로가 이미 동작하므로 이메일은 “이메일 수신이 꼭 필요할 때” 진행.
+- Slack 알림 두 채널 (notifySlack webhook + GitHub 공식 Slack 앱)이 디자이너/PM에 도달하고 있어 이메일 채널 불필요.
+- 코드 정리: `post-run-actions.ts`의 RESEND placeholder 제거 + `figma-pipeline.yml`의 RESEND env 3줄 제거 (2026-05-21).
+- 미래에 이메일이 필요해지면 [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) 설계 그대로 부활 가능.
 
 ---
 

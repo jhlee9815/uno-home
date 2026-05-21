@@ -6,19 +6,21 @@
  *   - auto-apply changes  -> Draft PR (label: designer-bot, auto-apply)
  *   - report-only changes -> Issue   (label: designer-review, report-only)
  *   - notification        -> Slack / Discord webhook (when env set)
- *   - email digest        -> Resend (task-6 wires this in)
  *
  * Behavior:
  *   - Graceful no-op when channel env vars are missing.
  *   - DRY_RUN=1 logs every external call but does not perform it.
  *   - Reuses the per-cs branch name so repeat runs update the existing PR
  *     instead of opening duplicates.
+ *   - Issue and PR creation run sequentially so manifest mutations
+ *     (githubIssueNumber/Url) do not race on the same file.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Octokit } from 'octokit';
+import { loadManifest, updateManifest } from './lib/cs-manifest.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -52,6 +54,8 @@ if (!existsSync(csPath)) {
   process.exit(1);
 }
 const csReport = readFileSync(csPath, 'utf-8');
+const manifest = loadManifestIfPresent(csId);
+const csReportWithViewer = prependViewerLink(csReport, manifest?.viewerUrl);
 
 // classified diff lives at .automation/diffs/<timestamp>-classified.json
 // cs-id format: cs-<timestamp> -> classified file: <timestamp>-classified.json
@@ -113,6 +117,34 @@ function truncateBody(body: string, maxLen = 60000): string {
   return body.slice(0, maxLen) + `\n\n---\n_Report truncated — see workflow artifact for full content._`;
 }
 
+
+function loadManifestIfPresent(id: string): { viewerUrl?: string } | null {
+  try {
+    return loadManifest(process.cwd(), id);
+  } catch {
+    return null;
+  }
+}
+
+function prependViewerLink(body: string, viewerUrl: string | undefined): string {
+  if (!viewerUrl) return body;
+  return `> 🔎 Before/after viewer: ${viewerUrl}
+
+${body}`;
+}
+
+function updateManifestIssue(id: string, issueNumber: number, issueUrl: string): void {
+  try {
+    updateManifest(process.cwd(), id, current => ({
+      ...current,
+      githubIssueNumber: issueNumber,
+      githubIssueUrl: issueUrl,
+    }));
+  } catch {
+    // Manifest is best-effort for legacy change sets.
+  }
+}
+
 // ----- notify channels -----
 
 async function notifySlack(): Promise<void> {
@@ -162,17 +194,19 @@ async function createOrUpdateIssue(): Promise<{ url?: string }> {
     if (!DRY_RUN) {
       await octokit.rest.issues.update({
         owner, repo, issue_number: existing.number,
-        body: truncateBody(csReport),
+        body: truncateBody(csReportWithViewer),
       });
     }
+    updateManifestIssue(csId, existing.number, existing.html_url);
     return { url: existing.html_url };
   }
   const created = await octokit.rest.issues.create({
     owner, repo,
     title,
-    body: truncateBody(csReport),
+    body: truncateBody(csReportWithViewer),
     labels: ['designer-review', 'report-only'],
   });
+  updateManifestIssue(csId, created.data.number, created.data.html_url);
   console.log(`[issue] created: #${created.data.number} ${created.data.html_url}`);
   return { url: created.data.html_url };
 }
@@ -195,18 +229,28 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     return {};
   }
 
-  // git status: see if there are actual code changes to push
-  const dirty = exec('git status --porcelain').length > 0;
-  if (!dirty) {
+  // Filter out manifest/viewer artifacts — those belong on main only.
+  // The figma-pipeline workflow persists .automation/cs/ separately;
+  // committing them into the designer-bot PR branch would orphan the
+  // main-branch audit trail (the Persist CS manifest step would no-op
+  // because the manifest commit already landed on the PR branch).
+  const dirtyAll = exec('git status --porcelain');
+  const codeChanges = dirtyAll
+    .split('\n')
+    .map(line => line.slice(3))
+    .filter(path => path && !path.startsWith('.automation/') && !path.startsWith('dist-viewer/'));
+  if (codeChanges.length === 0) {
     console.log('[pr] skipped — apply.ts produced no code changes (apply is no-op)');
     return {};
   }
 
-  // commit to branch
+  // commit to branch — explicit code-only paths, leave .automation/cs/ for main.
   exec('git config user.name "designer-bot"');
   exec('git config user.email "designer-bot@users.noreply.github.com"');
   exec(`git checkout -B ${branchName}`);
-  exec('git add -A');
+  for (const path of codeChanges) {
+    exec(`git add ${JSON.stringify(path)}`);
+  }
   exec(`git commit -m "design: ${csId} auto-apply" || true`);
   exec(`git push origin ${branchName} --force-with-lease`);
 
@@ -221,7 +265,7 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     if (!DRY_RUN) {
       await octokit.rest.pulls.update({
         owner, repo, pull_number: pr.number,
-        body: truncateBody(csReport),
+        body: truncateBody(csReportWithViewer),
       });
     }
     return { url: pr.html_url };
@@ -232,7 +276,7 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     head: branchName,
     base: 'main',
     title: `[designer-bot] ${csId} — ${autoApplyChanges.length} auto-apply change(s)`,
-    body: truncateBody(csReport),
+    body: truncateBody(csReportWithViewer),
     draft: true,
   });
   await octokit.rest.issues.addLabels({
@@ -247,16 +291,10 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
 
 (async () => {
   try {
-    const [issueRes, prRes] = await Promise.all([
-      createOrUpdateIssue(),
-      createOrUpdatePR(),
-    ]);
+    const issueRes = await createOrUpdateIssue();
+    const prRes = await createOrUpdatePR();
     await notifySlack();
     await notifyDiscord();
-    // Resend email is wired in task-6 — placeholder noop here
-    if (process.env.RESEND_API_KEY) {
-      console.log('[email] RESEND_API_KEY detected — implementation arrives in task-6');
-    }
     console.log('[post-run] done');
     if (issueRes.url) console.log(`  issue: ${issueRes.url}`);
     if (prRes.url) console.log(`  pr:    ${prRes.url}`);

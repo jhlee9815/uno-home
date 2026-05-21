@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-21 10:50 KST (Phase 6 task-1/2/3/4/7/8 ✅, 다음 권장 task-10 Phase A)
+> 최신 갱신: 2026-05-21 13:55 KST (Phase 6 task-1/2/3/4/7/8 ✅, task-6 SKIPPED. task-10 Phase A 코드 100% PR #10)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -14,11 +14,11 @@
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
 | **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **🚧 진행 중: task-1/2/3/4/7/8 ✅, task-10 Phase A 권장 / task-5·6 남음** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, task-10 Phase A 코드 100% (PR #10), task-5/10-B/10-C 남음** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: Task 8 DS Compliance Detection은 PR #9로 `main`에 merge 완료. 다음은 **Task 10 Phase A**(viewer/approval workflow) 권장. 단, Figma 편집→실행 지연을 먼저 줄여야 하면 task-5 Cloudflare Worker를 선행한다. 세부: [phase-plan-6 §6-9](./project-plan/phase-6/phase-plan-6.md#6-9-현재-handoff--다음-액션).
-**블로커**: 기술 블로커 없음. Slack webhook/Cloudflare/Resend는 외부 준비가 필요할 때까지 env 미설정 skip 방식.
+**현재 액션**: Task 10 Phase A 코드 100% 완료, PR #10 OPEN. 다음은 **PR #10 merge + GitHub Pages 활성화 + 라이브 검증 3건 → Phase B**. 권장 순서: A (Phase A 마무리) → B (Phase B Tier 2/3 자동화) → C (Phase C dev-merge 안전망) → optional task-5. 세부: [phase-plan-6 §6-9](./project-plan/phase-6/phase-plan-6.md#6-9-현재-handoff--다음-액션).
+**블로커**: 기술 블로커 없음. Slack 알림은 이미 동작 중. Cloudflare는 task-5에서 외부 준비 시작.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
 ---
@@ -62,16 +62,16 @@
 |:-:|---|:-:|---|
 | 1 | GitHub Remote init + 초기 push | ✅ | [`task-1-github-init.md`](./project-plan/phase-6/task-1-github-init.md) |
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./project-plan/phase-6/task-2-actions-workflow.md) |
-| 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack/Email) | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
+| 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack) | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./project-plan/phase-6/task-4-codeowners-governance.md) |
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
-| 6 | Resend 이메일 통합 | ⏳ | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
+| 6 | Resend 이메일 통합 | ⏭ SKIPPED (Slack로 대체, 2026-05-21) | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
 | 8 | DS Compliance Detection Core (detached / image / new frames) | ✅ PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🛠 설계 완료, Phase A 권장 | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟡 Phase A 코드 100% (PR #10 merge 대기). Phase B/C 미시작. | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
 
-현재 task-1/2/3/4/7/8 ✅. 잔여 핵심은 task-10 Phase A 또는 운영 지연 해소용 task-5/6.
+현재 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED. 잔여 핵심은 task-10 Phase A merge → Phase B → Phase C. task-5는 운영 지연 해소용 optional.
 
 ### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
 
@@ -174,6 +174,7 @@ gh issue list --label designer-review                # 자동 Issue 확인
 | Wrapper | `scripts/pipeline/claude-review.ts` |
 | Post-run 라우팅 | `scripts/pipeline/post-run-actions.ts` (task-3) |
 | 운영 모니터링 | `scripts/pipeline/health-check.ts` — `npm run figma:health` |
+| Task 10 Phase A | `scripts/pipeline/images-bootstrap.ts`, `viewer-gen.ts`, `designer-approval.ts`, `lib/{cs-manifest,figma-images,viewer-generator,designer-approval}.ts`, `.github/workflows/designer-approval.yml` |
 | Task 8 compliance | `scripts/pipeline/lib/compliance-types.ts`, `snapshot-node.ts`, `diff-snapshot.ts`, `classify-diff.ts`, `designer-review.ts`, `scripts/ops/pending-review-viewer.ts` |
 | 거버넌스 | `.github/CODEOWNERS`, `.github/labels.yml`, PR/Issue 템플릿 |
 
@@ -245,8 +246,7 @@ Phase 6/7 진입 전 외부 검증 결과:
 - [ ] Task 10 Phase A 진행 시 GitHub Pages/private Pages 사용 여부 결정
 - [ ] Task 10 Phase A 진행 시 `.automation/images/baseline/` PNG git tracking/storage threshold 결정
 - [ ] Cloudflare 계정 + wrangler 설치 (task-5 직전)
-- [ ] Resend 계정 + 도메인 검증 시작 (task-6 직전, DNS 반영 24h 걸릴 수 있음)
-- [ ] (선택) Slack/Discord webhook URL 생성 — 풍부한 메시지 원할 때만. 기본 알림은 GitHub 공식 Slack 앱으로 가능.
+- [x] Slack webhook URL 생성 — `SLACK_WEBHOOK_URL` secret 등록 완료. notifySlack + GitHub 공식 Slack 앱 둘 다 동작.
 
 ### Phase 6 진행 중
 - 각 task별 세부 문서 따라 실행

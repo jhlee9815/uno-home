@@ -13,8 +13,8 @@ on:
         default: 'manual'
 
 concurrency:
-  group: figma-pipeline-${{ github.ref }}
-  cancel-in-progress: false      # 이전 실행 끝까지 두고 큐잉 (baseline 쓰기 race 방지)
+  group: cs-main-writer-${{ github.ref }}
+  cancel-in-progress: false      # designer-approval과 공유. main의 .automation/cs/ 동시 push 차단.
 
 jobs:
   figma-pipeline:
@@ -27,12 +27,9 @@ jobs:
     env:
       # Required
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-      # Optional notifications (task-3, task-6에서 활용)
+      # Optional notifications (task-3)
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
-      RESEND_TO_EMAILS: ${{ vars.RESEND_TO_EMAILS }}
       # Extraction-friendly env overrides (task-7에서 본격 활용, 미설정 시 default)
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
@@ -130,12 +127,59 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Generate designer review viewer
+        if: steps.pipeline.outputs.cs_id != ''
+        run: npm run figma:viewer:generate -- ${{ steps.pipeline.outputs.cs_id }}
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_VIEWER_BASE_URL: ${{ vars.FIGMA_VIEWER_BASE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+
+      - name: Publish designer review viewer
+        if: steps.pipeline.outputs.cs_id != '' && hashFiles('dist-viewer/**') != ''
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist-viewer
+          keep_files: true
+          commit_message: "Publish designer review viewer for ${{ steps.pipeline.outputs.cs_id }}"
+
       - name: Post-run routing (PR + Issue + Notifications)
         if: steps.pipeline.outputs.cs_id != '' && hashFiles('scripts/pipeline/post-run-actions.ts') != ''
         run: npx tsx scripts/pipeline/post-run-actions.ts ${{ steps.pipeline.outputs.cs_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIGGER_EVENT: ${{ github.event_name }}
+
+      - name: Persist CS manifest
+        if: github.ref == 'refs/heads/main' && steps.pipeline.outputs.cs_id != '' && hashFiles('.automation/cs/*.json') != ''
+        run: |
+          # Status check includes untracked files; new cs manifests are
+          # untracked json and `git diff --quiet` would miss them.
+          if [ -z "$(git status --porcelain -- .automation/cs)" ]; then
+            echo "No CS manifest change to commit"
+            exit 0
+          fi
+          # post-run-actions may have left HEAD on designer-bot/<csId>.
+          # Move manifest changes aside, switch to main, then reapply so
+          # the commit lands on main only (never on the auto-apply PR branch).
+          # `-u` includes untracked files so new cs json files are preserved.
+          if ! git stash push -u -m "manifest-persist" -- .automation/cs/; then
+            echo "stash push failed; aborting to avoid losing manifest delta"
+            exit 1
+          fi
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          if ! git stash pop; then
+            echo "stash pop failed; manifest delta still on stash. Aborting."
+            git stash list
+            exit 1
+          fi
+          git config user.name "designer-bot"
+          git config user.email "designer-bot@users.noreply.github.com"
+          git add .automation/cs
+          git commit -m "Record CS manifest for ${{ steps.pipeline.outputs.cs_id }}"
+          git push origin HEAD:main
 
       - name: Cleanup .env
         if: always()
@@ -150,5 +194,8 @@ jobs:
             .automation/reports/
             .automation/snapshots/
             .automation/diffs/
+            .automation/cs/
+            .automation/images/snapshots/
+            dist-viewer/
           retention-days: 30
           if-no-files-found: ignore
