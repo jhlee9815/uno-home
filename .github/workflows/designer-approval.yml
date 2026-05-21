@@ -42,13 +42,28 @@ jobs:
       - name: Commit manifest transition
         if: github.ref == 'refs/heads/main'
         run: |
-          if git diff --quiet -- .automation/cs; then
+          # Use status (not diff --quiet) so untracked manifest files are detected.
+          if [ -z "$(git status --porcelain -- .automation/cs)" ]; then
             echo "No manifest change to commit"
             exit 0
+          fi
+          # Approval script may leave HEAD on designer-approved/<csId> later
+          # (Phase B). Move manifest delta aside, return to clean main, reapply,
+          # commit + push manifest-only. Fail loud if any step fails.
+          if ! git stash push -u -m "manifest-transition" -- .automation/cs/; then
+            echo "stash push failed; aborting"
+            exit 1
+          fi
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          if ! git stash pop; then
+            echo "stash pop failed; manifest delta still on stash. Aborting."
+            git stash list
+            exit 1
           fi
           git config user.name "designer-bot"
           git config user.email "designer-bot@users.noreply.github.com"
           git add .automation/cs
           git commit -m "Record designer decision for ${{ github.event.issue.number }}"
-          git pull --rebase origin main
           git push origin HEAD:main

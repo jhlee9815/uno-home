@@ -52,6 +52,7 @@ const classifiedWithText = {
       nodeId: 'node-1',
       nodeName: 'Badge',
       classes: ['text'],
+      subcategories: ['text-change'],
       reasons: ['textHash changed'],
       before: {},
       after: {},
@@ -76,6 +77,7 @@ const classifiedWithProps = {
       nodeId: 'node-1',
       nodeName: 'Notification Card',
       classes: ['component-props'],
+      subcategories: ['props-change'],
       reasons: ['componentPropsHash changed'],
       before: {},
       after: {},
@@ -304,3 +306,81 @@ assert.deepEqual(
     missingNodeIds: [],
   }
 );
+
+// ---------- decisionFilter regression + report-only path ----------
+
+const classifiedReportOnlyText = {
+  ...classifiedWithText,
+  changes: [
+    {
+      ...classifiedWithText.changes[0],
+      decision: 'report-only',
+      decisionReasons: ['Pending designer approval'],
+      target: {
+        ...classifiedWithText.changes[0].target,
+        apply: 'report-only',
+      },
+    },
+  ],
+} satisfies ClassifiedDiffFile;
+
+// Default filter (no option) still extracts only auto-apply — cron path stays unchanged.
+assert.deepEqual(
+  extractTextUpdates(classifiedReportOnlyText, baseSnapshot, headSnapshot),
+  [],
+  'default filter must skip report-only (cron regression guard)'
+);
+
+// Explicit report-only filter (designer-approval path) picks up the change.
+assert.deepEqual(
+  extractTextUpdates(classifiedReportOnlyText, baseSnapshot, headSnapshot, {
+    decisionFilter: ['report-only'],
+  }),
+  [
+    {
+      key: 'badge',
+      nodeId: '15:11400',
+      value: 'SUPER ADMIN',
+      code: '../src/components/Badge.tsx',
+    },
+  ]
+);
+
+// Same for prop updates.
+const classifiedReportOnlyProps = {
+  ...classifiedWithProps,
+  changes: [
+    {
+      ...classifiedWithProps.changes[0],
+      decision: 'report-only',
+      decisionReasons: ['Pending designer approval'],
+      target: {
+        ...classifiedWithProps.changes[0].target,
+        apply: 'report-only',
+      },
+    },
+  ],
+} satisfies ClassifiedDiffFile;
+
+assert.deepEqual(
+  extractComponentPropUpdates(classifiedReportOnlyProps, basePropsSnapshot, headPropsSnapshot),
+  [],
+  'default filter must skip report-only props (cron regression guard)'
+);
+
+assert.deepEqual(
+  extractComponentPropUpdates(classifiedReportOnlyProps, basePropsSnapshot, headPropsSnapshot, {
+    decisionFilter: ['report-only'],
+  }),
+  [
+    {
+      key: 'notificationCard',
+      nodeId: '20:11424',
+      propName: 'State',
+      value: 'Accepted',
+      code: '../src/compositions/NotificationCard.tsx',
+    },
+  ]
+);
+
+console.log('apply-code PASS');

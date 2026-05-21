@@ -24,6 +24,14 @@ export interface ApplyMarkedSourceResult {
   missingNodeIds: string[];
 }
 
+export type ExtractDecision = 'auto-apply' | 'report-only';
+
+export interface ExtractOptions {
+  decisionFilter?: readonly ExtractDecision[];
+}
+
+const DEFAULT_DECISION_FILTER: readonly ExtractDecision[] = ['auto-apply'];
+
 interface Marker {
   kind: 'text' | 'prop';
   start: number;
@@ -34,12 +42,14 @@ interface Marker {
 export function extractTextUpdates(
   classified: ClassifiedDiffFile,
   base: SnapshotFile,
-  head: SnapshotFile
+  head: SnapshotFile,
+  options: ExtractOptions = {}
 ): TextUpdate[] {
+  const filter = options.decisionFilter ?? DEFAULT_DECISION_FILTER;
   const updates: TextUpdate[] = [];
 
   for (const change of classified.changes) {
-    if (change.decision !== 'auto-apply' || !change.classes.includes('text') || !change.target.code) {
+    if (!filter.includes(change.decision) || !change.classes.includes('text') || !change.target.code) {
       continue;
     }
 
@@ -67,13 +77,15 @@ export function extractTextUpdates(
 export function extractComponentPropUpdates(
   classified: ClassifiedDiffFile,
   base: SnapshotFile,
-  head: SnapshotFile
+  head: SnapshotFile,
+  options: ExtractOptions = {}
 ): ComponentPropUpdate[] {
+  const filter = options.decisionFilter ?? DEFAULT_DECISION_FILTER;
   const updates: ComponentPropUpdate[] = [];
 
   for (const change of classified.changes) {
     if (
-      change.decision !== 'auto-apply' ||
+      !filter.includes(change.decision) ||
       !change.classes.includes('component-props') ||
       !change.target.code
     ) {
