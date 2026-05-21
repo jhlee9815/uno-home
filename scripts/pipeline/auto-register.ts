@@ -6,7 +6,13 @@ import { createLogger } from './lib/logger.ts';
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '../..');
 const CANDIDATES_PATH = resolve(REPO_ROOT, '.automation/audit-candidates.json');
-const MAPPING_PATH = resolve(REPO_ROOT, 'config/figma-mapping.yaml');
+// Mirror config-loader.ts: FIGMA_CONFIG_DIR env var wins so downstream
+// template installs that point at their own config directory get the
+// auto-registered entries appended to *their* mapping, not the repo's.
+const CONFIG_DIR = process.env.FIGMA_CONFIG_DIR
+  ? resolve(process.env.FIGMA_CONFIG_DIR)
+  : resolve(REPO_ROOT, 'config');
+const MAPPING_PATH = resolve(CONFIG_DIR, 'figma-mapping.yaml');
 
 const logger = createLogger('auto-register');
 
