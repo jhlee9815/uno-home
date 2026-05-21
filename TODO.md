@@ -132,8 +132,8 @@ npx tsc --noEmit
 
 ## Task 8 진행 메모 (2026-05-21 10:33 KST)
 
-- `feature/task-8-ds-compliance` 브랜치에서 Stage 0-5 local 완료.
+- `feature/task-8-ds-compliance` 브랜치에서 Stage 0-6 완료.
 - 구현: snapshot deep traversal compliance 수집, stable-key diff, classify report-only policy, cs report compliance sections, pending local viewer.
-- 검증: full figma test loop, `npm run lint`, `npm run build` PASS.
+- 검증: full figma test loop, `npm run lint`, `npm run build`, Stage 6 real Figma probe PASS.
 - 상세: [project-plan/phase-6/task-8-ds-compliance-detection.md](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-12.
-- 다음: Stage 6 실 Figma trigger 검증(detached style / imageRef / descendant frame) 후 task-9 또는 task-10 Phase A 진입.
+- 다음: Draft PR #9 review/CI 후 merge. 이후 task-9 또는 task-10 Phase A 진입.

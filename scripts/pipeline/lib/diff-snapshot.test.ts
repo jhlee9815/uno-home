@@ -286,6 +286,25 @@ run('diffCompliance: undefined base node → all head compliance entries treated
   assert.equal(r.changedImageRefs[0].before, null);
 });
 
+run('diffCompliance: existing old-schema base node skips compliance to avoid rollout flood', () => {
+  const oldSchemaBase = {
+    id: 'r:1',
+    name: 'Root',
+    textHash: 'sha256:t',
+    propsHash: 'sha256:p',
+    componentPropsHash: 'sha256:c',
+  };
+  const head = mkSnapshotNode({
+    detachedStyles: [mkDetachedStyle({})],
+    descendantFrames: [mkFrame({})],
+    assetRefs: [mkAsset({})],
+  });
+  const r = diffCompliance(oldSchemaBase, head);
+  assert.equal(r.newDetachedStyles.length, 0);
+  assert.equal(r.newFrames.length, 0);
+  assert.equal(r.changedImageRefs.length, 0);
+});
+
 run('diffSnapshots: compliance-only change emits DiffChange (no text/props change)', () => {
   const base: SnapshotFile = {
     fileKey: 'file-x',

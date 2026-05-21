@@ -279,6 +279,15 @@ function emptyComplianceFields(): ComplianceSnapshot {
   return { detachedStyles: [], descendantFrames: [], assetRefs: [] };
 }
 
+function hasComplianceFields(node: Partial<SnapshotNodeEntry> | undefined): boolean {
+  return (
+    node !== undefined &&
+    Array.isArray(node.detachedStyles) &&
+    Array.isArray(node.descendantFrames) &&
+    Array.isArray(node.assetRefs)
+  );
+}
+
 function getCompliance(node: Partial<SnapshotNodeEntry> | undefined): ComplianceSnapshot {
   if (!node) return emptyComplianceFields();
   return {
@@ -292,6 +301,14 @@ export function diffCompliance(
   base: Partial<SnapshotNodeEntry> | undefined,
   head: Partial<SnapshotNodeEntry> | undefined
 ): ComplianceDiffSummary {
+  // Task 8 adds compliance arrays to SnapshotNodeEntry. Older approved baselines
+  // do not have those arrays, so treating them as empty would flood the first
+  // upgraded run with every existing raw style/frame/image as "new". Skip
+  // compliance diff until the registered node has a schema-compatible baseline.
+  if (base !== undefined && !hasComplianceFields(base)) {
+    return emptyComplianceFieldsForDiff();
+  }
+
   const b = getCompliance(base);
   const h = getCompliance(head);
 
@@ -318,4 +335,8 @@ export function diffCompliance(
   }
 
   return { newDetachedStyles, newFrames, changedImageRefs };
+}
+
+function emptyComplianceFieldsForDiff(): ComplianceDiffSummary {
+  return { newDetachedStyles: [], newFrames: [], changedImageRefs: [] };
 }

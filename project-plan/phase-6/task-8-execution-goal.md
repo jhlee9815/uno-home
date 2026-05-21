@@ -15,7 +15,7 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 
 ## 현재 진행 지점
 
-2026-05-21 10:33 KST 기준 Claude/Codex가 Stage 0-5 local 구현과 검증을 완료했다. 남은 핵심은 Stage 6: 실제 Figma 파일에서 3종 변경(detached style / imageRef / descendant frame)을 만들어 pipeline report false positive를 확인하는 것이다.
+2026-05-21 10:43 KST 기준 Stage 0-6 구현과 검증을 완료했다. Draft PR #9가 열려 있으며 merge 전 review/CI 확인만 남았다.
 
 ## 진행 단계
 
@@ -27,38 +27,27 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 | 3 | `diff-snapshot.ts` stable-key comparison | ✅ 완료 |
 | 4 | classify subcategories + report section 통합 | ✅ 완료 |
 | 5 | fixture/unit/full local tests | ✅ 완료 |
-| 6 | 실 Figma trigger 검증 | 다음 |
+| 6 | 실 Figma trigger 검증 | ✅ 완료 |
 | 7 | 문서화 + plan/TODO 갱신 | ✅ local 완료 |
 
 
-## 바로 다음 작업 — Stage 6 Real Figma Trigger Verification
+## 바로 다음 작업 — PR Review / Merge Gate
 
-다음 담당자가 바로 시작할 작업은 **Stage 6**이다. local tests는 통과했으므로, 실제 Figma 변경이 pipeline report에 의도대로 나타나는지 확인한다.
+다음 담당자가 바로 시작할 작업은 PR #9 review/CI 확인이다. Stage 6은 완료됐다.
 
-### 검증 대상
+### Stage 6 evidence
 
-1. 등록 화면 내부에서 raw 색상 또는 typography를 직접 입력 → `detached-style` / `## Detached Styles`.
-2. 등록 화면 내부 image fill 교체 → `image-change` / `## Image Changes`.
-3. 등록 화면 내부 descendant `FRAME` 추가 → `new-frame` / `## New Frames in Tracked Screens`.
+- 최종 cs: `cs-2026-05-21T01-42-28`
+- Figma temp probe: 생성 후 삭제 완료 (`probeCount: 0`)
+- 감지 class: `detached-style`, `new-frame`, `image-change`
+- apply: noop
+- verify: build/lint passed
+- rollout 보강: old-schema approved baseline은 compliance diff를 skip해 첫 운영 run flood를 방지한다.
 
-### 실행 후보
+### Merge 전 확인
 
-```bash
-npm run figma:snapshot
-npm run figma:diff
-npm run figma:classify
-npm run figma:report
-npm run figma:viewer
-```
-
-또는 기존 cron/workflow trigger로 자연 실행한다.
-
-### 완료 기준
-
-- 생성된 classified diff에 compliance class와 `subcategories`가 포함된다.
-- 생성된 `cs-*.md`에 `## Detached Styles`, `## New Frames in Tracked Screens`, `## Image Changes` 중 실제 변경에 맞는 섹션이 채워진다.
-- compliance signal은 자동 patch되지 않고 report-only/manual guidance로 남는다.
-- false positive가 있으면 wrapper ignore rule 또는 detached-style heuristic을 보수적으로 조정한다.
+- Draft PR #9 CI/review 확인
+- merge 후 schema-compatible baseline refresh/promote 운영 절차 확인
 
 ## Stage 0 실행 명령
 
@@ -98,3 +87,5 @@ TASK8_SAMPLE_NODE_IDS="7:3,7:4,7:5,10:62" npm run figma:task8:stage0
 - 2026-05-20 22:34 KST — Stage 1 schema contract 작성 완료. 코드: `scripts/pipeline/lib/compliance-types.ts`, 문서: [`task-8-schema-contract.md`](./task-8-schema-contract.md).
 
 - 2026-05-21 10:33 KST — Stage 2-5 local 완료. full figma test loop(`diff classify report-only designer-review snapshot api token-css apply-token apply-code apply-report verify-report visual-diff promote-gate marker-candidates`) exit 0, `npm run lint` exit 0, `npm run build` exit 0. Stage 6 실 Figma trigger 검증 대기.
+
+- 2026-05-21 10:43 KST — Stage 6 real Figma trigger validation 완료. 최종 cs `cs-2026-05-21T01-42-28`, report-only 2건, compliance sections 확인, apply noop, verify passed. Figma probe cleanup 완료.

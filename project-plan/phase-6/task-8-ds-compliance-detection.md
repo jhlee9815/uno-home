@@ -4,7 +4,7 @@
 > **예상 시간**: 7-9시간 (Codex 견적, 5-6h optimistic 대비 보강)
 > **선행**: task-3/4 완료 ✅. task-5/6 무관 (병렬 가능).
 > **블록 해제**: task-9 (Report UX + Labels)
-> **상태**: 🚧 Stage 5 local 검증 완료 (2026-05-21 10:33 KST) — detection core 구현/단위 검증 완료, Stage 6 실 Figma trigger 검증 대기.
+> **상태**: ✅ Stage 6 실 Figma trigger 검증 완료 (2026-05-21 10:43 KST) — detection core 구현/검증 완료. merge 전 PR review/CI만 남음.
 > **설계 검증**: Codex `019e4xxx-xxxx` (별도 session) — `GO, 단 task-8/task-9로 분리하고 task-8 범위는 "구조화된 detection core"로 고정` 판정.
 
 ## 8-1. 배경 / 사용자 요구
@@ -88,7 +88,7 @@ interface ClassifiedChange {
 | **3** | Diff stable-key comparison — `diff-snapshot.ts`에 `newDetachedStyles` (`nodeId+kind+property`), `newFrames` (`nodeId`), `changedImageRefs` (`nodeId+paintIndex`). baseline vs head list comparison. **✅ 완료** | 45분 |
 | **4** | Classify + Report integrated — classify에 `subcategories` 추가, compliance class는 모두 report-only. report에 `## Detached Styles` / `## New Frames in Tracked Screens` / `## Image Changes` 섹션 추가. **✅ 완료** | 1시간 |
 | **5** | Fixture + Unit tests — detached color/typography, nested imageRef, nested new frame, report section, classify report-only policy 검증. **✅ 완료 — local full test loop PASS** | 1시간 |
-| **6** | 실 figma 자연 트리거 검증 — push 후 cron 또는 수동 트리거. cs report 새 섹션 의도대로 채워지는지 + noise/false positive 점검. | 30분 |
+| **6** | 실 figma 자연 트리거 검증 — Figma에 임시 probe를 만들고 snapshot→diff→classify→apply→verify→report 실행. cs report 새 섹션 확인 후 probe cleanup. **✅ 완료** | 30분 |
 | **7** | 문서화 — 본 doc 완료 기록 + phase-plan-6 갱신 + plan/TODO 갱신. **✅ local docs updated; commit/push는 사용자 명시 전 미실행** | 30분 |
 
 **총**: 7-9시간 (1일 작업 분량).
@@ -138,10 +138,10 @@ GO 판정. 주요 조정 사항:
 
 ## 8-9. 다음 단계
 
-1. Stage 6 실 Figma trigger 검증: 실제 등록 화면에서 detached style / imageRef / new frame 샘플 변경 후 수동 또는 cron 실행.
-2. 생성된 `cs-*.md`에서 `## Detached Styles`, `## New Frames in Tracked Screens`, `## Image Changes` 섹션과 GitHub Issue body 렌더 확인.
-3. noise/false positive가 있으면 wrapper ignore rule 또는 detached-style heuristic을 보수 조정.
-4. Stage 6 PASS 후 task-9 (Report UX + Labels) 또는 task-10 Phase A(viewer/approval workflow)로 이어짐.
+1. Draft PR #9 review/CI 확인.
+2. merge 직후 첫 운영 run은 기존 approved baseline이 Task 8 이전 schema일 수 있으므로 compliance diff flood 방지 로직이 적용되는지 확인.
+3. schema-compatible baseline refresh/promote 후 본격 운영 monitoring.
+4. 후속은 task-9 (Report UX + Labels) 또는 task-10 Phase A(viewer/approval workflow).
 
 ## 8-10. Stage 0 완료 기록 (2026-05-20 22:26 KST)
 
@@ -197,3 +197,41 @@ npm run build
 ### 남은 Stage 6
 
 아직 실 Figma 파일을 수정해 자연 trigger/수동 pipeline으로 `cs-*.md`를 생성하는 검증은 하지 않았다. 다음 담당자는 Stage 6에서 실제 Figma 변경 3종(detached style / imageRef / descendant frame)을 만들고 report 섹션의 false positive를 확인한다.
+
+
+## 8-13. Stage 6 실환경 검증 완료 기록 (2026-05-21 10:43 KST)
+
+### 절차
+
+1. Figma file `9cevQvPHlQ5vZv5Pz3QaLL`, tracked screen `pesse_home` (`7:3`) 아래에 임시 probe 생성.
+   - frame: `OMX Stage6 Compliance Probe`
+   - raw color rectangle: `OMX Stage6 Raw Color`
+   - image fill rectangle: `OMX Stage6 Image Fill`
+2. `npm run figma:snapshot && npm run figma:diff && npm run figma:classify && npm run figma:apply && npm run figma:verify && npm run figma:report` 실행.
+3. 검증 후 Figma probe 삭제. 최종 확인: `probeCount: 0`.
+
+### 발견한 rollout 이슈와 보강
+
+- 첫 Stage 6 시도에서 기존 approved baseline이 Task 8 이전 schema라 compliance 배열이 없었다.
+- 이 상태에서 missing arrays를 empty로 취급하면 기존 디자인 전체가 `new detached-style/new-frame/image-change`로 잡히는 flood가 난다.
+- 보강: `diffCompliance()`는 **기존 base node는 존재하지만 compliance fields가 없는 old-schema baseline**이면 compliance diff를 skip한다.
+- 단, base node 자체가 없는 신규 tracked node는 기존대로 head compliance를 new로 잡는다.
+
+### 최종 evidence
+
+schema-compatible 임시 baseline으로 재검증한 최종 change set:
+
+- `cs-2026-05-21T01-42-28`
+- classified summary: `total=2`, `autoApply=0`, `reportOnly=2`, `unknown=0`
+- `pesse_home`: `detached-style`, `new-frame`, `image-change`
+  - `3 new detached style(s)`
+  - `1 new descendant frame(s)`
+  - `1 image asset change(s)`
+- wrapper tracking node `figma_pesseAppleInspired3Screens_7_2`에도 동일 probe가 중첩 감지됨. 이는 현재 mapping이 wrapper와 child screen을 둘 다 추적하기 때문이며 자동 patch는 없음.
+- report sections confirmed:
+  - `## Detached Styles`
+  - `## New Frames in Tracked Screens`
+  - `## Image Changes`
+- apply result: noop.
+- verify result: build/lint passed.
+- cleanup: Figma probe removed; local temporary baseline file removed.

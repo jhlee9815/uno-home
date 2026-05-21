@@ -271,6 +271,6 @@ Phase 6/7 진입 전 외부 검증 결과:
 
 - Claude/Codex가 `feature/task-8-ds-compliance`에서 Stage 0-5 local 구현/검증 완료.
 - 핵심: Figma 자손 트리에서 detached style / descendant frame / imageRef를 수집하고, stable-key diff + classify report-only + cs report compliance sections로 연결.
-- 검증: full figma test loop, `npm run lint`, `npm run build` PASS.
+- 검증: full figma test loop, `npm run lint`, `npm run build`, Stage 6 real Figma probe PASS.
 - 상세 결과: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-12.
-- 다음: Stage 6 실 Figma trigger 검증.
+- 다음: Draft PR #9 review/CI 후 merge.
