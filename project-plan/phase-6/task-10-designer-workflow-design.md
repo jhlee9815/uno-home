@@ -86,11 +86,11 @@ Phase A는 ship 완료. Phase B는 코드가 main에 있고 artifact handoff fix
 - `figma-pipeline.yml`은 이미 `.automation/reports/`, `.automation/snapshots/`, `.automation/diffs/`, `.automation/cs/`, `.automation/images/snapshots/`, `dist-viewer/`를 `figma-pipeline-${github.run_id}` artifact로 업로드한다.
 - 회귀 테스트: `npm run figma:test:workflow-artifacts`.
 - 남은 live 검증:
-  1. `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml` 재실행.
-  2. `Download originating pipeline artifacts` step 성공 확인.
-  3. `Classified diff or snapshots missing` 제거 확인.
-  4. auto-edit 또는 manual-edit fallback PR 생성 확인.
-  5. manifest `pr-open` transition 확인.
+  1. ✅ `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml` 재실행 — #19, run `26212122539`.
+  2. ✅ `Download originating pipeline artifacts` step 성공 확인 — `figma-pipeline-26211009015` 다운로드 성공.
+  3. 🟡 `Classified diff or snapshots missing` 제거 확인 — artifact download 후 apply 단계 진입, missing artifact 에러 대신 PR 권한 에러 발생.
+  4. 🟠 auto-edit 또는 manual-edit fallback PR 생성 확인 — branch는 push됐지만 PR create가 `GitHub Actions is not permitted to create or approve pull requests`로 실패.
+  5. ⏳ manifest `pr-open` transition 확인 — PR 생성 권한 fix 후 재검증.
 
 ---
 

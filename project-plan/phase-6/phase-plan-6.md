@@ -2,7 +2,7 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 최신 갱신: 2026-05-21 16:45 KST — Phase B artifact handoff fix 구현. `designer-approval.yml`이 manifest `runId`로 원본 `figma-pipeline` artifact를 다운로드한 뒤 apply/PR 생성을 재시도한다. 남은 병목은 원격 반영 후 live 재검증.
+> 최신 갱신: 2026-05-21 16:55 KST — Phase B live 검증 1-2 완료. #19 라벨 재적용으로 run `26212122539` 실행, 원본 `figma-pipeline-26211009015` artifact 다운로드 성공. 다음 병목은 GitHub Actions PR 생성 권한.
 > 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
@@ -67,7 +67,8 @@
 - 2026-05-21 10:46 KST — PR #9 merged to main (`6d4cd94`). Post-merge local `npm run lint` / `npm run build` PASS.
 - 2026-05-21 11:15 KST — task-10 Phase A 1차 구현 진행: cs manifest, baseline/snapshot image helpers, viewer generator, designer approval label workflow, pipeline viewer publish + manifest persist step 추가. 로컬 신규 tests, full figma test loop, lint, build PASS.
 - 2026-05-21 16:15 KST — task-10 live 정리: PR #10 merged, #16 baseline PNG seed, #17/#18 Phase B auto-edit PR flow merged. `figma-pipeline` run `26211009015`, Pages run `26211035500`, `designer-approval` run `26211056345` success. Issue #19 `designer-approved` → `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved`. 단, approval run에서 classified diff/snapshot artifacts missing으로 auto-edit PR 생성은 skip됨.
-- 2026-05-21 16:45 KST — artifact handoff fix 구현: `designer-approval.yml`에 `actions: read`, manifest `runId` 기반 artifact prepare/download step, workflow contract test(`figma:test:workflow-artifacts`) 추가. 다음은 commit/push 후 승인 라벨 live 재검증.
+- 2026-05-21 16:45 KST — artifact handoff fix 구현: `designer-approval.yml`에 `actions: read`, manifest `runId` 기반 artifact prepare/download step, workflow contract test(`figma:test:workflow-artifacts`) 추가.
+- 2026-05-21 16:55 KST — live 검증 1-2 완료: #19 `designer-approved` 라벨 재적용 → run `26212122539`; `Download originating pipeline artifacts` step이 `figma-pipeline-26211009015`를 성공적으로 다운로드. Apply 단계 진입 후 `GitHub Actions is not permitted to create or approve pull requests`로 PR 생성 실패. 원격 branch `designer-approved/cs-2026-05-21T07-07-04`는 push됨, open PR 없음.
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
@@ -311,11 +312,11 @@ npm run figma:preflight
 
 **권장 순서: B1 → C → (필요시) task-5**
 
-1. **B1-1. Approval workflow 재실행** — `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml`을 다시 실행한다.
-2. **B1-2. Artifact download 확인** — workflow 로그에서 `Download originating pipeline artifacts`가 성공하는지 확인한다.
-3. **B1-3. Missing artifact 에러 제거 확인** — `Classified diff or snapshots missing`이 더 이상 나오지 않는지 확인한다.
-4. **B1-4. PR 생성 확인** — marker hit가 있으면 Draft PR, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR이 열려야 한다.
-5. **B1-5. Manifest transition 확인** — 성공 시 manifest state `pr-open` 확인.
+1. **B1-1. Approval workflow 재실행** — ✅ #19 `designer-approved` 라벨 재적용으로 run `26212122539` 실행.
+2. **B1-2. Artifact download 확인** — ✅ `Download originating pipeline artifacts`가 `figma-pipeline-26211009015`를 성공적으로 다운로드.
+3. **B1-3. Missing artifact 에러 제거 확인** — 🟡 artifact download 후 apply 단계 진입. 이전 missing artifact 에러 대신 PR 권한 에러가 발생.
+4. **B1-4. PR 생성 확인** — 🟠 `GitHub Actions is not permitted to create or approve pull requests`로 실패. branch `designer-approved/cs-2026-05-21T07-07-04`는 push됨.
+5. **B1-5. Manifest transition 확인** — ⏳ PR 생성 성공 후 `pr-open` 확인 필요.
 6. **C. Task 10 Phase C (Stage 5+7)** — visual diff + branch protection + baseline promote + e2e/rollback. 4-6h.
 7. **(끼워넣기) task-5 Cloudflare Worker** — 단계 2 (2h cron 대기) 해소. 디자이너가 2h 대기에 답답해할 때 1-2h.
 8. ~~**task-6 Resend**~~ — ⏭ SKIPPED (Slack로 충분, 2026-05-21).

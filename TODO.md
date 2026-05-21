@@ -1,7 +1,7 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-21 16:45 KST (Phase B artifact handoff fix 구현: designer-approval이 manifest runId로 figma-pipeline artifact 다운로드. 다음: commit/push → 승인 재검증)
+> 최신 갱신: 2026-05-21 16:55 KST (Phase B live 검증 1-2 완료: #19 라벨 재적용, artifact download 성공. 다음 blocker: GITHUB_TOKEN PR 생성 권한)
 
 ---
 
@@ -27,7 +27,7 @@
 - Actions: `figma-pipeline` run `26211009015` success, Pages run `26211035500` success, `designer-approval` run `26211056345` success.
 - Latest review Issue: #19 `cs-2026-05-21T07-07-04`, labels `designer-review`, `report-only`, `designer-approved`.
 - Latest manifest: `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved`, stateHistory includes `label:designer-approved`.
-- Fixed locally: `designer-approval.yml` now derives `CS_RUN_ID` from `.automation/cs/{csId}.json`, downloads `figma-pipeline-${CS_RUN_ID}` via `actions/download-artifact@v4`, then runs `figma:designer-approval`. Live revalidation pending after commit/push.
+- Live verification 1-2 complete: #19 `designer-approved` 라벨 재적용 → run `26212122539`; `Download originating pipeline artifacts` succeeded for `figma-pipeline-26211009015`. Next blocker: PR creation failed because GitHub Actions is not permitted to create pull requests.
 
 ### 단계 2 감지 매트릭스 (task-8 구현, report-only 정책)
 
@@ -70,18 +70,18 @@ Phase B artifact handoff fix는 로컬 구현됨. 다음은 원격 반영 후 li
 - 회귀 테스트: `npm run figma:test:workflow-artifacts` 추가.
 
 ### 다음 해야 할 검증 작업
-1. `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml`을 다시 실행한다.
-2. workflow 로그에서 `Download originating pipeline artifacts`가 성공하는지 확인한다.
-3. `Classified diff or snapshots missing`이 더 이상 나오지 않는지 확인한다.
-4. marker hit가 있으면 Draft PR 생성, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR 생성 확인.
-5. manifest state가 `designer-approved`에서 `pr-open`까지 transition되는지 확인.
+1. ✅ `designer-approved` 라벨 재적용 또는 신규 `cs-*` 승인으로 `designer-approval.yml`을 다시 실행한다. #19 라벨 재적용 완료 → run `26212122539`.
+2. ✅ workflow 로그에서 `Download originating pipeline artifacts`가 성공하는지 확인한다. `figma-pipeline-26211009015` 다운로드 성공.
+3. ⏭️ 다음: `Classified diff or snapshots missing`이 더 이상 나오지 않는지 확인한다. 이번 run은 artifact download 후 apply 단계까지 진입했다.
+4. 🟠 Blocked: marker hit가 있으면 Draft PR 생성, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR 생성 확인. 현재는 `GitHub Actions is not permitted to create or approve pull requests` 권한 에러로 PR create 실패.
+5. ⏳ manifest state가 `designer-approved`에서 `pr-open`까지 transition되는지 확인.
 6. 위 결과를 문서에 기록하고, 실패 시 해당 로그 기준으로 좁게 후속 fix를 잡는다.
 
 ### 완료 조건
-- 원격 반영 후 최신 또는 신규 `cs-*`에 `designer-approved` 라벨을 붙였을 때 artifact download가 성공한다.
-- `Classified diff or snapshots missing`이 사라진다.
-- marker hit가 있으면 Draft PR 생성, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR 생성.
-- manifest state가 `designer-approved`에서 `pr-open`까지 transition된다.
+- ✅ 최신 또는 신규 `cs-*`에 `designer-approved` 라벨을 붙였을 때 artifact download가 성공한다.
+- 🟡 `Classified diff or snapshots missing`이 사라진다. 이번 run은 artifact download 후 apply 단계까지 진입했으나 PR 권한에서 실패.
+- 🟠 marker hit가 있으면 Draft PR 생성, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR 생성. 현재 fallback branch `designer-approved/cs-2026-05-21T07-07-04`는 push됐지만 PR 생성 권한에서 실패.
+- ⏳ manifest state가 `designer-approved`에서 `pr-open`까지 transition된다.
 
 ---
 
