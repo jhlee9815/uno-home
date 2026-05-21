@@ -157,11 +157,18 @@ jobs:
             echo "No CS manifest change to commit"
             exit 0
           fi
+          # post-run-actions may have left HEAD on designer-bot/<csId>.
+          # Move manifest changes aside, switch to main, then reapply so
+          # the commit lands on main only (never on the auto-apply PR branch).
+          git stash push -u -m "manifest-persist" -- .automation/cs/ || true
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          git stash pop || true
           git config user.name "designer-bot"
           git config user.email "designer-bot@users.noreply.github.com"
           git add .automation/cs
           git commit -m "Record CS manifest for ${{ steps.pipeline.outputs.cs_id }}"
-          git pull --rebase origin main
           git push origin HEAD:main
 
       - name: Cleanup .env
