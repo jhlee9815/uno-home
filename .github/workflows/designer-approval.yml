@@ -4,6 +4,10 @@ on:
   issues:
     types: [labeled]
 
+concurrency:
+  group: cs-main-writer-${{ github.ref }}
+  cancel-in-progress: false      # figma-pipeline과 공유. main의 .automation/cs/ 동시 push 차단.
+
 jobs:
   designer-approval:
     if: github.event.label.name == 'designer-approved' || github.event.label.name == 'designer-rejected'
@@ -45,4 +49,5 @@ jobs:
           git config user.email "designer-bot@users.noreply.github.com"
           git add .automation/cs
           git commit -m "Record designer decision for ${{ github.event.issue.number }}"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
