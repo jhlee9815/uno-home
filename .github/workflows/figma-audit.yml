@@ -2,8 +2,9 @@ name: figma-audit
 
 on:
   schedule:
-    # Monday 00:00 UTC = 09:00 KST (weekly DS health check)
-    - cron: '0 0 * * 1'
+    # Daily 00:00 UTC = 09:00 KST. Daily cadence keeps the auto-register
+    # 2-sighting threshold short (~24h) without spamming the channel.
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       reason:
@@ -18,10 +19,12 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
-      contents: read
-      issues: write
+      contents: write          # push auto-register branch
+      pull-requests: write     # open auto-register PR
+      issues: write            # audit Issue
+      actions: write           # dispatch pr-checks for the auto-register PR
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
@@ -29,21 +32,149 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Always operate against main regardless of which ref the workflow
+          # was dispatched from. Otherwise a manual `workflow_dispatch` from
+          # a feature branch would audit that branch's mapping and open the
+          # auto-register PR from a non-main base, pulling in unrelated diff.
+          ref: main
+          fetch-depth: 0
+          # Don't leave the write-capable GITHUB_TOKEN in .git/config across
+          # npm ci / npm run figma:audit / npm run figma:audit:register so
+          # dependency lifecycle scripts and audit code can't reach it.
+          # The push/PR step re-injects the token via git remote URL.
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+
+      - name: Restore audit state from previous run
+        uses: actions/cache@v4
+        with:
+          path: .automation/audit-state.json
+          key: audit-state-v1-${{ github.run_id }}
+          restore-keys: |
+            audit-state-v1-
+
       - name: Write .env from secrets
         run: |
           echo "FIGMA_TOKEN=${FIGMA_TOKEN}" > .env
           chmod 600 .env
+
       - name: Run figma:audit
         id: audit
         run: npm run figma:audit
+
       - name: Cleanup .env
         if: always()
         run: rm -f .env
+
+      - name: Auto-register surviving candidates
+        id: register
+        if: steps.audit.outputs.auto_register_count != '0' && steps.audit.outputs.auto_register_count != ''
+        run: npm run figma:audit:register
+
+      - name: Open auto-register PR (when registered_count > 0)
+        if: steps.register.outputs.registered_count != '0' && steps.register.outputs.registered_count != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTERED_NAMES_B64: ${{ steps.register.outputs.registered_names_b64 }}
+          REGISTERED_IDS: ${{ steps.register.outputs.registered_ids }}
+          REGISTERED_COUNT: ${{ steps.register.outputs.registered_count }}
+          MAPPING_PATH: ${{ steps.register.outputs.mapping_path }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -e
+          DATE=$(date -u +%Y-%m-%d)
+
+          # Reuse an already-open auto-register PR if one exists. Otherwise the
+          # daily cron would stack one PR per day until a maintainer merges,
+          # which spams the review queue.
+          EXISTING=$(gh pr list --label auto-register --state open --limit 1 --json number,url,headRefName --jq '.[0]')
+          if [ -n "$EXISTING" ] && [ "$EXISTING" != "null" ]; then
+            PR_NUM=$(echo "$EXISTING" | jq -r .number)
+            PR_URL=$(echo "$EXISTING" | jq -r .url)
+            echo "An auto-register PR is already open: #${PR_NUM} (${PR_URL}). Skipping new PR creation to avoid duplicates."
+            gh pr comment "$PR_NUM" --body "_Audit run ${RUN_URL} sighted ${REGISTERED_COUNT} candidate(s) again. They will be picked up after this PR is merged or closed._" || true
+            exit 0
+          fi
+
+          BRANCH="auto-register/audit-${DATE}"
+          git config user.name "designer-bot"
+          git config user.email "designer-bot@users.noreply.github.com"
+          # Inject the write-capable token here (checkout ran with
+          # persist-credentials: false). Scoped to the push/PR window only.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Ensure the `auto-register` label exists. If a fresh-clone repo
+          # gets the workflow before the label is provisioned, `gh pr create
+          # --label auto-register` would fail and leak the branch.
+          gh label create auto-register \
+            --description "Auto-register PR from figma-audit (mapping update)" \
+            --color "5319e7" 2>/dev/null || true
+
+          # No open auto-register PR. If today's branch exists from an earlier
+          # run on the same day with no PR (rare — e.g. PR was force-closed),
+          # force-update it. Otherwise create fresh.
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git checkout -B "$BRANCH"
+            git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
+            git commit -m "chore(audit): refresh auto-register $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
+            git push -f origin "$BRANCH"
+          else
+            git checkout -b "$BRANCH"
+            git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
+            git commit -m "chore(audit): auto-register ${REGISTERED_COUNT} frame(s)"
+            git push origin "$BRANCH"
+          fi
+
+          BODY_FILE=$(mktemp)
+          {
+            echo "Auto-registered **${REGISTERED_COUNT}** frame(s) after surviving the audit sighting threshold."
+            echo ""
+            echo "These top-level frames have been present in the Figma file across multiple audit cycles, so they are promoted into \`config/figma-mapping.yaml\` with \`apply: report-only\`. Once merged, future audits will track detached-style violations inside them."
+            echo ""
+            echo "**Registered:**"
+            echo ""
+            # IDs are comma-separated. Names are base64-of-newline-joined to
+            # survive newlines/quotes/= chars that Figma frame names can hold.
+            # `while read` instead of `mapfile` for portability across bash
+            # versions; the CI runner ships bash 5, but mapfile is a quiet
+            # builtin and the read loop is just as fast for our handful of names.
+            IFS=',' read -ra IDS <<< "${REGISTERED_IDS}"
+            NAMES=()
+            while IFS= read -r line; do
+              NAMES+=("$line")
+            done < <(echo "${REGISTERED_NAMES_B64}" | base64 -d 2>/dev/null || true)
+            for i in "${!IDS[@]}"; do
+              echo "- \`${IDS[$i]}\` — ${NAMES[$i]:-}"
+            done
+            echo ""
+            echo "**Why a PR (not direct push):** main is protected; the \`validate\` check on this PR must pass before merge. Once it does, you can merge and detection extends automatically."
+            echo ""
+            echo "Audit run: ${RUN_URL}"
+            echo ""
+            echo "_Created by figma-audit workflow._"
+          } > "$BODY_FILE"
+
+          gh pr create \
+            --title "[auto-register] ${REGISTERED_COUNT} frame(s) — ${DATE}" \
+            --label auto-register \
+            --body-file "$BODY_FILE" \
+            --head "$BRANCH" \
+            --base main
+
+          # PRs opened via secrets.GITHUB_TOKEN don't cascade to pr-checks (by
+          # design — prevents recursive workflow loops). The pr-checks workflow
+          # exposes a workflow_dispatch trigger so we can fire `validate`
+          # against this head branch explicitly. The resulting check report
+          # against the PR's head SHA satisfies the required-status-check gate.
+          # No `|| true`: if dispatch fails, the PR would sit ungated, so fail
+          # loud (e.g. missing `actions: write` permission, malformed branch).
+          gh workflow run pr-checks.yml --ref "$BRANCH"
+
       - name: Step summary
         if: always()
         run: |
@@ -52,6 +183,8 @@ jobs:
             echo ""
             echo "- detached styles: \`${{ steps.audit.outputs.detached_total }}\`"
             echo "- unregistered top-level frames: \`${{ steps.audit.outputs.unregistered_total }}\`"
+            echo "- auto-register candidates: \`${{ steps.audit.outputs.auto_register_count }}\`"
+            echo "- registered this run: \`${{ steps.register.outputs.registered_count || '0' }}\`"
             echo "- has violations: \`${{ steps.audit.outputs.has_violations }}\`"
             if [ -f "${{ steps.audit.outputs.audit_md }}" ]; then
               echo ""
@@ -62,12 +195,14 @@ jobs:
               echo '```'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Create audit Issue when violations detected
         if: steps.audit.outputs.has_violations == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DETACHED: ${{ steps.audit.outputs.detached_total }}
           UNREG: ${{ steps.audit.outputs.unregistered_total }}
+          AUTO_REG: ${{ steps.register.outputs.registered_count || '0' }}
           AUDIT_MD: ${{ steps.audit.outputs.audit_md }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -75,7 +210,6 @@ jobs:
           DATE=$(date -u +%Y-%m-%d)
           TITLE="[audit] ${DATE} — ${DETACHED} detached styles, ${UNREG} unregistered frames"
 
-          # Capture top of the markdown report for the Issue body
           if [ -f "$AUDIT_MD" ]; then
             REPORT_HEAD=$(head -80 "$AUDIT_MD")
           else
@@ -84,10 +218,11 @@ jobs:
 
           BODY_FILE=$(mktemp)
           {
-            echo "Weekly Figma DS audit found violations."
+            echo "Daily Figma DS audit found violations."
             echo ""
             echo "- Detached styles: **${DETACHED}**"
             echo "- Unregistered top-level frames: **${UNREG}**"
+            echo "- Auto-registered this run: **${AUTO_REG}**"
             echo ""
             echo "Workflow run: ${RUN_URL}"
             echo "Full report attached as artifact \`figma-audit-${{ github.run_id }}\` (.automation/audits/audit-*.md)."
@@ -103,18 +238,21 @@ jobs:
             echo "_Created by \`figma-audit\` workflow._"
           } > "$BODY_FILE"
 
-          # Close any existing open audit issues to keep one rolling reminder
           OPEN=$(gh issue list --label audit --state open --json number --jq '.[].number' || true)
           for N in $OPEN; do
             gh issue close "$N" --comment "Superseded by latest audit run (${RUN_URL})." || true
           done
 
           gh issue create --title "$TITLE" --label audit --body-file "$BODY_FILE"
+
       - name: Upload audit artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: figma-audit-${{ github.run_id }}
-          path: .automation/audits/
+          path: |
+            .automation/audits/
+            .automation/audit-state.json
+            .automation/audit-candidates.json
           retention-days: 90
           if-no-files-found: ignore

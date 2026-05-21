@@ -51,7 +51,10 @@
     "figma:test:manual-edits": "tsx scripts/pipeline/lib/manual-edits.test.ts",
     "figma:test:workflow-artifacts": "tsx scripts/pipeline/lib/workflow-artifacts.test.ts",
     "figma:audit": "tsx --env-file=.env scripts/pipeline/audit.ts",
-    "figma:test:audit": "tsx scripts/pipeline/lib/audit-aggregator.test.ts"
+    "figma:audit:register": "tsx scripts/pipeline/auto-register.ts",
+    "figma:test:audit": "tsx scripts/pipeline/lib/audit-aggregator.test.ts",
+    "figma:test:audit-state": "tsx scripts/pipeline/lib/audit-state.test.ts",
+    "figma:test:auto-register-format": "tsx scripts/pipeline/lib/auto-register-format.test.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",
