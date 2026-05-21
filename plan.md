@@ -246,8 +246,7 @@ Phase 6/7 진입 전 외부 검증 결과:
 - [ ] Task 10 Phase A 진행 시 GitHub Pages/private Pages 사용 여부 결정
 - [ ] Task 10 Phase A 진행 시 `.automation/images/baseline/` PNG git tracking/storage threshold 결정
 - [ ] Cloudflare 계정 + wrangler 설치 (task-5 직전)
-- [ ] Resend 계정 + 도메인 검증 시작 (task-6 직전, DNS 반영 24h 걸릴 수 있음)
-- [ ] (선택) Slack/Discord webhook URL 생성 — 풍부한 메시지 원할 때만. 기본 알림은 GitHub 공식 Slack 앱으로 가능.
+- [x] Slack webhook URL 생성 — `SLACK_WEBHOOK_URL` secret 등록 완료. notifySlack + GitHub 공식 Slack 앱 둘 다 동작.
 
 ### Phase 6 진행 중
 - 각 task별 세부 문서 따라 실행

@@ -229,18 +229,28 @@ async function createOrUpdatePR(): Promise<{ url?: string }> {
     return {};
   }
 
-  // git status: see if there are actual code changes to push
-  const dirty = exec('git status --porcelain').length > 0;
-  if (!dirty) {
+  // Filter out manifest/viewer artifacts — those belong on main only.
+  // The figma-pipeline workflow persists .automation/cs/ separately;
+  // committing them into the designer-bot PR branch would orphan the
+  // main-branch audit trail (the Persist CS manifest step would no-op
+  // because the manifest commit already landed on the PR branch).
+  const dirtyAll = exec('git status --porcelain');
+  const codeChanges = dirtyAll
+    .split('\n')
+    .map(line => line.slice(3))
+    .filter(path => path && !path.startsWith('.automation/') && !path.startsWith('dist-viewer/'));
+  if (codeChanges.length === 0) {
     console.log('[pr] skipped — apply.ts produced no code changes (apply is no-op)');
     return {};
   }
 
-  // commit to branch
+  // commit to branch — explicit code-only paths, leave .automation/cs/ for main.
   exec('git config user.name "designer-bot"');
   exec('git config user.email "designer-bot@users.noreply.github.com"');
   exec(`git checkout -B ${branchName}`);
-  exec('git add -A');
+  for (const path of codeChanges) {
+    exec(`git add ${JSON.stringify(path)}`);
+  }
   exec(`git commit -m "design: ${csId} auto-apply" || true`);
   exec(`git push origin ${branchName} --force-with-lease`);
 

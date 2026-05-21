@@ -127,7 +127,7 @@ gh run watch
 gh pr list --label designer-bot
 gh issue list --label designer-review
 
-# Slack/Email 수신 확인 — 수동
+# Slack 수신 확인 — 수동 (notifySlack webhook + GitHub 공식 앱)
 ```
 
 ## 6-7. 리스크 / 한계

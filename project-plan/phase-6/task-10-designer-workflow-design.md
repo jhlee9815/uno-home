@@ -413,7 +413,7 @@ Phase A 단독 ship 권장. Phase B는 marker 추가가 충분히 진행된 후 
 ## 10-13. 범위 외 (명시)
 
 - Real-time Figma webhook 트리거 — task-5 (Cloudflare Worker)
-- Resend 이메일 알림 — task-6
+- Resend 이메일 알림 — task-6 ⏭ SKIPPED (Slack 도달로 대체, 2026-05-21)
 - INSTANCE_SWAP 감지 — task-8 v2
 - LLM 기반 코드 생성 — 후속 task
 - 디자인 시스템 일관성 자동 fixup (예: hex 색상 → 토큰 자동 변환) — task-10 v2
