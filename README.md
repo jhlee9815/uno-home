@@ -180,7 +180,7 @@ npm run figma:audit
 npm run figma:audit:register
 
 # 전체 파이프라인 (snapshot → diff → classify → apply → verify → report)
-npm run figma:pipeline
+npm run figma:run
 ```
 
 ### 8. 스케줄러 활성화
