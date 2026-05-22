@@ -78,6 +78,11 @@ const classified = JSON.parse(readFileSync(classifiedPath, 'utf-8')) as {
     subcategories?: string[];
     decision: 'auto-apply' | 'report-only';
     target?: { section?: string };
+    compliance?: {
+      newDetachedStyles?: unknown[];
+      newFrames?: unknown[];
+      changedImageRefs?: unknown[];
+    };
   }>;
 };
 
@@ -167,22 +172,43 @@ function updateManifestIssue(id: string, issueNumber: number, issueUrl: string):
 // ----- notify channels -----
 
 // Count how many of each Korean-labelled category appear in this change set.
-// Use the classifier-derived `subcategories[]` rather than raw `classes[]` —
-// raw classes carry low-level diff tags (text, component-props, token,
-// structure, ...) that don't map 1:1 to the user-facing compliance buckets.
-// `subcategories` is already deduped per change and normalized to keys we
-// have Korean labels for.
+//
+// Counting strategy:
+//   1. Prefer `change.compliance.*` arrays — a single classified change
+//      typically holds many compliance findings (one screen can have 50
+//      detached styles, 3 new frames, 2 image-ref changes). The classifier
+//      then dedupes `subcategories[]` to one tag per change, so counting
+//      tags would report 1 instead of 50 for that screen. The markdown
+//      report renderCategorySummary already aggregates these arrays.
+//   2. Fall back to tag-level counts (subcategories or classes) for
+//      text-change / props-change which don't have a compliance.* array
+//      and for legacy fixtures missing the compliance block.
 function categoryCounts(): Partial<Record<ComplianceSubcategory, number>> {
   const counts: Partial<Record<ComplianceSubcategory, number>> = {};
   for (const change of classified.changes) {
+    // 1. Compliance arrays — accurate per-finding counts.
+    if (change.compliance) {
+      const det = change.compliance.newDetachedStyles?.length ?? 0;
+      const nf = change.compliance.newFrames?.length ?? 0;
+      const im = change.compliance.changedImageRefs?.length ?? 0;
+      if (det) counts['detached-style'] = (counts['detached-style'] ?? 0) + det;
+      if (nf) counts['new-frame'] = (counts['new-frame'] ?? 0) + nf;
+      if (im) counts['image-change'] = (counts['image-change'] ?? 0) + im;
+    }
+    // 2. Tag-level count for the categories that have no compliance.* array
+    //    (text-change, props-change) AND for legacy changes missing
+    //    compliance entirely. Skip the categories already counted above so
+    //    a 50-detached-style change isn't double-counted.
     const tags = change.subcategories && change.subcategories.length > 0
       ? change.subcategories
       : change.classes;
     for (const raw of tags) {
-      if (raw in CATEGORY_LABEL_KO) {
-        const k = raw as ComplianceSubcategory;
-        counts[k] = (counts[k] ?? 0) + 1;
+      if (!(raw in CATEGORY_LABEL_KO)) continue;
+      const k = raw as ComplianceSubcategory;
+      if (change.compliance && (k === 'detached-style' || k === 'new-frame' || k === 'image-change')) {
+        continue; // covered by step 1
       }
+      counts[k] = (counts[k] ?? 0) + 1;
     }
   }
   return counts;
