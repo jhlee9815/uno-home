@@ -21,10 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: write          # push auto-register branch
-      pull-requests: write     # open auto-register PR
-      issues: write            # audit Issue
-      actions: write           # dispatch pr-checks for the auto-register PR
+      # GITHUB_TOKEN still needs these for the audit Issue + label cleanup
+      # steps. The auto-register PR push/create uses a separate GitHub App
+      # installation token (see `Generate App token` step) so the resulting
+      # PR fires a normal `pull_request: opened` event that pr-checks.yml
+      # can subscribe to. GITHUB_TOKEN-created PRs do not cascade workflows.
+      contents: read
+      issues: write            # audit Issue create/close
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
@@ -76,10 +79,23 @@ jobs:
         if: steps.audit.outputs.auto_register_count != '0' && steps.audit.outputs.auto_register_count != ''
         run: npm run figma:audit:register
 
+      - name: Generate App token for auto-register PR
+        id: app-token
+        if: steps.register.outputs.registered_count != '0' && steps.register.outputs.registered_count != ''
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AUDIT_APP_ID }}
+          private-key: ${{ secrets.AUDIT_APP_PRIVATE_KEY }}
+
       - name: Open auto-register PR (when registered_count > 0)
         if: steps.register.outputs.registered_count != '0' && steps.register.outputs.registered_count != ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # App installation token (not GITHUB_TOKEN). PRs opened with an
+          # App actor fire `pull_request: opened` like a human-authored PR,
+          # so pr-checks.yml runs and the resulting check_run populates
+          # the PR's statusCheckRollup. With GITHUB_TOKEN the PR was
+          # cascade-blocked and required workflow_dispatch + admin merge.
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REGISTERED_ITEMS_B64: ${{ steps.register.outputs.registered_items_b64 }}
           REGISTERED_COUNT: ${{ steps.register.outputs.registered_count }}
           MAPPING_PATH: ${{ steps.register.outputs.mapping_path }}
@@ -101,9 +117,9 @@ jobs:
           fi
 
           BRANCH="auto-register/audit-${DATE}"
-          git config user.name "designer-bot"
-          git config user.email "designer-bot@users.noreply.github.com"
-          # Inject the write-capable token here (checkout ran with
+          git config user.name "designer-bot[bot]"
+          git config user.email "designer-bot[bot]@users.noreply.github.com"
+          # Inject the App installation token here (checkout ran with
           # persist-credentials: false). Scoped to the push/PR window only.
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
@@ -145,7 +161,7 @@ jobs:
             printf '%s' "${REGISTERED_ITEMS_B64}" | base64 -d \
               | jq -r '.[] | "- `\(.nodeId)` — \(.name)"'
             echo ""
-            echo "**Why a PR (not direct push):** main is protected. The \`validate\` check below must pass before merge. The \`figma-audit\` workflow tries to dispatch \`pr-checks.yml\` against this branch, but \`workflow_dispatch\` runs may not always show up in the PR's required-check rollup; if the rollup is empty, verify the linked dispatch run manually and admin-merge."
+            echo "**Why a PR (not direct push):** main is protected. The \`validate\` check below must pass before merge. This PR is opened by the \`designer-bot\` GitHub App so \`pull_request: opened\` fires normally and \`pr-checks.yml\` attaches its check to this PR's head SHA — no manual dispatch needed."
             echo ""
             echo "Audit run: ${RUN_URL}"
             echo ""
@@ -158,20 +174,6 @@ jobs:
             --body-file "$BODY_FILE" \
             --head "$BRANCH" \
             --base main
-
-          # PRs opened via secrets.GITHUB_TOKEN don't cascade to pr-checks (by
-          # design — GitHub blocks recursive workflow loops). pr-checks.yml
-          # exposes a workflow_dispatch trigger so we can fire `validate`
-          # against this head branch explicitly. NOTE: dispatch-created
-          # check_suites do not always populate the PR's required-status-check
-          # rollup even though the check_run exists at the head SHA. If the
-          # rollup is empty after this dispatch, the PR will read as BLOCKED;
-          # maintainer must verify the dispatch run and admin-merge, or
-          # switch to a GitHub App / PAT actor for `gh pr create` so the
-          # PR fires a normal `pull_request: opened` event.
-          # No `|| true`: if dispatch fails, the PR would sit truly ungated,
-          # so fail loud (e.g. missing `actions: write` permission).
-          gh workflow run pr-checks.yml --ref "$BRANCH"
 
       - name: Step summary
         if: always()
