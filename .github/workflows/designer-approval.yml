@@ -75,23 +75,23 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: .
 
-      - name: Record designer decision
-        run: npm run figma:designer-approval
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate App token for manifest PR
-        id: manifest-app-token
+      - name: Generate App token for designer automation
+        id: designer-app-token
         if: github.ref == 'refs/heads/main'
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.AUDIT_APP_ID }}
           private-key: ${{ secrets.AUDIT_APP_PRIVATE_KEY }}
 
+      - name: Record designer decision
+        run: npm run figma:designer-approval
+        env:
+          GITHUB_TOKEN: ${{ steps.designer-app-token.outputs.token }}
+
       - name: Persist manifest transition PR
         if: github.ref == 'refs/heads/main'
         run: npm run figma:manifest-pr -- ${{ env.CS_ID }}
         env:
-          GITHUB_TOKEN: ${{ steps.manifest-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.designer-app-token.outputs.token }}
           MANIFEST_SOURCE_WORKFLOW: designer-approval
           MANIFEST_SOURCE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

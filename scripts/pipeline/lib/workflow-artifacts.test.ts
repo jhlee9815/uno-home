@@ -26,6 +26,17 @@ assert.match(
   /name:\s*Prepare designer decision context/,
   'designer-approval workflow must derive the originating run id before recording the decision'
 );
+
+assert.ok(
+  designerApproval.indexOf('Generate App token for designer automation') < designerApproval.indexOf('Record designer decision'),
+  'designer approval must generate an App token before creating designer-approved PRs so pull_request checks fire'
+);
+assert.match(
+  designerApproval,
+  /Record designer decision[\s\S]*GITHUB_TOKEN:\s*\$\{\{ steps\.designer-app-token\.outputs\.token \}\}/,
+  'designer-approval must use the App token, not GITHUB_TOKEN, when opening approved-change PRs'
+);
+
 assert.match(
   designerApproval,
   /uses:\s*actions\/download-artifact@v4[\s\S]*name:\s*figma-pipeline-\$\{\{ env\.CS_RUN_ID \}\}[\s\S]*run-id:\s*\$\{\{ env\.CS_RUN_ID \}\}/,
