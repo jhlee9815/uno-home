@@ -44,17 +44,35 @@ const RAW_CLASS_EMOJI: Record<string, string> = {
   layout: '📐',
 };
 
+// Mirror of classify-diff.ts `CLASS_TO_SUBCATEGORY`. Kept here so designer-
+// facing surfaces (Slack summary, viewer) can normalize raw class names
+// from legacy classified files that lack a `subcategories[]` field without
+// importing from the classifier (which would create a circular dependency
+// because the classifier itself depends on label maps for some logging).
+//
+// Keep in sync with `CLASS_TO_SUBCATEGORY` in scripts/pipeline/lib/classify-diff.ts.
+export const RAW_CLASS_TO_SUBCATEGORY: Readonly<Record<string, ComplianceSubcategory>> = {
+  text: 'text-change',
+  'component-props': 'props-change',
+  'image-change': 'image-change',
+  'detached-style': 'detached-style',
+  'new-frame': 'new-frame',
+};
+
 // Set of raw classes the classifier maps to a ComplianceSubcategory. The
 // viewer uses this to avoid showing the same change twice when both the
 // raw class and its derived subcategory appear (e.g. ['text'] →
 // subcategories ['text-change']).
-export const RAW_CLASSES_WITH_SUBCATEGORY: ReadonlySet<string> = new Set([
-  'text',
-  'component-props',
-  'image-change',
-  'detached-style',
-  'new-frame',
-]);
+export const RAW_CLASSES_WITH_SUBCATEGORY: ReadonlySet<string> = new Set(
+  Object.keys(RAW_CLASS_TO_SUBCATEGORY),
+);
+
+// Normalize a raw class name to its ComplianceSubcategory, or undefined if
+// the class doesn't produce a compliance bucket (token / structure / asset
+// / layout / etc.).
+export function rawClassToSubcategory(raw: string): ComplianceSubcategory | undefined {
+  return RAW_CLASS_TO_SUBCATEGORY[raw];
+}
 
 export const DETACHED_STYLE_KIND_LABEL_KO: Record<DetachedStyleKind, string> = {
   color: '색상',

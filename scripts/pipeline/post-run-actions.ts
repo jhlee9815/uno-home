@@ -22,7 +22,7 @@ import { execSync } from 'node:child_process';
 import { Octokit } from 'octokit';
 import { loadManifest, updateManifest } from './lib/cs-manifest.ts';
 import { createOrUpdateDesignerPr, selectPathsForPrBranch } from './lib/github-pr.ts';
-import { CATEGORY_EMOJI, CATEGORY_LABEL_KO } from './lib/category-labels.ts';
+import { CATEGORY_EMOJI, CATEGORY_LABEL_KO, rawClassToSubcategory } from './lib/category-labels.ts';
 import type { ComplianceSubcategory } from './lib/compliance-types.ts';
 
 const csId = process.argv[2];
@@ -199,16 +199,24 @@ function categoryCounts(): Partial<Record<ComplianceSubcategory, number>> {
     //    (text-change, props-change) AND for legacy changes missing
     //    compliance entirely. Skip the categories already counted above so
     //    a 50-detached-style change isn't double-counted.
+    //
+    //    Normalize raw class names to their subcategory before the
+    //    membership check — `classes[]` carries 'text' / 'component-props'
+    //    in legacy snapshots, while CATEGORY_LABEL_KO is keyed by
+    //    'text-change' / 'props-change'. Without normalization, legacy
+    //    text/props changes were silently dropped from the breakdown.
     const tags = change.subcategories && change.subcategories.length > 0
       ? change.subcategories
       : change.classes;
     for (const raw of tags) {
-      if (!(raw in CATEGORY_LABEL_KO)) continue;
-      const k = raw as ComplianceSubcategory;
-      if (change.compliance && (k === 'detached-style' || k === 'new-frame' || k === 'image-change')) {
+      const sub = (raw in CATEGORY_LABEL_KO)
+        ? (raw as ComplianceSubcategory)
+        : rawClassToSubcategory(raw);
+      if (!sub) continue;
+      if (change.compliance && (sub === 'detached-style' || sub === 'new-frame' || sub === 'image-change')) {
         continue; // covered by step 1
       }
-      counts[k] = (counts[k] ?? 0) + 1;
+      counts[sub] = (counts[sub] ?? 0) + 1;
     }
   }
   return counts;

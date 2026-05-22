@@ -4,7 +4,10 @@ on:
   repository_dispatch:
     types: [figma-file-update]   # task-5 Cloudflare Worker가 이걸 호출
   schedule:
-    - cron: '0 */2 * * *'        # 2시간 cron 안전망 (webhook 누락 대비)
+    # 2시간 cron 안전망 (webhook 누락 대비). 00:00 UTC slot은 figma-audit
+    # 완료 후 workflow_run cascade가 채우므로, cron은 02:00 UTC부터 시작해
+    # double-fire를 막는다. 결과: 02,04,06,...,22 UTC + cascade 1회 = 하루 12회.
+    - cron: '0 2-22/2 * * *'
   workflow_dispatch:
     inputs:
       reason:
