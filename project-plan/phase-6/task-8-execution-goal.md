@@ -33,7 +33,7 @@ Figma 등록 화면 내부에서 다음 3종을 구조화해 감지하는 detect
 
 ## 바로 다음 작업 — 완료 후 후속
 
-PR #9 review/CI/merge gate는 완료됐다. 다음 담당자가 바로 시작할 작업은 Task 10 Phase A 또는, 운영 지연 단축이 우선이면 task-5 Cloudflare Worker다.
+PR #9 review/CI/merge gate는 완료됐다. 이후 Task 10 Phase A와 Phase B artifact handoff는 진행됐고, 현재 다음 담당자가 바로 시작할 작업은 Actions PR 생성 권한 fix 후 #19 `designer-approved` 재검증이다. 운영 지연 단축이 우선이면 그 다음 task-5 Cloudflare Worker다.
 
 ### Stage 6 evidence
 
@@ -48,7 +48,7 @@ PR #9 review/CI/merge gate는 완료됐다. 다음 담당자가 바로 시작할
 
 - PR #9 merged: https://github.com/jhlee9815/uno-home/pull/9
 - main: `6d4cd94`
-- schema-compatible baseline refresh 완료: `.automation/baseline/2026-05-21T07-43-40.json` 시드, `npm run figma:diff` 기준 `Changes: 0` 확인(2026-05-21 16:44 KST).
+- schema-compatible baseline refresh 완료: `.automation/baseline/2026-05-21T07-43-40.json` 시드, `npm run figma:diff` 기준 `Changes: 0` 확인(2026-05-21 16:44 KST), `614dfc8`로 main push.
 
 ## Stage 0 실행 명령
 
@@ -91,4 +91,12 @@ TASK8_SAMPLE_NODE_IDS="7:3,7:4,7:5,10:62" npm run figma:task8:stage0
 
 - 2026-05-21 10:43 KST — Stage 6 real Figma trigger validation 완료. 최종 cs `cs-2026-05-21T01-42-28`, report-only 2건, compliance sections 확인, apply noop, verify passed. Figma probe cleanup 완료.
 
-- 2026-05-21 10:50 KST — PR #9 merge 완료. main `6d4cd94`. 당시 다음은 Task 10 Phase A였고, 이후 Phase A는 완료됨. artifact handoff fix는 구현됐고 현재 후속은 Phase B live 재검증.
+- 2026-05-21 10:50 KST — PR #9 merge 완료. main `6d4cd94`. 당시 다음은 Task 10 Phase A였고, 이후 Phase A는 완료됨. Phase B artifact handoff는 live download 확인까지 완료됐고 현재 후속은 PR #25 auto-register mapping PR body/check follow-up 후 merge.
+
+
+## Audit auto-register follow-up (2026-05-21 23:28 KST)
+
+- PR #23 merged to main (`bcb7e98`) and added daily audit auto-register.
+- Live verify created PR #25 from run `26232107808`; PR #25 adds two report-only mappings.
+- Validation dispatch run `26232141435` passed, but PR #25 body/check association needs follow-up before merge.
+- Next session should start from `project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md`.

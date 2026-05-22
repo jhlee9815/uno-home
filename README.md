@@ -7,7 +7,7 @@ This project is a local React/Vite prototype connected to a Figma change-detecti
 > - **현재 상태/우선순위**: [`plan.md`](./plan.md) (master) · [`TODO.md`](./TODO.md) (다음 세션 진입)
 > - **Phase 6 운영 / 헬퍼 / Figma 추적 메커니즘**: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8
 > - **Task 8 DS compliance 감지 완료/merged**: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md)
-> - **다음 권장 작업**: [`project-plan/phase-6/task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) Phase A (viewer/approval workflow). 운영 지연 단축이 우선이면 task-5 Cloudflare Worker.
+> - **다음 권장 작업**: auto-register PR #25 body/check association 후속 확인 → merge. 세부는 [`TODO.md`](./TODO.md) §2 / [`project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md`](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
 > - **Slack 통합**: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md)
 > - **매일 1초 운영 체크**: `npm run figma:health`
 
@@ -76,6 +76,8 @@ npm run figma:task8:stage0                        # Task 8 Figma field sampler
 npm run figma:viewer                              # pending report-only local HTML viewer
 npm run figma:images:bootstrap                    # Task 10 Phase A baseline PNG seed
 npm run figma:viewer:generate -- cs-{id}          # Task 10 Phase A before/after viewer
+npm run figma:audit                               # Daily DS audit + auto-register candidate emission
+npm run figma:audit:register                      # Append surviving candidates to figma-mapping.yaml
 npm run figma:claude-review                       # 3-band 체크리스트 (UNO 트랙)
 npm run figma:claude-review -- --source apple     # Apple-inspired 트랙
 ```
@@ -84,10 +86,11 @@ Use `npm run figma:run` for the normal end-to-end cycle. Use the individual comm
 
 ## Current Phase 6 Status (Pesse active track)
 
-- **Main**: `6d4cd94` — PR #9 merged; Task 8 DS Compliance Detection is on `main`.
-- **Task 8 validated**: real Figma probe on file `9cevQvPHlQ5vZv5Pz3QaLL`, screen `pesse_home` (`7:3`) detected `detached-style`, `new-frame`, and `image-change`; probe cleanup confirmed.
-- **Rollout guard**: old approved baselines that do not contain Task 8 compliance arrays are skipped for compliance diff to prevent first-run false-positive floods. New tracked nodes still report head compliance as new.
-- **Task 10 Phase A**: implementation branch adds baseline image bootstrap, before/after viewer generation, immutable cs manifest, and designer approval/rejection label workflow. If immediate Figma webhook latency is more important, do Task 5 Cloudflare Worker first.
+- **Main**: `bcb7e98` — PR #23 merged: daily `figma-audit` plus 2-sighting auto-register PR flow.
+- **Task 8 validated**: real Figma probe on file `9cevQvPHlQ5vZv5Pz3QaLL`, screen `pesse_home` (`7:3`) detected `detached-style`, `new-frame`, and `image-change`; probe cleanup confirmed. Schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json` is on main.
+- **Audit auto-register live proof**: two manual `figma-audit` runs (`26232066749`, `26232107808`) created PR #25 with two report-only mapping entries: `35:244`/`test1`, `35:382`/`test2`. Dispatch validation run `26232141435` passed.
+- **Current stop point**: Claude hit session limit while investigating PR #25 polish: PR body omits the second frame name, and PR `statusCheckRollup` is empty even though the dispatched validation run succeeded.
+- **Next**: fix/document PR #25 body/check association, then merge #25. After that, resume Task 10 Phase B designer approval PR creation/manifest `pr-open` verification if still prioritized.
 
 ## Design System Skill (Phase 3·보완 트랙)
 

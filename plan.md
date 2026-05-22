@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-21 13:55 KST (Phase 6 task-1/2/3/4/7/8 ✅, task-6 SKIPPED. task-10 Phase A 코드 100% PR #10)
+> 최신 갱신: 2026-05-21 23:28 KST (PR #23 audit auto-register merged. Live verify created PR #25; next is PR #25 body/check follow-up and merge.)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -14,11 +14,11 @@
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
 | **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **🚧 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, task-10 Phase A 코드 100% (PR #10), task-5/10-B/10-C 남음** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, audit auto-register PR #23 ✅, PR #25 follow-up 필요, task-10-C 남음** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: Task 10 Phase A 코드 100% 완료, PR #10 OPEN. 다음은 **PR #10 merge + GitHub Pages 활성화 + 라이브 검증 3건 → Phase B**. 권장 순서: A (Phase A 마무리) → B (Phase B Tier 2/3 자동화) → C (Phase C dev-merge 안전망) → optional task-5. 세부: [phase-plan-6 §6-9](./project-plan/phase-6/phase-plan-6.md#6-9-현재-handoff--다음-액션).
-**블로커**: 기술 블로커 없음. Slack 알림은 이미 동작 중. Cloudflare는 task-5에서 외부 준비 시작.
+**현재 액션**: auto-register PR #25를 마무리한다. PR diff는 맞지만 body에서 `test2`가 누락됐고, dispatch validation run은 성공했지만 PR `statusCheckRollup`이 empty다. 권장 순서: PR #25 body/check association 확인 또는 fix → #25 merge → Task 10 Phase B/Phase C 재개. 세부: [audit-auto-register handoff](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
+**블로커**: Claude 세션 한도 도달로 live verify 후속 조사가 중단됐다. Slack 알림은 이미 동작 중. Cloudflare는 task-5에서 외부 준비 시작.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
 ---
@@ -67,11 +67,11 @@
 | 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏭ SKIPPED (Slack로 대체, 2026-05-21) | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
-| 8 | DS Compliance Detection Core (detached / image / new frames) | ✅ PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
+| 8 | DS Compliance Detection Core (detached / image / new frames) + audit auto-register | ✅ PR #9 merged (`6d4cd94`), PR #23 merged (`bcb7e98`), PR #25 follow-up 필요 | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟡 Phase A 코드 100% (PR #10 merge 대기). Phase B/C 미시작. | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟠 Phase A live 완료, Phase B artifact download 검증 완료. PR 생성/manifest `pr-open` 재검증 대기. Phase C 미시작. | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
 
-현재 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED. 잔여 핵심은 task-10 Phase A merge → Phase B → Phase C. task-5는 운영 지연 해소용 optional.
+현재 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, audit auto-register code ✅. 잔여 핵심은 PR #25 후속 확인/merge → task-10 Phase B PR 생성 재검증 → Phase C. task-5는 운영 지연 해소용 optional.
 
 ### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
 
@@ -277,4 +277,4 @@ Phase 6/7 진입 전 외부 검증 결과:
 - 검증: full figma test loop, `npm run lint`, `npm run build`, Stage 6 real Figma probe PASS.
 - rollout 보강: 기존 approved baseline이 Task 8 이전 schema일 때 기존 node compliance diff를 skip해 false-positive flood 방지.
 - 상세 결과: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) §8-13.
-- 다음 권장: Task 10 Phase A. 운영 지연 단축이 우선이면 task-5.
+- 후속: Task 10 Phase A는 완료, Phase B artifact download는 검증 완료. audit auto-register PR #23도 main에 merge됨. 다음 권장은 PR #25 body/check follow-up 후 merge. 운영 지연 단축이 우선이면 이후 task-5.

@@ -2,7 +2,7 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 최신 갱신: 2026-05-21 16:55 KST — Phase B live 검증 1-2 완료. #19 라벨 재적용으로 run `26212122539` 실행, 원본 `figma-pipeline-26211009015` artifact 다운로드 성공. 추가로 schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json` 시드 및 diff `Changes: 0` 확인. 다음 병목은 GitHub Actions PR 생성 권한.
+> 최신 갱신: 2026-05-21 16:55 KST — 세션 종료 정리. schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json`이 `614dfc8`로 main에 push됨. Phase B live 검증은 artifact 다운로드 성공 후 apply 단계까지 진입했고, 다음 병목은 repo Actions workflow 권한(`default_workflow_permissions=read`, PR 생성 허용 false).
 > 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
@@ -42,7 +42,7 @@
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 | 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 검증 + PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md) | 2-3시간 | — |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟠 Phase A live 완료. Phase B 코드 merged + artifact handoff fix 구현. live PR 생성 재검증 대기. Phase C 미시작. | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | A+B: ~11h+ |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟠 Phase A live 완료. Phase B 코드 merged + artifact handoff fix live download 확인. PR 생성 권한 fix 후 재검증 대기. Phase C 미시작. | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | A+B: ~11h+ |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관). 8은 완료. 9의 report/label 범위는 10 Phase A에 대부분 흡수됐으므로 필요 시 label/Slack summary 보강만 분리한다.
 
@@ -68,7 +68,13 @@
 - 2026-05-21 11:15 KST — task-10 Phase A 1차 구현 진행: cs manifest, baseline/snapshot image helpers, viewer generator, designer approval label workflow, pipeline viewer publish + manifest persist step 추가. 로컬 신규 tests, full figma test loop, lint, build PASS.
 - 2026-05-21 16:15 KST — task-10 live 정리: PR #10 merged, #16 baseline PNG seed, #17/#18 Phase B auto-edit PR flow merged. `figma-pipeline` run `26211009015`, Pages run `26211035500`, `designer-approval` run `26211056345` success. Issue #19 `designer-approved` → `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved`. 단, approval run에서 classified diff/snapshot artifacts missing으로 auto-edit PR 생성은 skip됨.
 - 2026-05-21 16:45 KST — artifact handoff fix 구현: `designer-approval.yml`에 `actions: read`, manifest `runId` 기반 artifact prepare/download step, workflow contract test(`figma:test:workflow-artifacts`) 추가.
-- 2026-05-21 16:55 KST — live 검증 1-2 완료: #19 `designer-approved` 라벨 재적용 → run `26212122539`; `Download originating pipeline artifacts` step이 `figma-pipeline-26211009015`를 성공적으로 다운로드. Apply 단계 진입 후 `GitHub Actions is not permitted to create or approve pull requests`로 PR 생성 실패. 원격 branch `designer-approved/cs-2026-05-21T07-07-04`는 push됨, open PR 없음.
+- 2026-05-21 16:55 KST — live 검증 1-2 완료: #19 `designer-approved` 라벨 재적용 → run `26212122539`; `Download originating pipeline artifacts` step이 `figma-pipeline-26211009015`를 성공적으로 다운로드. Apply 단계 진입 후 `GitHub Actions is not permitted to create or approve pull requests`로 PR 생성 실패. 원격 branch `designer-approved/cs-2026-05-21T07-07-04`는 push됨, open PR 없음. repo 권한 확인 결과 `default_workflow_permissions=read`, `can_approve_pull_request_reviews=false`.
+- 2026-05-21 16:55 KST — schema-compatible baseline refresh를 main에 push: `614dfc8 Seed a schema-compatible Figma baseline`. 다음 scheduled run부터 기존 등록 node의 `detached-style` / `new-frame` / `image-change`가 baseline 이후 증분으로 감지 가능.
+
+
+- 2026-05-21 23:28 KST — audit auto-register 구현 PR #23 merge 완료: `bcb7e98 feat(audit): two-sighting auto-register + daily cron (#23)`. `figma-audit`는 daily cron, audit-state cache, 2-sighting candidates, `figma:audit:register`, auto-register PR creation, and explicit `pr-checks` dispatch를 포함한다.
+- 2026-05-21 23:28 KST — live verify: `figma-audit` run `26232066749` success 후 run `26232107808` success가 PR #25 `[auto-register] 2 frame(s) — 2026-05-21`를 생성. PR diff는 `config/figma-mapping.yaml`에 `auto_test1_35_244`와 `auto_test2_35_382`를 추가한다. `pr-checks` dispatch run `26232141435` success.
+- 2026-05-21 23:28 KST — stopped point: Claude session limit. PR #25 body에서 두 번째 frame name이 blank로 표시되고, PR `statusCheckRollup`은 empty라 required check association 확인 필요. 자세한 resume 문서: [`audit-auto-register-handoff-2026-05-21.md`](./audit-auto-register-handoff-2026-05-21.md).
 
 ## 6-4. Extraction-Friendly 설계 결정 (Phase 7 비용 선납)
 
@@ -276,8 +282,8 @@ npm run figma:preflight
 ```
 
 권장 선택:
-- **최우선: Phase B live 재검증** — artifact handoff fix를 원격 반영한 뒤 새/기존 `cs-*` 승인 라벨로 marker hit PR 또는 manual-edit fallback PR이 열리고 manifest가 `pr-open`으로 전이되는지 확인한다.
-- **필요 시 후속 fix** — artifact 다운로드는 됐지만 apply/PR 생성이 실패하면 해당 로그 기준으로 좁게 보정한다.
+- **최우선: Actions workflow 권한 fix** — repo Settings → Actions → General에서 `Read and write permissions` + `Allow GitHub Actions to create and approve pull requests`를 켠다.
+- **이후: Phase B live 재검증** — #19 또는 신규 `cs-*` 승인 라벨로 marker hit PR 또는 manual-edit fallback PR이 열리고 manifest가 `pr-open`으로 전이되는지 확인한다.
 - **이후: Phase C** — visual diff, branch protection, baseline promote, e2e/rollback.
 - **task-5** — 2h cron 지연이 실제 운영 병목일 때 끼워넣는다.
 - **task-6** — ⏭ SKIPPED. Slack 알림(`notifySlack` webhook) + GitHub 공식 Slack 앱이 이미 디자이너/PM에 도달하고 있어 이메일 채널 불필요.
@@ -294,33 +300,39 @@ npm run figma:preflight
 
 ## 6-9. 현재 handoff / 다음 액션
 
-2026-05-21 16:15 KST 기준:
+2026-05-21 23:28 KST 기준:
 
 - task-1/2/3/4/7/8 **완료** ✅. Task 8은 PR #9로 main에 merge됨 (`6d4cd94`).
 - Task 10 Phase A **live 완료** ✅: PR #10 merged, GitHub Pages built, viewer URL이 Issue에 붙고, `designer-approved` label이 manifest state transition까지 기록됨.
-- Task 10 Phase B **코드 merge 완료 / artifact handoff fix 구현 / live 재검증 대기** 🟠: PR #17/#18로 yml stash isolation, decisionFilter, apply runner, GitHub PR helper, manual-edit fallback이 main에 들어갔다. 이번 세션에서 label workflow가 manifest `runId`로 원본 pipeline artifact를 다운로드하도록 보강했다.
+- Task 10 Phase B **코드 merge 완료 / artifact handoff fix live download 확인 / PR 생성 재검증 대기** 🟠: PR #17/#18로 yml stash isolation, decisionFilter, apply runner, GitHub PR helper, manual-edit fallback이 main에 들어갔다. label workflow가 manifest `runId`로 원본 pipeline artifact를 다운로드하는 것은 run `26212122539`에서 확인됐다.
+- Audit auto-register **code merged / generated PR follow-up pending** 🟠: PR #23 merged to main (`bcb7e98`). Live audit run `26232107808` created PR #25; validation dispatch `26232141435` passed, but body/check association needs follow-up.
 - Latest evidence:
   - `figma-pipeline` run `26211009015` success
   - Pages run `26211035500` success
   - `designer-approval` run `26211056345` success
   - Issue #19: `cs-2026-05-21T07-07-04`, labels `designer-review`, `report-only`, `designer-approved`
   - Manifest: `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved`, viewer URL recorded
+  - Actions permission: `default_workflow_permissions=read`, `can_approve_pull_request_reviews=false`
+  - Baseline: `.automation/baseline/2026-05-21T07-43-40.json` pushed in `614dfc8`
+  - Audit auto-register: PR #23 merged (`bcb7e98`), PR #25 open, `figma-audit` runs `26232066749` / `26232107808`, validation dispatch `26232141435` success
 
 ### 다음 작업 선택 (2026-05-21 갱신)
 
-전체 목표 (Figma 편집 → diff 감지 → Slack 알림 → 디자이너 확인 → 개발 변경 → 개발자 머지) 가중 진척 ≈ **82%**. 잔여 가치는 Phase B live 재검증 + 단계 5 안전망에 집중.
+전체 목표 (Figma 편집 → diff 감지 → Slack 알림 → 디자이너 확인 → 개발 변경 → 개발자 머지) 가중 진척 ≈ **86%**. 잔여 가치는 PR #25 body/check association 정리와 merge, 그 다음 Phase B PR 생성 재검증 + 단계 5 안전망에 집중.
 
-**권장 순서: B1 → C → (필요시) task-5**
+**권장 순서: PR #25 follow-up/merge → B1 재검증 → C → (필요시) task-5**
 
-1. **B1-1. Approval workflow 재실행** — ✅ #19 `designer-approved` 라벨 재적용으로 run `26212122539` 실행.
-2. **B1-2. Artifact download 확인** — ✅ `Download originating pipeline artifacts`가 `figma-pipeline-26211009015`를 성공적으로 다운로드.
-3. **B1-3. Missing artifact 에러 제거 확인** — 🟡 artifact download 후 apply 단계 진입. 이전 missing artifact 에러 대신 PR 권한 에러가 발생.
-4. **B1-4. PR 생성 확인** — 🟠 `GitHub Actions is not permitted to create or approve pull requests`로 실패. branch `designer-approved/cs-2026-05-21T07-07-04`는 push됨.
-5. **B1-5. Manifest transition 확인** — ⏳ PR 생성 성공 후 `pr-open` 확인 필요.
-6. **C. Task 10 Phase C (Stage 5+7)** — visual diff + branch protection + baseline promote + e2e/rollback. 4-6h.
-7. **(끼워넣기) task-5 Cloudflare Worker** — 단계 2 (2h cron 대기) 해소. 디자이너가 2h 대기에 답답해할 때 1-2h.
-8. ~~**task-6 Resend**~~ — ⏭ SKIPPED (Slack로 충분, 2026-05-21).
-9. ~~**Task 9**~~ — Task 10에 흡수됨. label/Slack summary 보강만 필요 시 분리.
+1. **Audit auto-register PR #25 follow-up** — 🔴 PR body second name blank + `statusCheckRollup` empty 조사 후 #25 merge. Resume: [`audit-auto-register-handoff-2026-05-21.md`](./audit-auto-register-handoff-2026-05-21.md).
+2. **B1-1. Approval workflow 재실행** — ✅ #19 `designer-approved` 라벨 재적용으로 run `26212122539` 실행.
+3. **B1-2. Artifact download 확인** — ✅ `Download originating pipeline artifacts`가 `figma-pipeline-26211009015`를 성공적으로 다운로드.
+4. **B1-3. Missing artifact 에러 제거 확인** — 🟡 artifact download 후 apply 단계 진입. 이전 missing artifact 에러 대신 PR 권한 에러가 발생.
+5. **Actions workflow 권한 수정** — 🔴 repo 현재값 `default_workflow_permissions=read`, `can_approve_pull_request_reviews=false`. Settings → Actions → General에서 `Read and write permissions` + `Allow GitHub Actions to create and approve pull requests`로 변경 필요.
+6. **B1-4. PR 생성 확인** — 🟠 권한 수정 후 #19 라벨 재적용. 직전 run은 `GitHub Actions is not permitted to create or approve pull requests`로 실패했고 branch `designer-approved/cs-2026-05-21T07-07-04`만 push됨.
+7. **B1-5. Manifest transition 확인** — ⏳ PR 생성 성공 후 `pr-open` 확인 필요.
+8. **C. Task 10 Phase C (Stage 5+7)** — visual diff + branch protection + baseline promote + e2e/rollback. 4-6h.
+9. **(끼워넣기) task-5 Cloudflare Worker** — 단계 2 (2h cron 대기) 해소. 디자이너가 2h 대기에 답답해할 때 1-2h.
+10. ~~**task-6 Resend**~~ — ⏭ SKIPPED (Slack로 충분, 2026-05-21).
+11. ~~**Task 9**~~ — Task 10에 흡수됨. label/Slack summary 보강만 필요 시 분리.
 
 검증 증거 (최신):
 
@@ -332,9 +344,10 @@ npm run build  # PASS
 # Stage 6 real Figma probe: cs-2026-05-21T01-42-28, reportOnly=2, compliance sections present, probeCount=0
 
 # Task 10 live evidence
-# PR #10/#16/#17/#18 merged; latest main fc3cda8
+# PR #10/#16/#17/#18/#23 merged; latest main bcb7e98
 # figma-pipeline 26211009015 success; pages 26211035500 success; designer-approval 26211056345 success
-# Artifact handoff fix implemented locally; live revalidation pending after commit/push.
+# designer-approval 26212122539: artifact download succeeded, apply reached PR creation, blocked by repo Actions PR permission.
+# audit auto-register: figma-audit 26232066749 + 26232107808 success; PR #25 open; pr-checks dispatch 26232141435 success.
 ```
 
 ## 6-10. 참고
