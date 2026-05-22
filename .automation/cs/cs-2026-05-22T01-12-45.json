@@ -27,13 +27,26 @@
     }
   },
   "runId": "26262567586",
-  "state": "pending",
+  "state": "pr-open",
   "stateHistory": [
     {
       "state": "pending",
       "at": "2026-05-22T01:12:57.454Z",
       "by": "jhlee9815",
       "via": "report-generation"
+    },
+    {
+      "state": "designer-approved",
+      "at": "2026-05-22T03:04:42.827Z",
+      "by": "jhlee9815",
+      "via": "label:designer-approved",
+      "note": "https://github.com/jhlee9815/design-review-bot/issues/32"
+    },
+    {
+      "state": "pr-open",
+      "at": "2026-05-22T03:04:44.950Z",
+      "by": "designer-bot",
+      "via": "pr:https://github.com/jhlee9815/design-review-bot/pull/40"
     }
   ],
   "viewerUrl": "https://jhlee9815.github.io/uno-home/cs/cs-2026-05-22T01-12-45/",
