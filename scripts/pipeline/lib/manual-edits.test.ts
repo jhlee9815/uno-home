@@ -63,7 +63,7 @@ const classified = {
 const md = buildManualEditMarkdown({
   csId: 'cs-2026-05-21T05-49-48',
   classified,
-  viewerUrl: 'https://jhlee9815.github.io/uno-home/cs/cs-2026-05-21T05-49-48/',
+  viewerUrl: 'https://jhlee9815.github.io/design-review-bot/cs/cs-2026-05-21T05-49-48/',
   missingMarkers: [
     { kind: 'text', code: '../src/screens/PesseHomeScreen.tsx', nodeIds: ['7:3'] },
   ],

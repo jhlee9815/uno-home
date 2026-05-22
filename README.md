@@ -1,240 +1,206 @@
-# Figma Automation
+# design-review-bot
 
-This project is a local React/Vite prototype connected to a Figma change-detection pipeline. The pipeline watches mapped Figma nodes, snapshots them, compares them with the approved baseline, applies safe code changes, verifies the app, and creates a designer review report when there is something to review.
+Figma → 코드 디자인 변경을 자동으로 감지·분류·알리는 GitHub Actions 기반 자동화 봇.
 
-> 📌 **현재 활성 트랙 (2026-05-21 ~)**: 본 README의 "Current Registration"은 초기 UNO HOME 트랙 (figma `SXPVingkmqkrcLzcXYFsZd`) 기준이며 archive 트랙입니다.
-> Pesse Apple 데모 + Phase 6 운영화의 활성 Figma 파일은 `9cevQvPHlQ5vZv5Pz3QaLL`입니다.
-> - **현재 상태/우선순위**: [`plan.md`](./plan.md) (master) · [`TODO.md`](./TODO.md) (다음 세션 진입)
-> - **Phase 6 운영 / 헬퍼 / Figma 추적 메커니즘**: [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8
-> - **Task 8 DS compliance 감지 완료/merged**: [`project-plan/phase-6/task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md)
-> - **다음 권장 작업**: auto-register PR #25 body/check association 후속 확인 → merge. 세부는 [`TODO.md`](./TODO.md) §2 / [`project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md`](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
-> - **Slack 통합**: [`project-plan/phase-6/slack-integration.md`](./project-plan/phase-6/slack-integration.md)
-> - **매일 1초 운영 체크**: `npm run figma:health`
+디자이너가 Figma에서 화면을 수정하면, 봇이 일정 주기로 변경 사항을 잡아 카테고리별로 분류하고, 디자이너에게 GitHub Issue / Slack / 시각 비교 viewer로 알리며, 개발 코드가 Figma와 어긋난 부분(디자인 시스템 미사용, 새 화면 추가, 이미지 변경 등)을 PR로 자동 등록합니다.
 
-## Current Registration (archive — UNO HOME 트랙)
+> **선행 조건**: 이 봇은 사용 중인 디자인 시스템을 Figma 측에 등록(컬러/타이포 변수, 컴포넌트, 스타일)한 뒤에야 의미 있는 감지를 합니다. 토큰이 등록돼 있어야 "디자인 시스템 미사용"을 변별할 수 있고, 컴포넌트가 등록돼 있어야 INSTANCE 교체를 잡을 수 있습니다.
 
-| Item | Value |
-|---|---|
-| Figma file | `SXPVingkmqkrcLzcXYFsZd` |
-| Mapping file | `config/figma-mapping.yaml` |
-| Total mapped entries | `186` |
-| Components | `6` |
-| Compositions | `7` |
-| Screens / frames | `173` |
-| Approved snapshot baseline | `.automation/baseline/2026-05-06T06-00-44.json` |
-| Tracking-only code target | `src/screens/FigmaFrameTracking.ts` |
+---
 
-All top-level Figma frames in the file are registered. Frames that do not yet have a React route are mapped as `report-only` screens and point to `FigmaFrameTracking.ts`; this keeps preflight valid while still detecting future Figma-only changes.
+## 빠르게 보는 결과 (Quick Result)
 
-## How The Current Registration Was Done
+스케줄러가 한 번 돌면 디자이너는 보통 이 3가지를 받습니다:
 
-1. Fetched the Figma file tree from the REST API with `depth=2`.
-2. Collected every top-level `FRAME` from all pages.
-3. Skipped frame node IDs that were already mapped to implemented screens.
-4. Added the remaining frames under `screens:` in `config/figma-mapping.yaml`.
-5. Set unimplemented frames to `automation.apply: report-only`.
-6. Used `src/screens/FigmaFrameTracking.ts` as the tracking-only code path for those frames.
-7. Ran preflight, snapshot, diff, classify, apply, verify, report, approve, and promote.
-8. Promoted the registration change-set so future diffs compare against the new 186-node baseline.
+1. **Slack 통합 알림** (1일 1회 기준):
+   ```
+   🎨 Figma 변경 감지 — cs-2026-05-22T01-12-45
+   • 🆕 새 화면 추가: 2건
+   • 🎨 디자인 시스템 미사용: 1083건 (색상 980, 타이포 100, 효과 3)
+   • 🖼️ 이미지 변경: 5건
+   • 전체: 1090건 (자동 반영 후보 0건, 디자이너 검토 1090건)
+   • 오늘의 audit Issue: Issue #31
+   • 새 화면 등록 PR: PR #30
+   • 리뷰 viewer: cs-2026-05-22T01-12-45
+   ```
 
-The registration change-set was `cs-2026-05-06T06-00-51`. It contained `165` report-only registration changes, no code changes, and was promoted to baseline `.automation/baseline/2026-05-06T06-00-44.json`.
+2. **GitHub Issue** (`audit` 라벨): 감지된 미사용/미등록 항목을 표로 정리한 Markdown 리포트.
 
-## Daily Workflow (archive — UNO HOME 트랙)
+3. **GitHub Pages viewer**: baseline ↔ 현재 스크린샷을 좌우 비교하고, 각 변경에 카테고리 chip(🆕 새 화면 추가, 🎨 디자인 시스템 미사용, …)을 붙인 HTML.
 
-> ⚠️ 본 섹션은 **archive UNO HOME 트랙** (figma `SXPVingkmqkrcLzcXYFsZd`, 21:00 launchd) 기준입니다. 활성 트랙(Phase 6 / Pesse Apple Demo)은 GitHub Actions cron + post-run routing + Slack 통합으로 대체됨. 운영자 daily routine은 [`project-plan/phase-6/phase-plan-6.md`](./project-plan/phase-6/phase-plan-6.md) §6-8-A 참조 — `npm run figma:health` 한 줄.
+추가로, **새로 등록할 만한 화면이 발견되면 봇이 자동으로 Pull Request를 만들어** `config/figma-mapping.yaml`에 추가합니다. 디자이너 또는 관리자가 머지 한 번으로 다음 cycle부터 그 화면 내부도 감지 대상에 포함됩니다.
 
-Use this path when the recipient is working with the same Figma file, `SXPVingkmqkrcLzcXYFsZd`.
+---
 
-1. Designer edits the Figma file.
-2. Run `npm run figma:run`, or wait for the 21:00 launchd schedule.
-3. The pipeline runs `preflight -> snapshot -> diff -> classify -> apply -> verify -> report -> promote`.
-4. If changes are detected, inspect `.automation/reports/cs-{id}.md`.
-5. If report-only details exist, inspect `.automation/reports/diff-report-only-{timestamp}.md`.
-6. Approve or reject the change-set.
-7. Approved change-sets are promoted to `dist-dev/` and update `.automation/baseline/`.
+## 작동 방식 (How it works)
 
-If there are no changes, the pipeline still writes apply/verify operational logs, but skips the designer review `cs-{id}.md`.
+### 워크플로 2개로 분리
 
-## Commands
-
-```bash
-npm run figma:preflight
-npm run figma:snapshot
-npm run figma:diff
-npm run figma:classify
-npm run figma:apply
-npm run figma:verify
-npm run figma:report
-npm run figma:approve cs-{id}
-npm run figma:reject cs-{id} "reason"
-npm run figma:promote cs-{id}
-npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name"
-npm run figma:register-file -- "<app-figma-url-or-file-key>" --project-name "Project Name" --package-name "package-name" --design-system-url "<design-system-figma-url-or-file-key>"
-npm run figma:run
-npm run figma:health                              # GitHub Actions/Issue/PR 운영 상태 요약
-npm run figma:task8:stage0                        # Task 8 Figma field sampler
-npm run figma:viewer                              # pending report-only local HTML viewer
-npm run figma:images:bootstrap                    # Task 10 Phase A baseline PNG seed
-npm run figma:viewer:generate -- cs-{id}          # Task 10 Phase A before/after viewer
-npm run figma:audit                               # Daily DS audit + auto-register candidate emission
-npm run figma:audit:register                      # Append surviving candidates to figma-mapping.yaml
-npm run figma:claude-review                       # 3-band 체크리스트 (UNO 트랙)
-npm run figma:claude-review -- --source apple     # Apple-inspired 트랙
-```
-
-Use `npm run figma:run` for the normal end-to-end cycle. Use the individual commands only when debugging a specific stage.
-
-## Current Phase 6 Status (Pesse active track)
-
-- **Main**: `bcb7e98` — PR #23 merged: daily `figma-audit` plus 2-sighting auto-register PR flow.
-- **Task 8 validated**: real Figma probe on file `9cevQvPHlQ5vZv5Pz3QaLL`, screen `pesse_home` (`7:3`) detected `detached-style`, `new-frame`, and `image-change`; probe cleanup confirmed. Schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json` is on main.
-- **Audit auto-register live proof**: two manual `figma-audit` runs (`26232066749`, `26232107808`) created PR #25 with two report-only mapping entries: `35:244`/`test1`, `35:382`/`test2`. Dispatch validation run `26232141435` passed.
-- **Current stop point**: Claude hit session limit while investigating PR #25 polish: PR body omits the second frame name, and PR `statusCheckRollup` is empty even though the dispatched validation run succeeded.
-- **Next**: fix/document PR #25 body/check association, then merge #25. After that, resume Task 10 Phase B designer approval PR creation/manifest `pr-open` verification if still prioritized.
-
-## Design System Skill (Phase 3·보완 트랙)
-
-The pipeline's deterministic classify stage is augmented by a Skill layer that produces a developer-facing checklist with three bands (Auto-applied / Claude review / Human review).
-
-| Skill | Location | Track |
+| 워크플로 | 일정 | 역할 |
 |---|---|---|
-| UNO Design System | `.claude/skills/uno-design-system/SKILL.md` | UNO Figma pipeline (main) |
-| Apple-inspired DS | `.claude/skills/apple-design-system/SKILL.md` | External Markdown DS (experiment) |
-| Wrapper | `scripts/pipeline/claude-review.ts` | both, `--source` flag |
-| Sample report | `project-plan/supplementary-2026-05-20/sample-cs-report.md` | presentation-ready model |
+| `figma-audit.yml` | 매일 00:00 UTC (09:00 KST) | 디자인 시스템 미사용 + 새 top-level 화면 감지 → Issue / 자동 등록 PR |
+| `figma-pipeline.yml` | 2시간마다 + audit 완료 후 cascade | baseline 스냅샷 비교 → cs-* 리포트 + viewer + Slack |
 
-Run `npm run figma:claude-review` to generate the Skill output. Implementation is deterministic (no API call). An `--use-claude` flag for LLM-augmented natural-language summaries is planned.
+### cascade — 1일 1회 통합 알림
 
-## Where To Check Results
+매일 00:00 UTC `figma-audit`이 끝나면 `figma-pipeline`이 자동으로 이어 돌면서 (`workflow_run` 트리거), pipeline의 Slack 메시지에 audit 결과 + auto-register PR 링크를 함께 담아 디자이너가 한 번의 알림으로 모든 시그널을 확인할 수 있게 합니다.
 
-| Path | Purpose |
-|---|---|
-| `.automation/snapshots/` | Raw Figma node snapshots for mapped entries |
-| `.automation/diffs/` | Baseline-vs-head diff JSON and classified diff JSON |
-| `.automation/reports/cs-{id}.md` | Designer review report for a change-set |
-| `.automation/reports/diff-report-only-{timestamp}.md` | Manual follow-up list for report-only changes |
-| `.automation/reports/apply-cs-{id}.md` | Code application result |
-| `.automation/reports/verify-cs-{id}.md` | Build/lint/visual verification result |
-| `.automation/reports/promote-cs-{id}.md` | Promotion result |
-| `.automation/baseline/` | Approved snapshot and screenshot baselines |
+### 자동 등록 PR
 
-## How To Repeat This On A New Figma Change
+새 top-level 화면이 **2회 연속 sighting**(약 24시간)되면 `designer-bot` GitHub App이 PR을 만들고 `config/figma-mapping.yaml`에 `apply: report-only`로 추가합니다. 머지하면 다음 audit cycle부터 그 화면 내부의 디자인 시스템 미사용까지 검사 대상에 포함됩니다.
 
-For normal design edits, do not re-register frames. Just run:
+---
 
-```bash
-npm run figma:run
+## 감지 가능 항목 (What it detects)
+
+| 카테고리 | 라벨 | 감지 기준 | 처리 |
+|---|---|---|---|
+| 🆕 새 화면 추가 | `new-frame` | snapshot에 없던 frame 노드 (등록 화면 안 / top-level 모두) | Issue + 자동 등록 PR |
+| 🎨 디자인 시스템 미사용 | `detached-style` | `boundVariables`/`fillStyleId`/`textStyleId` 없는 raw 컬러·타이포·효과 | Issue |
+| 🖼️ 이미지 변경 | `image-change` | image fill의 `imageRef` 해시 변경 | Issue |
+| ✏️ 텍스트 변경 | `text-change` | 등록된 텍스트 노드의 `characters` 변경 | Tier 1 marker patch (자동 반영) |
+| 🧩 속성 변경 | `props-change` | 등록된 컴포넌트의 속성 변경 (매핑 외) | Issue |
+| 🧱 구조 변경 / 📐 레이아웃 변경 / 📦 에셋 변경 / 🎨 디자인 토큰 변경 | `structure` / `layout` / `asset` / `token` | 그 외 저수준 diff 시그널 | Issue (참고용) |
+
+---
+
+## 어디까지 가능한가 (Limits / non-goals)
+
+**v1에서 가능**:
+- 디자인 토큰(`boundVariables` 부재) 단위로 화면 안의 미사용 색상/타이포/효과 감지
+- 새 top-level 화면 자동 등록 PR (`apply: report-only` 모드)
+- 등록된 텍스트 노드의 marker 기반 자동 코드 반영
+- baseline ↔ 현재 시각 비교 (스크린샷 diff)
+- Slack 통합 알림 (한국어 카테고리)
+
+**v1 범위 밖 (수동 / 다음 phase)**:
+- 토큰 이름까지 추적해 "어떤 토큰을 써야 할지" 추천 (`suggestedToken: null` 정책 유지). 잘못된 추천은 없는 것보다 나쁘다는 판단.
+- INSTANCE_SWAP / component path 기반 정밀한 아이콘 교체 감지 — v1은 `imageRef` 해시 비교만.
+- 컴포넌트 속성 변경의 자동 코드 반영 — 위험도가 높아 report-only.
+- 시각적 diff 자동 baseline promote — 다음 Phase에서 처리.
+
+**원천적으로 불가능**:
+- 디자인 시스템이 Figma 측에 등록돼 있지 않으면 "미사용"을 판단할 기준이 없습니다. 컬러/타이포 변수, 컴포넌트, 스타일을 먼저 Figma에서 정리하세요.
+
+---
+
+## 자기 프로젝트에 설치하기 (Install in your project)
+
+### 1. 사전 준비
+
+- GitHub repository (private/public 모두 가능)
+- Figma 파일 + 토큰 (`FIGMA_TOKEN`)
+- Slack incoming webhook URL (선택, `SLACK_WEBHOOK_URL`)
+- Node.js 20+ (CI runner는 `actions/setup-node@v4`로 자동 설치)
+
+### 2. 봇 코드 도입
+
+이 repo를 자신의 프로젝트에 도입하는 가장 단순한 방법은 다음 디렉토리/파일을 복사해 들이는 것입니다:
+
+```
+scripts/pipeline/            # 봇 본체
+scripts/ops/                 # 보조 ops 스크립트
+.github/workflows/           # figma-audit, figma-pipeline, pr-checks, designer-approval
+config/figma-mapping.yaml    # 사용자 매핑 (비워 두고 직접 등록)
+package.json                 # 봇 dependencies + npm scripts
+tsconfig.json                # 스크립트 빌드 설정
+eslint.config.js             # 린트 설정
 ```
 
-Then read the generated report. For a mapped frame like `0:8063` (`mo - No Home Hub`), future text/layout/structure changes will appear in the diff because the frame is now part of the approved baseline.
+### 3. 디자인 시스템 등록
 
-## How A New Recipient Starts
+Figma 측:
+1. 컬러/타이포/효과를 **Variables 또는 Styles로 등록**합니다.
+2. 화면에서 raw 값(hex, font name 직접 입력) 대신 등록된 변수/스타일을 적용합니다.
+3. 봇이 raw 값을 만나면 `detached-style`로 분류합니다.
 
-1. Put the transferred `design-test` folder anywhere on the machine.
-2. Install dependencies.
-3. Create `uno-home/.env` with their own Figma token.
-4. Run preflight.
-5. Decide whether they are using the same Figma file or their own app/design-system Figma files.
+> 디자인 시스템 등록을 건너뛰면 `detached-style` 감지가 무의미해집니다 — 모든 값이 raw로 보이기 때문.
 
-```bash
-cd /path/to/design-test/uno-home
-npm install
-printf 'FIGMA_TOKEN=YOUR_FIGMA_TOKEN\n' > .env
-npm run figma:preflight
-```
+### 4. Figma 매핑 등록
 
-If they use the same Figma file, they can immediately run:
-
-```bash
-npm run figma:run
-```
-
-Keep `.automation/baseline/` when handing off the project. Without it, the first run cannot compare against the approved 186-node baseline.
-
-## How To Use A Different Project And Figma File
-
-Different Figma files are supported, but the existing node IDs cannot be reused. Figma node IDs are file-local, so a new file needs a new mapping and a new baseline. The project display name and npm package name can be changed during registration.
-
-If the project has only an app/screen Figma file:
-
-```bash
-cd /path/to/design-test/uno-home
-npm run figma:register-file -- "https://www.figma.com/design/APP_FILE_KEY/FileName?m=dev" --project-name "Project Name" --package-name "package-name"
-npm run figma:preflight
-npm run figma:run
-```
-
-If the project has a separate design-system Figma file:
-
-```bash
-cd /path/to/design-test/uno-home
-npm run figma:register-file -- "https://www.figma.com/design/APP_FILE_KEY/FileName?m=dev" --project-name "Project Name" --package-name "package-name" --design-system-url "https://www.figma.com/design/DESIGN_SYSTEM_FILE_KEY/FileName?m=dev"
-npm run figma:preflight
-npm run figma:run
-```
-
-`figma:register-file` does this:
-
-- Backs up `config/figma.yaml`, `config/figma-mapping.yaml`, and `package.json` to `.automation/backups/`.
-- Updates `config/figma.yaml` to the new app file key.
-- Stores `--project-name` in `config/figma-mapping.yaml`.
-- Stores `--package-name` in `package.json`.
-- Replaces `config/figma-mapping.yaml` with a tracking-only mapping for the new files.
-- Registers every app-file top-level `FRAME` as a `report-only` screen.
-- If `--design-system-url` is provided, registers top-level `FRAME`, `COMPONENT`, and `COMPONENT_SET` nodes from that file as `report-only` components.
-- Clears old components/compositions automation because those node IDs must be remapped per file.
-
-The first run after switching files will report many changes because the frames are new to the baseline. Approve/promote that registration change-set to establish the new baseline:
-
-```bash
-npm run figma:approve cs-{id}
-npm run figma:promote cs-{id}
-npm run figma:run
-```
-
-The final run should show `Changes: 0`. After that, future edits in the new Figma file are detected normally.
-
-Important limits:
-
-- New files start in report-only tracking mode.
-- Automatic token/text/prop code changes require manually reviewing/remapping `components:` and `compositions:` for that specific app/design-system file.
-- Visual diff only works for mapped screens with a real `route`.
-- The folder can be renamed from `uno-home`, but any launchd plist paths in `config/com.uno-home.figma-pipeline.plist` must be updated if scheduler automation is used.
-
-## How To Register New Frames Later
-
-Only do this when the Figma file gains new top-level frames.
-
-1. Fetch the file tree with Figma REST API `GET /v1/files/{fileKey}?depth=2`.
-2. Find top-level nodes with `type: "FRAME"`.
-3. Check whether each frame `id` already exists as a `figmaNodeId` in `config/figma-mapping.yaml`.
-4. Add only missing frames under `screens:`.
-5. For unimplemented screens, use:
+`config/figma-mapping.yaml`에 추적할 화면을 등록합니다.
 
 ```yaml
-code: ../src/screens/FigmaFrameTracking.ts
-targetType: screen
-automation:
-  apply: report-only
-  allowedClasses:
-    - token
-    - text
-    - layout
-    - structure
+screens:
+  home_screen:
+    figmaNodeId: "123:456"
+    figmaNodeName: "Home"
+    code: ../src/screens/Home.tsx
+    targetType: screen
+    automation:
+      apply: report-only      # 또는 auto-apply (텍스트 marker 한정)
+      audit: include
+      allowedClasses:
+        - token
+        - text
+        - layout
+        - structure
 ```
 
-6. Do not add a `route` unless the frame has a real React route and should participate in visual diff.
-7. Run `npm run figma:preflight`.
-8. Run `npm run figma:run`.
-9. Approve and promote the registration change-set to establish a clean baseline.
-10. Run `npm run figma:run` again and confirm `Changes: 0`.
+> 비워 두고 시작해도 됩니다. 스케줄러가 등록되지 않은 top-level 화면을 발견하면 2-sighting 후 자동 등록 PR을 보냅니다.
 
-The first run after registration is expected to show many `report-only` changes because the new frames were missing from the old baseline. That run is a baseline reset, not a product UI change.
+### 5. GitHub App 설치 (자동 등록 PR용)
 
-## What The Pipeline Can And Cannot Prove
+자동 등록 PR이 정상적인 `pull_request: opened` 이벤트로 cascade하려면 GitHub App이 PR을 만들어야 합니다 (`GITHUB_TOKEN`으로 만든 PR은 cascade되지 않음).
 
-The pipeline can prove that a mapped Figma node changed after the last approved baseline. It can also prove whether safe token/text/prop changes were applied to code and whether build/lint/visual checks passed.
+1. https://github.com/settings/apps 에서 새 App 생성 (예: `designer-bot`)
+2. Permissions: `contents: write`, `pull-requests: write`, `issues: write`
+3. 해당 repo에 install
+4. App ID + private key를 repo secrets에 추가:
+   - `AUDIT_APP_ID`
+   - `AUDIT_APP_PRIVATE_KEY`
 
-It cannot infer historical edits that happened before a node was registered. If a frame was not in the old baseline, the first detection only says “this node is newly tracked.” After promotion, future edits to that same frame are detectable.
+### 6. Repository secrets
 
-Visual diff only runs for mapped screens with a `route`. Tracking-only Figma frames without routes are reported in markdown, not screenshot-compared against the app UI.
+| 이름 | 용도 |
+|---|---|
+| `FIGMA_TOKEN` | Figma API 호출 (필수) |
+| `AUDIT_APP_ID` / `AUDIT_APP_PRIVATE_KEY` | 자동 등록 PR (필수) |
+| `SLACK_WEBHOOK_URL` | Slack 알림 (선택) |
+| `DISCORD_WEBHOOK_URL` | Discord 알림 (선택) |
+
+Repository variables:
+
+| 이름 | 용도 |
+|---|---|
+| `FIGMA_FILE_KEY` | Figma 파일 키 |
+| `FIGMA_CONFIG_DIR` | (선택) 매핑 config 디렉토리 override |
+| `FIGMA_VIEWER_BASE_URL` | (선택) GitHub Pages base URL override |
+
+### 7. 수동 실행
+
+```bash
+# Figma → snapshot
+npm run figma:snapshot
+
+# 감사 (DS 미사용 + 새 화면)
+npm run figma:audit
+
+# 자동 등록 후보 등록
+npm run figma:audit:register
+
+# 전체 파이프라인 (snapshot → diff → classify → apply → verify → report)
+npm run figma:pipeline
+```
+
+### 8. 스케줄러 활성화
+
+`.github/workflows/figma-audit.yml`과 `figma-pipeline.yml`이 각각 daily / 2시간 cron으로 자동 실행됩니다. 별도 설정 없이 main에 들어가면 활성화됩니다.
+
+수동으로 트리거하고 싶을 때:
+```bash
+gh workflow run figma-audit.yml
+gh workflow run figma-pipeline.yml
+```
+
+---
+
+## GitHub App
+
+이 봇은 자동 PR 생성에 GitHub App `designer-bot`을 사용합니다. App 이름은 사용자가 변경해도 됩니다(설치할 때 임의의 이름을 줄 수 있음). 워크플로 코드에는 App 이름이 하드코드되어 있지 않고 `AUDIT_APP_ID` / `AUDIT_APP_PRIVATE_KEY` secret 값으로 인증합니다.
+
+---
+
+## 라이선스 / 기여
+
+내부 자동화 도구로 시작한 프로젝트입니다. 외부 기여는 issue로 먼저 논의해 주세요.

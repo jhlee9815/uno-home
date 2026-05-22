@@ -16,7 +16,7 @@
 
 import { execSync } from 'node:child_process';
 
-const REPO = process.env.GITHUB_REPOSITORY ?? 'jhlee9815/uno-home';
+const REPO = process.env.GITHUB_REPOSITORY ?? 'jhlee9815/design-review-bot';
 const WORKFLOW_FILE = 'figma-pipeline.yml';
 const WINDOW_HOURS = Number(process.env.WINDOW_HOURS ?? 24);
 const STALE_HOURS = Number(process.env.STALE_HOURS ?? 48);

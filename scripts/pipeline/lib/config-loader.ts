@@ -10,9 +10,9 @@ export class ConfigError extends Error {
   }
 }
 
-// config/ directory (uno-home/config/ by default).
-// Phase 6 extraction-friendly override: downstream repos can point the
-// pipeline at their own config directory without editing source files.
+// config/ directory (repo root config/ by default).
+// Downstream repos can point the pipeline at their own config directory via
+// the FIGMA_CONFIG_DIR env var without editing source files.
 const CONFIG_DIR = process.env.FIGMA_CONFIG_DIR
   ? resolve(process.env.FIGMA_CONFIG_DIR)
   : resolve(dirname(fileURLToPath(import.meta.url)), '../../../config');

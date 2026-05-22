@@ -23,6 +23,10 @@ const DIFFS_DIR = join(REPO_ROOT, '.automation', 'diffs');
 const REPORTS_DIR = join(REPO_ROOT, '.automation', 'reports');
 const VIEWER_DIR = join(REPO_ROOT, '.automation', 'viewer');
 const MAPPING_PATH = join(REPO_ROOT, 'config', 'figma-mapping.yaml');
+// Used in the rendered ops viewer header to link to live designer-review
+// issues. Falls back to the current repo slug; downstream forks should set
+// GITHUB_REPOSITORY (or run from a CI context that does).
+const REPO_SLUG = process.env.GITHUB_REPOSITORY ?? 'jhlee9815/design-review-bot';
 
 interface ClassifiedChange {
   key: string;
@@ -277,7 +281,7 @@ function renderHtml(input: {
     Change set: <code>${escapeHtml(input.csId)}</code> ·
     fileKey: <code>${escapeHtml(input.fileKey)}</code> ·
     baseline: <code>${escapeHtml(input.baseTs)}</code> → head: <code>${escapeHtml(input.headTs)}</code> ·
-    GitHub: <a href="https://github.com/jhlee9815/uno-home/issues?q=is%3Aissue+is%3Aopen+label%3Adesigner-review" target="_blank">designer-review issues →</a>
+    GitHub: <a href="https://github.com/${REPO_SLUG}/issues?q=is%3Aissue+is%3Aopen+label%3Adesigner-review" target="_blank">designer-review issues →</a>
   </div>
 </header>
 <main>

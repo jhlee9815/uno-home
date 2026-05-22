@@ -31,14 +31,14 @@ const classified = {
 
 assert.deepEqual(extractChangedNodeIds(classified), ['7:3', '7:4']);
 assert.equal(
-  viewerUrlFor('https://jhlee9815.github.io/uno-home', 'cs-test'),
-  'https://jhlee9815.github.io/uno-home/cs/cs-test/'
+  viewerUrlFor('https://jhlee9815.github.io/design-review-bot', 'cs-test'),
+  'https://jhlee9815.github.io/design-review-bot/cs/cs-test/'
 );
 
 const html = buildViewerHtml({
   csId: 'cs-test',
   fileKey: 'figma-file',
-  issueUrl: 'https://github.com/jhlee9815/uno-home/issues/9',
+  issueUrl: 'https://github.com/jhlee9815/design-review-bot/issues/9',
   classified,
   imageRefs: {
     '7:3': { before: 'images/7-3-before.png', after: 'images/7-3-after.png' },

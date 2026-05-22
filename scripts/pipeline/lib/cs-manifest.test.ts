@@ -39,7 +39,7 @@ assert.deepEqual(loaded.imageRefs['7:3'], { before: 'sha256:before', after: 'sha
 const updated = updateManifest(root, 'cs-2026-05-21T02-00-00', manifest => ({
   ...manifest,
   githubIssueNumber: 9,
-  githubIssueUrl: 'https://github.com/jhlee9815/uno-home/issues/9',
+  githubIssueUrl: 'https://github.com/jhlee9815/design-review-bot/issues/9',
   viewerUrl: 'https://example.test/cs/cs-2026-05-21T02-00-00/',
 }));
 assert.equal(updated.githubIssueNumber, 9);
