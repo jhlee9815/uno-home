@@ -23,7 +23,7 @@ assert.match(
 );
 assert.match(
   designerApproval,
-  /name:\s*Prepare approval artifact download/,
+  /name:\s*Prepare designer decision context/,
   'designer-approval workflow must derive the originating run id before recording the decision'
 );
 assert.match(
@@ -32,8 +32,18 @@ assert.match(
   'designer-approval workflow must download the original figma-pipeline artifact by manifest runId'
 );
 assert.ok(
-  designerApproval.indexOf('Prepare approval artifact download') < designerApproval.indexOf('Record designer decision'),
+  designerApproval.indexOf('Prepare designer decision context') < designerApproval.indexOf('Record designer decision'),
   'artifact download preparation must happen before figma:designer-approval runs'
+);
+assert.match(
+  figmaPipeline,
+  /name:\s*Persist CS manifest PR[\s\S]*run:\s*npx tsx scripts\/pipeline\/manifest-pr\.ts/,
+  'figma-pipeline must persist CS manifests through a PR so protected main validate can run'
+);
+assert.match(
+  designerApproval,
+  /name:\s*Persist manifest transition PR[\s\S]*run:\s*npm run figma:manifest-pr/,
+  'designer-approval must persist decision transitions through a PR so protected main validate can run'
 );
 
 console.log('workflow artifact handoff contract ok');
