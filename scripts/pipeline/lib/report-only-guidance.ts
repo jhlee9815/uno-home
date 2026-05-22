@@ -74,7 +74,11 @@ export function describeReportOnlyChange(change: ClassifiedChange): Guidance {
   if (compliance.length > 0) {
     return {
       label: 'Compliance signal',
-      detail: `${compliance.join(', ')} detected. See the cs report sections (## Detached Styles / ## New Frames in Tracked Screens / ## Image Changes).`,
+      // Section names in cs reports are Korean now ("## 🎨 디자인 시스템 미사용",
+      // "## 🆕 새 화면 추가 (등록된 화면 안)", "## 🖼️ 이미지 변경"); guide reviewers
+      // to look up by category label so the pointer doesn't rot if those
+      // headings get further reformatted.
+      detail: `${compliance.join(', ')} detected. cs 리포트의 "## 변경 분류" 블록과 카테고리별 섹션(디자인 시스템 미사용 / 새 화면 추가 / 이미지 변경)을 확인하세요.`,
       action: change.target.code
         ? `Review Figma node + \`${change.target.code}\` manually. Compliance signals never auto-patch (v1 policy).`
         : 'Review Figma node manually and decide whether to map/add a new screen or accept the change.',

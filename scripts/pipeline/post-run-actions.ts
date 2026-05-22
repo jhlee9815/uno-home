@@ -242,18 +242,32 @@ async function fetchAuditContext(): Promise<{ issueLink?: string; prLink?: strin
     }
   } catch {/* best-effort */}
   try {
-    // Auto-register PRs are also gated to this audit run: figma-audit embeds
-    // the audit run URL in the PR body (`Audit run: <url>`). Without that
-    // match we'd surface yesterday's still-open PR as if it were today's.
+    // Auto-register PRs are also gated to this audit run.
+    //
+    // figma-audit references its audit run URL in TWO places:
+    //   1. PR body (`Audit run: <url>`) — only on the FIRST audit run that
+    //      created the PR.
+    //   2. PR comment (`Audit run <url> sighted N candidate(s) again ...`)
+    //      — when a subsequent audit run reuses the still-open PR instead
+    //      of creating a new one.
+    //
+    // We accept the PR if either surface contains the current AUDIT_RUN_URL,
+    // otherwise we'd miss the very common reused-PR path (the daily cron
+    // hits this every day until the maintainer merges/closes the PR).
     const { data: prs } = await octokit.rest.pulls.list({
       owner, repo, state: 'open', per_page: 5, sort: 'created', direction: 'desc',
     });
     const autoRegister = prs.find(p => p.labels.some(l => l.name === 'auto-register'));
     if (autoRegister && auditRunUrl) {
       const { data: full } = await octokit.rest.pulls.get({ owner, repo, pull_number: autoRegister.number });
-      if ((full.body ?? '').includes(auditRunUrl)) {
-        out.prLink = `<${autoRegister.html_url}|PR #${autoRegister.number}>`;
+      let matched = (full.body ?? '').includes(auditRunUrl);
+      if (!matched) {
+        const { data: comments } = await octokit.rest.issues.listComments({
+          owner, repo, issue_number: autoRegister.number, per_page: 30,
+        });
+        matched = comments.some(c => (c.body ?? '').includes(auditRunUrl));
       }
+      if (matched) out.prLink = `<${autoRegister.html_url}|PR #${autoRegister.number}>`;
     }
   } catch {/* best-effort */}
   return out;
