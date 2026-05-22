@@ -52,6 +52,7 @@
     "figma:test:manual-edits": "tsx scripts/pipeline/lib/manual-edits.test.ts",
     "figma:test:workflow-artifacts": "tsx scripts/pipeline/lib/workflow-artifacts.test.ts",
     "figma:test:manifest-pr": "tsx scripts/pipeline/lib/manifest-pr.test.ts",
+    "figma:test:artifact-paths": "tsx scripts/pipeline/lib/artifact-paths.test.ts",
     "figma:audit": "tsx --env-file=.env scripts/pipeline/audit.ts",
     "figma:audit:register": "tsx scripts/pipeline/auto-register.ts",
     "figma:test:audit": "tsx scripts/pipeline/lib/audit-aggregator.test.ts",

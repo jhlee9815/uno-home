@@ -18,6 +18,7 @@ import { extractComponentPropUpdates, extractTextUpdates } from './lib/apply-cod
 import { applyMarkedUpdatesToFiles, type MarkedApplyResult } from './lib/apply-runner.ts';
 import { manualEditFilePath, writeManualEditFile } from './lib/manual-edits.ts';
 import { createOrUpdateDesignerPr } from './lib/github-pr.ts';
+import { resolveAutomationPath } from './lib/artifact-paths.ts';
 import type { ClassifiedDiffFile } from './lib/classify-diff.ts';
 import type { SnapshotFile } from './lib/diff-snapshot.ts';
 
@@ -260,24 +261,27 @@ interface CsArtifacts {
 
 function loadCsArtifacts(csId: string, manifest: CsManifest): CsArtifacts | null {
   const timestamp = csId.replace(/^cs-/, '');
-  const classifiedPath = resolve(DIFFS_DIR, `${timestamp}-classified.json`);
+  const classifiedPath = resolveAutomationPath(REPO_ROOT, manifest.classifiedDiffPath)
+    || resolve(DIFFS_DIR, `${timestamp}-classified.json`);
   if (!existsSync(classifiedPath)) {
     logger.error(`Classified diff not found: ${classifiedPath}`);
     return null;
   }
   const classified = JSON.parse(readFileSync(classifiedPath, 'utf-8')) as ClassifiedDiffFile;
-  if (!existsSync(manifest.baseSnapshotPath)) {
-    logger.error(`Base snapshot not found: ${manifest.baseSnapshotPath}`);
+  const baseSnapshotPath = resolveAutomationPath(REPO_ROOT, manifest.baseSnapshotPath);
+  const headSnapshotPath = resolveAutomationPath(REPO_ROOT, manifest.headSnapshotPath);
+  if (!existsSync(baseSnapshotPath)) {
+    logger.error(`Base snapshot not found: ${baseSnapshotPath}`);
     return null;
   }
-  if (!existsSync(manifest.headSnapshotPath)) {
-    logger.error(`Head snapshot not found: ${manifest.headSnapshotPath}`);
+  if (!existsSync(headSnapshotPath)) {
+    logger.error(`Head snapshot not found: ${headSnapshotPath}`);
     return null;
   }
   return {
     classified,
-    base: JSON.parse(readFileSync(manifest.baseSnapshotPath, 'utf-8')) as SnapshotFile,
-    head: JSON.parse(readFileSync(manifest.headSnapshotPath, 'utf-8')) as SnapshotFile,
+    base: JSON.parse(readFileSync(baseSnapshotPath, 'utf-8')) as SnapshotFile,
+    head: JSON.parse(readFileSync(headSnapshotPath, 'utf-8')) as SnapshotFile,
   };
 }
 
