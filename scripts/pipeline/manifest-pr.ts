@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { Octokit } from 'octokit';
 import {
   buildManifestPrBody,
@@ -48,21 +49,32 @@ async function main(): Promise<void> {
     console.log('[manifest-pr] no CS manifest changes to persist');
     return;
   }
+  const initialPaths = pathsFromPorcelain(initialStatus);
+  if (initialPaths.length === 0) {
+    console.log('[manifest-pr] no CS manifest json changes to persist');
+    return;
+  }
+  const fileContents = initialPaths.map(path => ({
+    path,
+    content: readFileSync(path, 'utf-8'),
+  }));
 
-  exec('git stash push -u -m manifest-pr -- .automation/cs/');
   exec('git fetch origin main');
   exec('git checkout main');
   exec('git reset --hard origin/main');
-  exec('git stash pop');
+  const branch = manifestBranchForCs(csId);
+  exec(`git checkout -B ${JSON.stringify(branch)}`);
+  for (const file of fileContents) {
+    mkdirSync(dirname(file.path), { recursive: true });
+    writeFileSync(file.path, file.content, 'utf-8');
+  }
 
   const paths = pathsFromPorcelain(exec('git status --porcelain -- .automation/cs'));
   if (paths.length === 0) {
-    console.log('[manifest-pr] no CS manifest json changes after stash pop; nothing to persist');
+    console.log('[manifest-pr] no CS manifest json changes after restoring state; nothing to persist');
     return;
   }
 
-  const branch = manifestBranchForCs(csId);
-  exec(`git checkout -B ${JSON.stringify(branch)}`);
   exec('git config user.name "designer-bot[bot]"');
   exec('git config user.email "designer-bot[bot]@users.noreply.github.com"');
   exec(`git remote set-url origin ${JSON.stringify(`https://x-access-token:${token}@github.com/${repoFull}.git`)}`);
