@@ -27,25 +27,6 @@ components: {}
 compositions: {}
 
 screens:
-  # Codex's earlier preview frame — tracking only.
-  # Audit skipped because the page is a hand-authored DS reference where
-  # raw hex/font values are intentional (not a token-binding violation).
-  figma_appleInspiredDesignSystemGeneratedPreview_2_2:
-    figmaNodeId: "2:2"
-    figmaNodeName: Apple-inspired Design System / Generated Preview
-    figmaNodePath:
-      - Apple-inspired DS Preview
-    code: ../src/screens/FigmaFrameTracking.ts
-    targetType: screen
-    automation:
-      apply: report-only
-      audit: skip
-      allowedClasses:
-        - token
-        - text
-        - layout
-        - structure
-
   # Wrapper containing the 3 Pesse phones — tracking only (children mapped separately)
   figma_pesseAppleInspired3Screens_7_2:
     figmaNodeId: "7:2"
