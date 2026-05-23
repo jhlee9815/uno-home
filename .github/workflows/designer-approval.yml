@@ -88,6 +88,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.designer-app-token.outputs.token }}
 
+      - name: Promote baseline from approved snapshot
+        if: github.ref == 'refs/heads/main' && github.event.label.name == 'designer-approved'
+        run: npm run figma:promote-baseline -- ${{ env.CS_ID }}
+        env:
+          GITHUB_TOKEN: ${{ steps.designer-app-token.outputs.token }}
+          MANIFEST_SOURCE_WORKFLOW: designer-approval
+          MANIFEST_SOURCE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # Dry-run for the first week of operation: log decision only, do not
+          # mutate .automation/baseline/. Flip to '0' once we've observed at
+          # least one approval cycle without surprises.
+          FIGMA_PROMOTE_DRY_RUN: '1'
+
       - name: Persist manifest transition PR
         if: github.ref == 'refs/heads/main'
         run: npm run figma:manifest-pr -- ${{ env.CS_ID }}
