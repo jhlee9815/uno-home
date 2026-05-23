@@ -1,24 +1,24 @@
-# Active Handoff — Pesse Phase 6 (2026-05-21)
+# Active Handoff — Pesse Phase 6 (2026-05-23)
 
 > 아래의 기존 UNO HOME handoff는 archive 트랙 정보가 많다. 현재 작업 기준은 이 상단 섹션과 `plan.md` / `TODO.md` / `project-plan/phase-6/phase-plan-6.md`를 우선한다.
 
 | 항목 | 현재 값 |
 |---|---|
-| 활성 repo | `jhlee9815/uno-home` (`/Users/juhee/Work/Test/design-test/uno-home`) |
+| 활성 repo | `jhlee9815/design-review-bot` (구 `uno-home`, PR #36으로 리네임) — local: `/Users/juhee/Work/Test/design-test/uno-home` |
 | 활성 Figma file | `9cevQvPHlQ5vZv5Pz3QaLL` (Pesse Apple Demo) |
-| 활성 mapping | `config/figma-mapping.yaml` — 5 entries (`pesse_home`, `pesse_cards`, `pesse_send` 포함) |
-| 최신 main | `bcb7e98` — PR #23 daily audit auto-register merged |
-| 완료 | Phase 6 task-1/2/3/4/7/8 ✅, task-10 Phase A live ✅, Phase B artifact download ✅, audit auto-register code ✅ |
-| 다음 권장 | PR #25 body/check 후속 확인 → auto-register mapping PR merge |
-| 대안 | #25 후 Task 10 Phase B PR 생성/manifest `pr-open` 재검증 또는 task-5 Cloudflare Worker |
+| 활성 mapping | `config/figma-mapping.yaml` — **8 entries** (`figma_appleInspiredDesignSystemGeneratedPreview_2_2` 제거됨, PR #74) |
+| 최신 main | `feat/baseline-promote`(#67) 머지됨. manifest auto-merge(#63), token App(#28/#45), Korean labels + cascade(#33), 리네임(#36) 모두 land |
+| 완료 | Phase 6 task-1/2/3/4/7/8/10 Phase A·B ✅, audit auto-register ✅, manifest PR auto-merge ✅, baseline-promote 자동화 (**dry-run mode**) ✅ |
+| 다음 권장 | 1) baseline-promote `FIGMA_PROMOTE_DRY_RUN: '1' → '0'` flip · 2) test_clean_* auto-register 확인 · 3) report-only/structure reason 한국어화 · 4) audit Issue dedup |
+| 대안 | task-5 Cloudflare Worker → Figma webhook → 즉시 트리거 |
 
-## 현재 디자이너/개발자 워크플로우
+## 현재 디자이너/개발자 워크플로우 (2026-05-23 기준)
 
-1. Figma 변경은 GitHub Actions cron 또는 수동 workflow로 감지된다.
-2. Task 8 이후 등록 화면 내부의 `detached-style`, `new-frame`, `image-change`는 `report-only`로 구조화되어 cs report/Issue에 표시된다. schema-compatible baseline `2026-05-21T07-43-40`이 main에 올라가 다음 run부터 증분 감지 가능하다.
-3. 디자이너 승인 UX는 Phase A로 live 확인됐고, artifact handoff도 live에서 다운로드 성공까지 확인됐다.
-4. `figma-audit` daily auto-register는 PR #23으로 main에 들어갔다. 두 번의 live audit run이 PR #25를 생성했고 validation dispatch도 성공했다.
-5. 현재 blocker는 PR #25 후속이다: PR body에서 두 번째 frame name이 비고, `statusCheckRollup`이 empty라 merge gate가 PR에 붙었는지 확인해야 한다. 자세한 재개 문서는 [`project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md`](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
+1. **Figma 변경 감지**: figma-pipeline cron(2h 간격) + figma-audit(daily) + workflow_dispatch 수동. audit 완료 시 figma-pipeline cascade로 자동 trigger.
+2. **검출 매트릭스**: registered 화면 내부의 `text/component-props/layout/structure`는 delta diff로, top-level frame 등록 여부 + DS detached-style 절대량은 audit가 잡는다. structure/report-only는 자동 코드 수정 안 됨 — 디자이너 검토만.
+3. **디자이너 승인**: GitHub Issue에 `designer-approved` 라벨 → designer-approval workflow가 (a) manifest pending→designer-approved 전이 (b) **baseline-promote dry-run 로그** (c) manifest 전이 PR + 디자이너 사본 PR 생성. designer-bot App token으로 PR 작성.
+4. **머지 자동화**: manifest PR과 baseline-promote PR(향후 production flip 시) 모두 `enablePullRequestAutoMerge` 호출 → `validate` 통과 시 자동 squash merge.
+5. **baseline-promote dry-run live 증거 (2026-05-23 05:48 UTC)**: Issue #68 `cs-2026-05-23T05-45-46` 라벨링 → designer-approval run `26324997509` success → `[promote-baseline] DRY-RUN would create .automation/baseline/2026-05-23T05-48-23.json (848269 bytes, prev baseline: 2026-05-21T07-43-40)`. promote 결정 path 정상 작동, baseline 디렉토리 안 건드림.
 
 ## 바로 읽을 문서
 
