@@ -1,0 +1,58 @@
+{
+  "csId": "cs-2026-05-23T14-54-27",
+  "createdAt": "2026-05-23T14:54:39.147Z",
+  "fileKey": "9cevQvPHlQ5vZv5Pz3QaLL",
+  "baseSnapshotPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/baseline/2026-05-21T07-43-40.json",
+  "headSnapshotPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/snapshots/2026-05-23T14-54-27.json",
+  "classifiedDiffPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/diffs/2026-05-23T14-54-27-classified.json",
+  "reportPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/reports/cs-2026-05-23T14-54-27.md",
+  "classifiedDiffSha256": "sha256:a38eeadbeb8d046c3fc1f8384e84738bce110cc6cd482d19741c37bf9de83e1a",
+  "headSnapshotSha256": "sha256:7197136ece693292a196823fa7e401104a8afc0900db8d457b5dee83f7c1dcb9",
+  "imageRefs": {
+    "73:2090": {
+      "before": null,
+      "after": "sha256:c9eef172329a072595a5df713eb0f013c00f187e9730c1df784e5d74146dfa95"
+    },
+    "73:2076": {
+      "before": null,
+      "after": "sha256:983d1014850ffae1a1fc5d9878a5873e143eab9e811c34e70ae55b9cec80af7e"
+    },
+    "35:244": {
+      "before": null,
+      "after": "sha256:e65c91fbf037741020b3d38a1b2057ff8bf3a6d9af2713c3204060eb48085686"
+    },
+    "35:382": {
+      "before": null,
+      "after": "sha256:e65c91fbf037741020b3d38a1b2057ff8bf3a6d9af2713c3204060eb48085686"
+    },
+    "78:1024": {
+      "before": null,
+      "after": "sha256:85b5b3251444e6c386c1640694d8779d15a7c067a3e217012ad0cf1f6f16b00d"
+    },
+    "78:1046": {
+      "before": null,
+      "after": "sha256:8210b2343f23626a64b0f1de1a963274ec740cb89ea6d9568791abce6b5e602c"
+    },
+    "78:1073": {
+      "before": null,
+      "after": "sha256:65b7975d174e1d8818bd9385404f8badd73e5c960cab870585f4178ec70909e4"
+    },
+    "2:2": {
+      "before": "sha256:d9f9f72bfa5a6cdc45ea488f5df1f1ef1be8126559bc074f9c93f9ce027a1299",
+      "after": null
+    }
+  },
+  "runId": "26335834834",
+  "state": "pending",
+  "stateHistory": [
+    {
+      "state": "pending",
+      "at": "2026-05-23T14:54:39.147Z",
+      "by": "jhlee9815",
+      "via": "report-generation"
+    }
+  ],
+  "viewerUrl": "https://jhlee9815.github.io/design-review-bot/cs/cs-2026-05-23T14-54-27/",
+  "githubIssueNumber": 91,
+  "githubIssueUrl": "https://github.com/jhlee9815/design-review-bot/issues/91"
+}
