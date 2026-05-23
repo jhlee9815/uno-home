@@ -113,10 +113,10 @@ assert.match(classified.changes[2].decisionReasons[0], /report-only/);
 
 assert.equal(classified.changes[3].decision, 'report-only');
 assert.equal(classified.changes[3].classes[0], 'unknown');
-assert.match(classified.changes[3].decisionReasons[0], /No mapping/);
+assert.match(classified.changes[3].decisionReasons[0], /매핑된 대상이 없습니다/);
 
 assert.equal(classified.changes[4].decision, 'report-only');
-assert.match(classified.changes[4].decisionReasons[0], /manual-only/);
+assert.match(classified.changes[4].decisionReasons[0], /수동 처리가 필요합니다/);
 
 // ============================================================================
 // Stage 4 — compliance classes always report-only + subcategories derivation

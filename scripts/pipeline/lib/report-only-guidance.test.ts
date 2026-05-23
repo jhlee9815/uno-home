@@ -84,16 +84,16 @@ const markdown = renderReportOnlyMarkdown(
   '2026-05-06T12:30:00.000Z'
 );
 
-assert.match(markdown, /Why blocked/);
-assert.match(markdown, /Manual action/);
+assert.match(markdown, /차단 사유/);
+assert.match(markdown, /수동 액션/);
 
-assert.match(markdown, /Screen policy/);
-assert.match(markdown, /screens are intentionally report-only/);
-assert.match(markdown, /Edit `\.\.\/src\/screens\/HomeScreen\.tsx` manually/);
+assert.match(markdown, /화면 정책/);
+assert.match(markdown, /의도적으로 report-only로 설정/);
+assert.match(markdown, /`\.\.\/src\/screens\/HomeScreen\.tsx`를 직접 수정/);
 
-assert.match(markdown, /Deferred class/);
+assert.match(markdown, /미지원 분류/);
 assert.match(markdown, /layout/);
-assert.match(markdown, /M4 layout automation is deferred/);
+assert.match(markdown, /M4 layout 자동화는 아직 deferred/);
 
-assert.match(markdown, /Unmapped target/);
-assert.match(markdown, /Add this node to `config\/figma-mapping\.yaml`/);
+assert.match(markdown, /매핑 누락/);
+assert.match(markdown, /`config\/figma-mapping\.yaml`에 추가/);
