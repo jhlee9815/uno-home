@@ -175,3 +175,63 @@ screens:
         - text
         - layout
         - structure
+  # Auto-registered by figma-audit on 2026-05-23 (sighted 2 times, first seen 2026-05-23)
+  auto_test_clean_001_78_1024:
+    figmaNodeId: "78:1024"
+    figmaNodeName: "test_clean_001"
+    figmaNodePath: []
+    code: ../src/screens/FigmaFrameTracking.ts
+    targetType: screen
+    automation:
+      apply: report-only
+      audit: include
+      allowedClasses:
+        - token
+        - text
+        - layout
+        - structure
+  # Auto-registered by figma-audit on 2026-05-23 (sighted 2 times, first seen 2026-05-23)
+  auto_test_clean_002_78_1046:
+    figmaNodeId: "78:1046"
+    figmaNodeName: "test_clean_002"
+    figmaNodePath: []
+    code: ../src/screens/FigmaFrameTracking.ts
+    targetType: screen
+    automation:
+      apply: report-only
+      audit: include
+      allowedClasses:
+        - token
+        - text
+        - layout
+        - structure
+  # Auto-registered by figma-audit on 2026-05-23 (sighted 2 times, first seen 2026-05-23)
+  auto_test_clean_003_78_1073:
+    figmaNodeId: "78:1073"
+    figmaNodeName: "test_clean_003"
+    figmaNodePath: []
+    code: ../src/screens/FigmaFrameTracking.ts
+    targetType: screen
+    automation:
+      apply: report-only
+      audit: include
+      allowedClasses:
+        - token
+        - text
+        - layout
+        - structure
+  # Auto-registered by figma-audit on 2026-05-23 (sighted 2 times, first seen 2026-05-23)
+  auto_apple_inspired_design_system_generated_p_79_306:
+    figmaNodeId: "79:306"
+    figmaNodeName: "Apple-inspired Design System / Generated Preview"
+    figmaNodePath: []
+    code: ../src/screens/FigmaFrameTracking.ts
+    targetType: screen
+    automation:
+      apply: report-only
+      audit: include
+      allowedClasses:
+        - token
+        - text
+        - layout
+        - structure
