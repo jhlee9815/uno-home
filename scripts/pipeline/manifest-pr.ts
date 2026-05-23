@@ -103,6 +103,7 @@ async function main(): Promise<void> {
       body,
     });
     console.log(`[manifest-pr] updated PR #${existing.data[0].number}: ${existing.data[0].html_url}`);
+    await enableAutoMerge(octokit, existing.data[0].node_id, existing.data[0].number);
     return;
   }
 
@@ -115,6 +116,24 @@ async function main(): Promise<void> {
     body,
   });
   console.log(`[manifest-pr] created PR #${created.data.number}: ${created.data.html_url}`);
+  await enableAutoMerge(octokit, created.data.node_id, created.data.number);
+}
+
+async function enableAutoMerge(octokit: Octokit, pullRequestId: string, prNumber: number): Promise<void> {
+  try {
+    await octokit.graphql(
+      `mutation($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
+        enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId, mergeMethod: $mergeMethod }) {
+          pullRequest { number }
+        }
+      }`,
+      { pullRequestId, mergeMethod: 'SQUASH' },
+    );
+    console.log(`[manifest-pr] auto-merge enabled for PR #${prNumber}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`[manifest-pr] auto-merge not enabled for PR #${prNumber}: ${message}`);
+  }
 }
 
 function exec(cmd: string): string {
