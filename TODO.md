@@ -1,7 +1,7 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-21 23:28 KST (Claude 세션 한도 도달 정리: PR #23 audit auto-register merged, live verify로 PR #25 생성. 다음은 #25 body/check 후속 확인.)
+> 최신 갱신: 2026-05-23 14:50 KST (manifest PR auto-merge + baseline-promote dry-run + mapping cleanup live 확인 완료. 다음: dry-run flip + i18n + audit dedup.)
 
 ---
 
@@ -12,27 +12,28 @@
 | # | 단계 | 진척 | 비고 |
 |:-:|---|:-:|---|
 | 1 | Figma 편집 | 100% | 도구 외부 |
-| 2 | 스케쥴 diff | 99% | daily `figma-audit` + 2-sighting auto-register PR flow가 PR #23으로 main에 들어감. schema-compatible baseline `2026-05-21T07-43-40` 유지. task-5 webhook은 optional. |
-| 3 | Slack 알림 + 디자이너 확인 | 100% | PR #10 merged, baseline images seeded(PR #16), Pages built, viewer URL 포함 Issue 생성, `designer-approved` 라벨 → manifest transition 확인. |
-| 4 | 개발 코드 변경 | 75% | Phase B 코드 PR #17/#18 merged. audit auto-register code PR #23 merged. PR #25 generated mapping follow-up 필요. |
-| 5 | 개발자 머지 | 60% | Auto-register PR #25 open. Phase C visual diff/branch protection/baseline promote 미완료. |
+| 2 | 스케쥴 diff | 99% | daily audit + 2시간 pipeline cron + workflow_run cascade + 2-sighting auto-register live. baseline `2026-05-21T07-43-40` (다음 approval에서 자동 갱신 예정). |
+| 3 | Slack 알림 + 디자이너 확인 | 100% | Korean labels + audit→pipeline cascade(#33), 라벨링 시 designer-approval workflow 정상. |
+| 4 | 개발 코드 변경 | 85% | designer-bot App token으로 PR 작성(#28/#45), manifest PR auto-merge(#63), baseline-promote 자동화 dry-run(#67) 완료. live promote는 flip 후. |
+| 5 | 개발자 머지 | 80% | manifest PR auto-merge live. baseline-promote PR auto-merge 코드 준비됨(dry-run). Phase C visual diff/branch protection은 별개. |
 
-**가중 진척 ≈ 86%.** 가장 큰 잔여 가치는 auto-register PR #25의 body/check association을 정리하고 merge하는 것, 그 다음 Task 10 Phase B PR 생성/manifest `pr-open` 재검증과 Phase C 안전망.
+**가중 진척 ≈ 93%.** 가장 큰 잔여 가치는 baseline-promote dry-run→prod flip(접근법 확정, 안전망 검증 끝). 그 다음 audit/Issue 노이즈 정량 감소(한국어화/dedup/threshold).
 
-### 최신 운영 증거 (2026-05-21)
+### 최신 운영 증거 (2026-05-23)
 
-- `main` 최신: `bcb7e98` (`feat(audit): two-sighting auto-register + daily cron (#23)`).
-- merged PRs: #10 Phase A, #13 webhook failure isolation, #16 baseline image seed, #17 Phase B prep, #18 Phase B auto-edit PR flow, #23 audit auto-register.
-- GitHub Pages: `https://jhlee9815.github.io/uno-home/` built, latest viewer `https://jhlee9815.github.io/uno-home/cs/cs-2026-05-21T07-07-04/`.
-- Actions: `figma-pipeline` run `26211009015` success, Pages run `26211035500` success, `designer-approval` run `26211056345` success.
-- Latest review Issue: #19 `cs-2026-05-21T07-07-04`, labels `designer-review`, `report-only`, `designer-approved`.
-- Latest manifest: `.automation/cs/cs-2026-05-21T07-07-04.json` state `designer-approved`, stateHistory includes `label:designer-approved`.
-- Live verification 1-2 complete: #19 `designer-approved` 라벨 재적용 → run `26212122539`; `Download originating pipeline artifacts` succeeded for `figma-pipeline-26211009015`; apply 단계까지 진입. Next blocker: PR creation failed because GitHub Actions is not permitted to create pull requests.
-- Audit auto-register live verify: `figma-audit` run `26232066749` success, run `26232107808` success; run 2 created PR #25.
-- PR #25: `[auto-register] 2 frame(s) — 2026-05-21`, branch `auto-register/audit-2026-05-21`, diff adds `auto_test1_35_244` and `auto_test2_35_382`.
-- PR #25 validation dispatch: `pr-checks` run `26232141435` success, but PR `statusCheckRollup` is empty and `mergeStateStatus` is `BLOCKED`.
-- Known PR #25 body issue: second registered frame name is blank in body even though diff contains `figmaNodeName: "test2"`.
-- Claude stopped because the session limit was hit; resume from [`project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md`](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
+- repo 리네임: `uno-home → design-review-bot` (PR #36 2026-05-22).
+- merged PRs (2026-05-22~23 핵심):
+  - **#63 manifest PR auto-merge** — `enablePullRequestAutoMerge(SQUASH)`로 validate 통과 시 manifest PR 자동 land. 이전 누적된 9개 manifest PR(#42/47/49/51/53/55/57/59/62) squash-merge로 정리.
+  - **#67 baseline-promote 자동화 (dry-run)** — `scripts/pipeline/lib/baseline-promote.ts` 순수 결정 함수 + `promote-baseline.ts` CLI + designer-approval workflow step. `FIGMA_PROMOTE_DRY_RUN: '1'`로 안전망. lib 5 test 케이스 통과.
+  - **#74 mapping cleanup** — `figma_appleInspiredDesignSystemGeneratedPreview_2_2` (page 2 DS preview, 2:2) 제거. mapping entries 9 → 8.
+  - 이전: #28/#45 designer-bot App token, #33 Korean labels + audit→pipeline cascade, #36 repo rename, #37/#43 manifest persistence under branch protection.
+- baseline-promote live 증거 (run `26324997509`, Issue #68 `cs-2026-05-23T05-45-46` 라벨링):
+  - 로그: `[promote-baseline] DRY-RUN would create .automation/baseline/2026-05-23T05-48-23.json (848269 bytes, prev baseline: 2026-05-21T07-43-40)`
+  - 의미: snapshot artifact 다운로드 정상, cs.createdAt이 newer-than-current 통과, promote 결정 도달, 실제 mutation 없음 (flag 정상 작동).
+- audit live (run `26324994936`, Issue #70):
+  - Detached styles: **1167** (변동 없음 — 새 frame들이 DS-clean이라는 증거)
+  - Unregistered top-level frames: **4** — `test_clean_001` (78:1024), `test_clean_002` (78:1046), `test_clean_003` (78:1073), `Apple-inspired Design System / Generated Preview` (79:306).
+- stale manual-edit PR: #20 (cs-2026-05-21T07-07-04), #40 (cs-2026-05-22T01-12-45), #64 (cs-2026-05-23T02-42-47). 본문 path가 옛 `uno-home/` prefix.
 
 ### 단계 2 감지 매트릭스 (task-8 구현, report-only 정책)
 
@@ -63,21 +64,29 @@ npm run build
 
 ---
 
-## 2. 우선순위 1 — Auto-register PR #25 마무리
+## 2. 우선순위 1 — baseline-promote dry-run → production flip
 
-Claude가 PR #23을 main에 merge한 뒤 live verify로 PR #25를 생성했다. 지금 해야 할 일은 PR #25를 안전하게 merge 가능 상태로 만드는 것이다.
+PR #67이 baseline-promote 자동화를 dry-run으로 land했다. dry-run 로그가 2026-05-23 05:48 UTC live run에서 정상 패턴(`would create … bytes, prev baseline: …`)으로 떨어졌다. 추가 관찰 없이 flip 가능 상태.
 
-### 현재 PR #25 상태
+### 작업 내용
 
-- URL: https://github.com/jhlee9815/uno-home/pull/25
-- Head: `auto-register/audit-2026-05-21`
-- Base: `main`
-- Diff: `config/figma-mapping.yaml` only
-- Adds: `35:244`/`test1`, `35:382`/`test2`
-- Validation dispatch: `pr-checks` run `26232141435` success
-- Blockers to inspect:
-  1. PR body에서 `35:382`의 frame name이 blank로 표시됨.
-  2. `statusCheckRollup`이 empty라 required check가 PR에 붙었는지 확인 필요.
+1. `.github/workflows/designer-approval.yml`에서 `FIGMA_PROMOTE_DRY_RUN: '1'` → `'0'`로 변경 (해당 step 환경변수 한 줄).
+2. PR로 land + auto-merge.
+3. 다음 `designer-approved` 라벨 시 실제 baseline 파일이 `.automation/baseline/` 디렉토리에 새로 생성되고, 그 다음 figma-pipeline run에서 해당 4건이 더 이상 안 나오는지 확인.
+4. 실패 시 롤백: 잘못 promote된 baseline 파일을 `git rm` → 자동으로 직전 baseline로 복귀 (sort().at(-1) 로직).
+
+### 우선순위 2 — Issue/Slack 노이즈 추가 감소
+
+baseline-promote가 켜져도 audit Issue(detached 1167 + unregistered frames) 노이즈는 별도 메커니즘. 다음 세션에서 줄일 수 있는 항목:
+
+- **report-only / structure 한국어화** — `scripts/pipeline/lib/classify-diff.ts:110,115`와 `scripts/pipeline/lib/report-only-guidance.ts:91,101`의 영어 reason 문자열을 한국어로 (단순 치환). 추가로 manual action도 한국어. Issue 본문이 디자이너가 읽기 좋아짐.
+- **audit Issue dedup** — 직전 audit Issue와 detached/unregistered 카운트가 동일하면 새 Issue 생성하지 말고 댓글로만 갱신 또는 skip. Issue #60/#70 같은 중복 발생 패턴 차단.
+- **stale manual-edit PR #20/#40/#64 정리** — close + 본문 path를 새 repo 이름(`design-review-bot/`)으로 normalize하는 코드 수정 (`scripts/pipeline/lib/manual-edits.ts` 추정).
+- **baseline 디렉토리 자동 prune** — 최근 N개만 유지하는 cleanup 스크립트 (현재 6개+ 누적 중).
+
+### 우선순위 3 — test_clean_* mapping 자동 등록 확인
+
+2026-05-23 05:50 UTC에 figma-audit를 다시 trigger했음 (run `26325098092`). 2-sighting policy로 `test_clean_001/002/003`에 대한 auto-register PR이 자동 생성되어야 함. PR 머지 → preflight에 entries 8→11로 늘어남 → 다음 pipeline run에서 새 frame이 pipeline diff에서도 잡히는지 확인.
 
 ### 다음 해야 할 작업
 
