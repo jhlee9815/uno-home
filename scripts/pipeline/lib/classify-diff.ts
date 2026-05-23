@@ -92,7 +92,7 @@ function classifyChange(
       ...change,
       classes,
       decision: 'report-only',
-      decisionReasons: [`No mapping found for key '${change.key}'`],
+      decisionReasons: [`키 '${change.key}'에 매핑된 대상이 없습니다`],
       target: {
         section: 'unknown',
         apply: 'report-only',
@@ -107,22 +107,22 @@ function classifyChange(
   const decisionReasons: string[] = [];
 
   if (target.apply === 'report-only') {
-    decisionReasons.push(`Mapping apply mode is report-only`);
+    decisionReasons.push(`매핑의 apply 모드가 report-only로 설정되어 있어 자동 코드 반영 대상이 아닙니다`);
   }
 
   const manualOnly = change.classes.filter(cls => MANUAL_ONLY_CLASSES.has(cls));
   if (manualOnly.length > 0) {
-    decisionReasons.push(`Classes require manual-only handling in Phase 5: ${manualOnly.join(', ')}`);
+    decisionReasons.push(`Phase 5 자동 반영 엔진(M1-M3)으로는 처리할 수 없는 분류라 수동 처리가 필요합니다: ${manualOnly.join(', ')}`);
   }
 
   const disallowed = change.classes.filter(cls => !target.allowedClasses.includes(cls));
   if (disallowed.length > 0) {
-    decisionReasons.push(`Classes not allowed by mapping: ${disallowed.join(', ')}`);
+    decisionReasons.push(`이 매핑의 allowedClasses에 포함되지 않은 분류라 자동 반영이 차단됩니다: ${disallowed.join(', ')}`);
   }
 
   const unsupported = change.classes.filter(cls => !AUTO_SUPPORTED_CLASSES.has(cls));
   if (unsupported.length > 0 && manualOnly.length === 0) {
-    decisionReasons.push(`Classes are not auto-supported yet: ${unsupported.join(', ')}`);
+    decisionReasons.push(`자동 반영을 아직 지원하지 않는 분류입니다: ${unsupported.join(', ')}`);
   }
 
   const canAutoApply =
@@ -133,7 +133,7 @@ function classifyChange(
   return {
     ...change,
     decision: canAutoApply ? 'auto-apply' : 'report-only',
-    decisionReasons: canAutoApply ? ['Mapped target allows all changed classes'] : decisionReasons,
+    decisionReasons: canAutoApply ? ['매핑이 변경된 모든 분류를 허용해 자동 반영 대상입니다'] : decisionReasons,
     target,
     subcategories: deriveSubcategories(change.classes),
   };
