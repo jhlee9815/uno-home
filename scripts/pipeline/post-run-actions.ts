@@ -24,6 +24,7 @@ import { loadManifest, updateManifest } from './lib/cs-manifest.ts';
 import { createOrUpdateDesignerPr, selectPathsForPrBranch } from './lib/github-pr.ts';
 import { CATEGORY_EMOJI, CATEGORY_LABEL_KO, rawClassToSubcategory } from './lib/category-labels.ts';
 import type { ComplianceSubcategory } from './lib/compliance-types.ts';
+import { postWebhook } from './lib/webhook.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -102,38 +103,6 @@ function exec(cmd: string): string {
     return '';
   }
   return execSync(cmd, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim();
-}
-
-async function postWebhook(url: string, payload: object, label: string): Promise<void> {
-  if (DRY_RUN) {
-    console.log(`[dry-run ${label}] POST ${url.replace(/[A-Za-z0-9_-]{20,}/g, '<redacted>')}`);
-    return;
-  }
-  // Guard a malformed secret (whitespace, missing scheme, paste of an
-  // OAuth token instead of an Incoming Webhook URL) from killing the
-  // entire post-run step. Notification failures must not roll back PR
-  // creation, issue creation, or manifest persistence.
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    console.warn(`[${label}] skipped — webhook URL is not a valid URL. Fix the secret.`);
-    return;
-  }
-  try {
-    const res = await fetch(parsed, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      console.warn(`[${label}] webhook returned ${res.status} ${res.statusText}`);
-    } else {
-      console.log(`[${label}] notified`);
-    }
-  } catch (err) {
-    console.warn(`[${label}] webhook fetch failed: ${err instanceof Error ? err.message : String(err)}`);
-  }
 }
 
 function truncateBody(body: string, maxLen = 60000): string {
@@ -314,7 +283,7 @@ async function notifySlack(): Promise<void> {
     (auditLines.length ? '\n' + auditLines.join('\n') : '') +
     viewerLine +
     `\n• repo: <https://github.com/${owner}/${repo}|${owner}/${repo}>`;
-  await postWebhook(url, { text: summary }, 'slack');
+  await postWebhook({ url, payload: { text: summary }, label: 'slack', dryRun: DRY_RUN });
 }
 
 async function notifyDiscord(): Promise<void> {
@@ -326,7 +295,7 @@ async function notifyDiscord(): Promise<void> {
     buildLocalizedSummary().join('\n') +
     viewerLine +
     `\nrepo: https://github.com/${owner}/${repo}`;
-  await postWebhook(url, { content }, 'discord');
+  await postWebhook({ url, payload: { content }, label: 'discord', dryRun: DRY_RUN });
 }
 
 // ----- GitHub Issue (report-only) -----

@@ -197,6 +197,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create audit Issue when violations detected
+        id: audit_issue
         if: steps.audit.outputs.has_violations == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -243,7 +244,17 @@ jobs:
             gh issue close "$N" --comment "Superseded by latest audit run (${RUN_URL})." || true
           done
 
-          gh issue create --title "$TITLE" --label audit --body-file "$BODY_FILE"
+          ISSUE_URL=$(gh issue create --title "$TITLE" --label audit --body-file "$BODY_FILE")
+          echo "issue_url=${ISSUE_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack with audit summary
+        if: steps.audit.outputs.has_violations == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          AUDIT_JSON: ${{ steps.audit.outputs.audit_json }}
+          ISSUE_URL: ${{ steps.audit_issue.outputs.issue_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npm run figma:audit:notify
 
       - name: Upload audit artifact
         if: always()

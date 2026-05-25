@@ -59,7 +59,9 @@
     "figma:audit:register": "tsx scripts/pipeline/auto-register.ts",
     "figma:test:audit": "tsx scripts/pipeline/lib/audit-aggregator.test.ts",
     "figma:test:audit-state": "tsx scripts/pipeline/lib/audit-state.test.ts",
-    "figma:test:auto-register-format": "tsx scripts/pipeline/lib/auto-register-format.test.ts"
+    "figma:test:audit-slack": "tsx scripts/pipeline/lib/audit-slack.test.ts",
+    "figma:test:auto-register-format": "tsx scripts/pipeline/lib/auto-register-format.test.ts",
+    "figma:audit:notify": "tsx scripts/pipeline/audit-notify.ts"
   },
   "dependencies": {
     "lucide-react": "^1.11.0",
