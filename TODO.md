@@ -1,7 +1,7 @@
 # TODO — 다음 세션 시작 가이드
 
 > 작성: 2026-05-20
-> 최신 갱신: 2026-05-23 14:50 KST (manifest PR auto-merge + baseline-promote dry-run + mapping cleanup live 확인 완료. 다음: dry-run flip + i18n + audit dedup.)
+> 최신 갱신: 2026-05-25 22:30 KST (검출 결손 3종 해결: PR #131 새 frame compliance + PR #132 audit→slack live 확인. 다음: Phase 2 PR-B 슬랙 본문 강화.)
 
 ---
 
@@ -12,38 +12,37 @@
 | # | 단계 | 진척 | 비고 |
 |:-:|---|:-:|---|
 | 1 | Figma 편집 | 100% | 도구 외부 |
-| 2 | 스케쥴 diff | 99% | daily audit + 2시간 pipeline cron + workflow_run cascade + 2-sighting auto-register live. baseline `2026-05-21T07-43-40` (다음 approval에서 자동 갱신 예정). |
-| 3 | Slack 알림 + 디자이너 확인 | 100% | Korean labels + audit→pipeline cascade(#33), 라벨링 시 designer-approval workflow 정상. |
-| 4 | 개발 코드 변경 | 85% | designer-bot App token으로 PR 작성(#28/#45), manifest PR auto-merge(#63), baseline-promote 자동화 dry-run(#67) 완료. live promote는 flip 후. |
-| 5 | 개발자 머지 | 80% | manifest PR auto-merge live. baseline-promote PR auto-merge 코드 준비됨(dry-run). Phase C visual diff/branch protection은 별개. |
+| 2 | 스케쥴 diff | 100% | daily audit + 2시간 pipeline cron + workflow_run cascade + 2-sighting auto-register live. **신규 frame compliance도 첫 cycle에 검출** (PR #131). baseline production flip 완료 (PR #80). |
+| 3 | Slack 알림 + 디자이너 확인 | 100% (UX 강화 여지) | per-cs 알림 + **daily audit 절대량 알림** (PR #132) 둘 다 live. pipeline 본문은 카테고리 라인이 빈약 — Phase 2(PR-B)에서 raw class 라인 + cap 추가 예정. |
+| 4 | 개발 코드 변경 | 90% | designer-bot App token, manifest PR auto-merge, baseline-promote production. 잔여: stale manual-edit PR 정리, baseline 디렉토리 prune. |
+| 5 | 개발자 머지 | 90% | manifest/baseline-promote PR auto-merge live. Phase C visual diff/branch protection은 별개. |
 
-**가중 진척 ≈ 93%.** 가장 큰 잔여 가치는 baseline-promote dry-run→prod flip(접근법 확정, 안전망 검증 끝). 그 다음 audit/Issue 노이즈 정량 감소(한국어화/dedup/threshold).
+**가중 진척 ≈ 96%.** 검출 결손 3종(신규 frame DS 미사용 / pipeline slack 카운트 / audit absolute slack)이 모두 해소돼 검출 시스템은 완성. 잔여는 UX(Phase 2)와 운영 정리.
 
-### 최신 운영 증거 (2026-05-23)
+### 최신 운영 증거 (2026-05-25)
 
-- repo 리네임: `uno-home → design-review-bot` (PR #36 2026-05-22).
-- merged PRs (2026-05-22~23 핵심):
-  - **#63 manifest PR auto-merge** — `enablePullRequestAutoMerge(SQUASH)`로 validate 통과 시 manifest PR 자동 land. 이전 누적된 9개 manifest PR(#42/47/49/51/53/55/57/59/62) squash-merge로 정리.
-  - **#67 baseline-promote 자동화 (dry-run)** — `scripts/pipeline/lib/baseline-promote.ts` 순수 결정 함수 + `promote-baseline.ts` CLI + designer-approval workflow step. `FIGMA_PROMOTE_DRY_RUN: '1'`로 안전망. lib 5 test 케이스 통과.
-  - **#74 mapping cleanup** — `figma_appleInspiredDesignSystemGeneratedPreview_2_2` (page 2 DS preview, 2:2) 제거. mapping entries 9 → 8.
-  - 이전: #28/#45 designer-bot App token, #33 Korean labels + audit→pipeline cascade, #36 repo rename, #37/#43 manifest persistence under branch protection.
-- baseline-promote live 증거 (run `26324997509`, Issue #68 `cs-2026-05-23T05-45-46` 라벨링):
-  - 로그: `[promote-baseline] DRY-RUN would create .automation/baseline/2026-05-23T05-48-23.json (848269 bytes, prev baseline: 2026-05-21T07-43-40)`
-  - 의미: snapshot artifact 다운로드 정상, cs.createdAt이 newer-than-current 통과, promote 결정 도달, 실제 mutation 없음 (flag 정상 작동).
-- audit live (run `26324994936`, Issue #70):
-  - Detached styles: **1167** (변동 없음 — 새 frame들이 DS-clean이라는 증거)
-  - Unregistered top-level frames: **4** — `test_clean_001` (78:1024), `test_clean_002` (78:1046), `test_clean_003` (78:1073), `Apple-inspired Design System / Generated Preview` (79:306).
-- stale manual-edit PR: #20 (cs-2026-05-21T07-07-04), #40 (cs-2026-05-22T01-12-45), #64 (cs-2026-05-23T02-42-47). 본문 path가 옛 `uno-home/` prefix.
+- merged PRs (2026-05-25):
+  - **#131 new-frame compliance detection** — `diff-snapshot.ts:129-140`의 `!beforeNode` 분기에 `diffCompliance(undefined, afterNode)` 연결. 신규 frame의 detached-style/new-frame/image-change가 첫 cycle에 슬랙·viewer·issue로 surface. T1~T5 단위 테스트 추가. 17/17 + 6/6 통과.
+  - **#132 audit→slack notification** — `lib/audit-slack.ts` 순수 포매터 + `audit-notify.ts` 엔트리 + `lib/webhook.ts` 공유 helper. `figma-audit.yml`에 `Notify Slack` step + audit Issue URL `$GITHUB_OUTPUT` 캡쳐. `hasViolations=false`이면 침묵. 6 단위 테스트.
+- audit→slack first live (workflow_dispatch run `26402360291`, 2026-05-25 13:14 UTC):
+  - 본문: `🎨 일일 DS 컴플라이언스 audit — 2026-05-25 · 기준: 일일 전체 audit (delta 아님) · 전체 detached style: 1295건 (색상 72·타이포 1223) · 미등록 top-level frame: 0건 · 상위 위반 화면 top-5: 1. Pesse Apple-inspired — 3 screens(592건) 2. Phone · Home — Balance(145건) 3. Phone · Send Money(108건) 4. Phone · Cards — Select Card(98건) 5. test1(70건) · 외 6개 화면`
+  - Issue #133 링크 + workflow URL 포함.
+  - 의미: baseline 흡수돼 delta로는 안 보이던 1295건이 매일 슬랙 채널에 surface.
+- 이전 세션 핵심 merged: #80 baseline-promote prod flip, #81 DS preview exclude (2:2/79:306), #82 audit refresh, #86 Korean reasons, #67 baseline-promote dry-run, #74 mapping cleanup, #63 manifest auto-merge, #28/#45 designer-bot App token, #33 Korean labels + cascade, #36 rename.
+- stale manual-edit PR (정리 대기): #20, #40, #64, #71. 본문 path가 옛 `uno-home/` prefix.
 
-### 단계 2 감지 매트릭스 (task-8 구현, report-only 정책)
+### 단계 2 감지 매트릭스 (전체, 2026-05-25 기준)
 
-| 감지 종류 | class | 트리거 | 자동 patch | 디자이너 검토 필요 |
+| 감지 종류 | class | 트리거 | 자동 patch | 디자이너 검토 |
 |---|---|---|---|---|
-| 텍스트 변경 (marker 있음) | `text-change` | 매핑된 텍스트 노드 변경 | ✅ Tier 1 marker patch | (auto-apply) |
-| 속성/스타일 변경 (매핑 외) | (다양) | 매핑 외 속성 변경 | ❌ | ✅ Issue |
-| **새 프레임 추가** | `new-frame` | snapshot에 없던 frame 노드 추가 | ❌ | ✅ Issue |
-| **DS 토큰 미반영 (타이포/색상)** | `detached-style` | Figma 변수/스타일 해제 (로컬 hex/font) | ❌ | ✅ Issue |
-| 이미지 변경 | `image-change` | image fill의 ref hash 변경 | ❌ | ✅ Issue |
+| 텍스트 변경 (marker 있음) | `text` → `text-change` | 매핑된 텍스트 노드 hash 변경 | ✅ Tier 1 marker patch | (auto-apply) |
+| 속성/컴포넌트 props | `component-props` → `props-change` | 매핑된 노드 props hash 변경 | ✅ (mapping 허용 시) | (auto-apply) |
+| 토큰 | `token` | tokensHash 변경 | ✅ | (auto-apply) |
+| 구조 변경 | `structure` | 노드 추가/삭제/boundingBox null toggle | ❌ | ✅ Issue |
+| 레이아웃 | `layout` | boundingBox 좌표/크기 변경 | ❌ | ✅ Issue |
+| **새 프레임 추가** | `new-frame` | registered frame 내부 descendant frame 추가 + **!beforeNode 분기 신규 frame 자체도 포함 (PR #131)** | ❌ | ✅ Issue |
+| **DS 토큰 미반영 (타이포/색상/효과)** | `detached-style` | Figma 변수/스타일 해제. **신규 frame 첫 cycle에서도 잡힘 (PR #131)** | ❌ | ✅ Issue + 매일 절대량 슬랙 (PR #132) |
+| 이미지 변경 | `image-change` | image fill의 ref hash 변경. **신규 frame도 포함 (PR #131)** | ❌ | ✅ Issue |
 
 ---
 
@@ -64,87 +63,53 @@ npm run build
 
 ---
 
-## 2. 우선순위 1 — baseline-promote dry-run → production flip
+## 2. 우선순위 1 — Phase 2 (PR-B): figma-pipeline 슬랙 본문 강화 + cap
 
-PR #67이 baseline-promote 자동화를 dry-run으로 land했다. dry-run 로그가 2026-05-23 05:48 UTC live run에서 정상 패턴(`would create … bytes, prev baseline: …`)으로 떨어졌다. 추가 관찰 없이 flip 가능 상태.
+### 배경
+
+검출 결손 3종은 모두 해소됐다(PR #131/#132). 남은 결손은 **figma-pipeline의 슬랙 알림 본문이 빈약**한 것:
+
+- `post-run-actions.ts:286 buildLocalizedSummary()`는 5개 compliance bucket(text-change/props-change/image-change/detached-style/new-frame)만 라인으로 출력
+- `structure/token/layout/asset` 같은 raw class는 카테고리 라인에서 누락 → 사용자가 8건짜리 알림에서 "전체: 8건"만 보고 무슨 변경인지 모르는 케이스 (`cs-2026-05-25T11-44-34`)
 
 ### 작업 내용
 
-1. `.github/workflows/designer-approval.yml`에서 `FIGMA_PROMOTE_DRY_RUN: '1'` → `'0'`로 변경 (해당 step 환경변수 한 줄).
-2. PR로 land + auto-merge.
-3. 다음 `designer-approved` 라벨 시 실제 baseline 파일이 `.automation/baseline/` 디렉토리에 새로 생성되고, 그 다음 figma-pipeline run에서 해당 4건이 더 이상 안 나오는지 확인.
-4. 실패 시 롤백: 잘못 promote된 baseline 파일을 `git rm` → 자동으로 직전 baseline로 복귀 (sort().at(-1) 로직).
-
-### 우선순위 2 — Issue/Slack 노이즈 추가 감소
-
-baseline-promote가 켜져도 audit Issue(detached 1167 + unregistered frames) 노이즈는 별도 메커니즘. 다음 세션에서 줄일 수 있는 항목:
-
-- **report-only / structure 한국어화** — `scripts/pipeline/lib/classify-diff.ts:110,115`와 `scripts/pipeline/lib/report-only-guidance.ts:91,101`의 영어 reason 문자열을 한국어로 (단순 치환). 추가로 manual action도 한국어. Issue 본문이 디자이너가 읽기 좋아짐.
-- **audit Issue dedup** — 직전 audit Issue와 detached/unregistered 카운트가 동일하면 새 Issue 생성하지 말고 댓글로만 갱신 또는 skip. Issue #60/#70 같은 중복 발생 패턴 차단.
-- **stale manual-edit PR #20/#40/#64 정리** — close + 본문 path를 새 repo 이름(`design-review-bot/`)으로 normalize하는 코드 수정 (`scripts/pipeline/lib/manual-edits.ts` 추정).
-- **baseline 디렉토리 자동 prune** — 최근 N개만 유지하는 cleanup 스크립트 (현재 6개+ 누적 중).
-
-### 우선순위 3 — test_clean_* mapping 자동 등록 확인
-
-2026-05-23 05:50 UTC에 figma-audit를 다시 trigger했음 (run `26325098092`). 2-sighting policy로 `test_clean_001/002/003`에 대한 auto-register PR이 자동 생성되어야 함. PR 머지 → preflight에 entries 8→11로 늘어남 → 다음 pipeline run에서 새 frame이 pipeline diff에서도 잡히는지 확인.
-
-### 다음 해야 할 작업
-
-1. `gh pr view 25 --repo jhlee9815/uno-home --json number,title,state,mergeStateStatus,reviewDecision,statusCheckRollup,body,url`로 현재 gate 확인.
-2. `gh run list --repo jhlee9815/uno-home --workflow pr-checks.yml --branch auto-register/audit-2026-05-21 --limit 5`로 dispatch validation 증거 확인.
-3. body name bug는 `.github/workflows/figma-audit.yml`의 base64 decode loop가 trailing newline 없는 마지막 줄을 놓치는지 확인한다. 후보 fix는 handoff 문서에 있음.
-4. dispatch run이 branch protection required check로 인정되지 않으면 PR check strategy를 고치거나 수동 검증/merge 정책을 문서화한다.
-5. #25를 merge하거나, code fix가 필요하면 작은 follow-up PR을 만든 뒤 audit PR을 재생성/수정한다.
+1. `post-run-actions.ts:186-223 categoryCounts()`/`buildLocalizedSummary()` 확장:
+   - raw class별 라인 추가 (`🧱 구조 변경: 8건 (추가 5·삭제 2·표시토글 1)`, `🎨 디자인 토큰 변경: N건`, `📐 레이아웃 변경: N건`, `📦 에셋 변경: N건`)
+   - structure 종류 breakdown — `diff-snapshot.ts`의 reason 문자열로 추가/삭제/toggle 추론하거나 raw class에 sub-kind 부여
+   - 영향 화면 top-3 inline 라인 (`• 영향 화면: Phone · Cards 외 7개`)
+2. cap 정책:
+   - 카테고리당 N건 이상이면 `(외 N건은 viewer 참조)` 추가
+   - 슬랙 본문 길이 한도 — `truncateBody` 비슷한 가드
+3. `lib/category-labels.ts`에 raw class 라벨도 노출(이미 `RAW_CLASS_LABEL_KO` 있음 — `category-labels.ts:30`).
+4. 단위 테스트 — fixture로 `categoryCounts`/`buildLocalizedSummary`가 raw class도 정확히 집계하는지.
 
 ### 완료 조건
 
-- ✅ PR #25 body가 등록 frame을 둘 다 정확히 표시하거나, body 표시 버그가 비차단으로 명시된다.
-- ✅ PR #25 validation 상태가 merge gate에 붙거나, dispatch validation run `26232141435`로 대체 검증하는 운영 규칙이 명시된다.
-- ✅ PR #25가 merge되어 `config/figma-mapping.yaml`에 두 auto-registered frame이 main에 들어간다.
+- ✅ cs-2026-05-25T11-44-34 같은 8건 알림이 다음부터 카테고리별로 풀어진 본문으로 옴.
+- ✅ structure 알림에 추가/삭제 구분이 들어감.
+- ✅ 영향 화면 이름 top-3 inline 노출.
+- ✅ 50+ 건 케이스에 슬랙 본문 cap 적용.
+- ✅ 기존 5개 compliance bucket 라인 회귀 없음.
+
+### Codex 교차 검증 권고 (PR-B 진행 전)
+
+- 변경 전 design draft를 cmux 워크스페이스의 Codex 세션에 전달 → 카테고리 라인 디자인 + cap 정책 일관성 검토
+- 변경 후 final review로 회귀 위험(특히 categoryCounts 분기) 재확인
+
+### 후순위 — 운영 정리
+
+- **audit Issue dedup** — 직전 audit Issue와 detached/unregistered 카운트가 동일하면 새 Issue 생성 skip 또는 댓글 갱신. Issue #122/#133 같은 매일-close-and-create 패턴 노이즈 감소.
+- **stale manual-edit PR 정리** — #20, #40, #64, #71. 본문 path가 옛 `uno-home/` prefix.
+- **baseline 디렉토리 자동 prune** — 최근 N개만 유지하는 cleanup. promote production live 이후 누적 중.
+- **Phase 3.1 audit trend** — `audit-state.json`에 prev `totalDetachedStyles` 저장 → 슬랙 본문에 `▲N vs 어제` 추가.
+- **mapping cleanup** — `test1` (auto_test1_35_244) 같은 테스트 frame 정리.
 
 ---
 
-## 3. 우선순위 2 — GitHub Actions PR 생성 권한 해제 → Phase B 재검증
+## 3. 우선순위 2 — Phase C 안전망 (장기)
 
-Phase B artifact handoff fix는 원격에 반영됐고 live에서 artifact download 성공까지 확인됐다. PR #25 이후에는 repo Actions workflow 권한 또는 workflow-level permissions를 정리한 뒤 #19 라벨을 다시 걸어 PR 생성과 manifest `pr-open` 전이를 확인한다.
-
-### 구현된 fix
-- `designer-approval.yml` 권한에 `actions: read` 추가.
-- `Prepare approval artifact download` step이 Issue의 `cs-*`를 찾고 `.automation/cs/{csId}.json`의 `runId`를 `CS_RUN_ID`로 export.
-- `actions/download-artifact@v4`가 `figma-pipeline-${CS_RUN_ID}` artifact를 checkout root에 복원.
-- 기존 `designer-approval.ts`가 `.automation/diffs/`, `.automation/snapshots/`, baseline paths를 그대로 읽어 apply/PR 생성 시도.
-- 회귀 테스트: `npm run figma:test:workflow-artifacts` 추가.
-
-### 다음 해야 할 작업
-1. 🔴 GitHub repo Settings → Actions → General → Workflow permissions 변경:
-   - `Read and write permissions` 선택
-   - `Allow GitHub Actions to create and approve pull requests` 체크
-   - CLI/API 대안:
-     ```bash
-     gh api -X PUT repos/jhlee9815/uno-home/actions/permissions/workflow \
-       -f default_workflow_permissions=write \
-       -F can_approve_pull_request_reviews=true
-     ```
-2. 🔁 #19 `designer-approved` 라벨을 제거/재부착하거나 신규 `cs-*`를 승인해서 `designer-approval.yml` 재실행.
-3. ✅ workflow 로그에서 다음을 확인:
-   - `Download originating pipeline artifacts` 성공 유지
-   - `Classified diff or snapshots missing` 미발생
-   - auto-edit 또는 manual-edit fallback PR 생성 성공
-4. ✅ `.automation/cs/{csId}.json` manifest state가 `designer-approved` → `pr-open`으로 전이되는지 확인.
-5. 결과를 `TODO.md`, `phase-plan-6.md`, `task-10-designer-workflow-design.md`에 기록한다.
-
-### 완료 조건
-- ✅ repo Actions workflow 권한이 `write` + PR 생성 허용으로 바뀐다.
-- ✅ 최신 또는 신규 `cs-*`에 `designer-approved` 라벨을 붙였을 때 artifact download가 성공한다.
-- ✅ `Classified diff or snapshots missing` 없이 apply 단계가 진행된다.
-- ✅ marker hit가 있으면 Draft PR 생성, marker hit가 없으면 `.automation/manual-edits/{csId}.md` fallback PR 생성.
-- ✅ manifest state가 `designer-approved`에서 `pr-open`까지 transition된다.
-
----
-
-## 4. 우선순위 3 — Phase C 안전망
-
-Phase B PR 생성 + manifest `pr-open` 전이가 확인된 후 진행.
+검출/알림 시스템이 안정화됐으니 다음은 머지 안전망.
 
 ### 목표
 - visual diff (Playwright pixel diff) — 변경 화면 실제 렌더 vs baseline image
@@ -172,7 +137,43 @@ Phase B PR 생성 + manifest `pr-open` 전이가 확인된 후 진행.
 
 ---
 
-## 7. task-3 완료 기록 (2026-05-20 20:20 KST)
+## 7. PR #131 완료 기록 (2026-05-25 13:03 UTC)
+
+**제목**: Detect compliance violations on newly added frames (`!beforeNode` branch)
+
+`scripts/pipeline/lib/diff-snapshot.ts:129-140`의 `!beforeNode` 분기가 `classes:['structure']`로 short-circuit 되면서 신규 frame이 가져온 detached-style/new-frame/image-change 위반이 첫 cycle에 누락되던 결손 해결. `diffCompliance(undefined, afterNode)`를 wire-up.
+
+변경 파일:
+- `scripts/pipeline/lib/diff-snapshot.ts` (+29 -4)
+- `scripts/pipeline/lib/diff-snapshot.test.ts` (+134, T1~T4)
+- `scripts/pipeline/lib/classify-diff.test.ts` (+74, T5)
+
+검증: diff-snapshot 17/17, classify-diff 6/6, build clean, lint clean. Codex 교차 검증 통과 (pre-impl + post-impl).
+
+## 8. PR #132 완료 기록 (2026-05-25 13:14 UTC)
+
+**제목**: Send daily figma-audit summary to Slack
+
+baseline에 흡수돼 delta로는 안 보이던 절대량 DS 미사용(1295건)을 매일 슬랙으로 push. issue #122에만 있던 정보를 디자이너가 실제 보는 채널로 가져옴.
+
+추가 파일:
+- `scripts/pipeline/lib/webhook.ts` — `postWebhook` 추출 (post-run-actions.ts와 공유)
+- `scripts/pipeline/lib/audit-slack.ts` — 순수 포매터
+- `scripts/pipeline/lib/audit-slack.test.ts` — 6 cases
+- `scripts/pipeline/audit-notify.ts` — 엔트리, `hasViolations=false`이면 침묵
+
+수정 파일:
+- `scripts/pipeline/post-run-actions.ts` — postWebhook 인라인 → lib/webhook.ts import
+- `.github/workflows/figma-audit.yml` — audit Issue URL `$GITHUB_OUTPUT` 캡쳐 + `Notify Slack` step
+- `package.json` — `figma:audit:notify`, `figma:test:audit-slack`
+
+첫 live run: `26402360291` (2026-05-25 13:14 UTC). 슬랙 본문 1295건 + top-5 화면 + Issue #133 링크 정상 도착.
+
+Codex 교차 검증: pre-design Q1-Q5 결정 (분리/webhook 추출/issue URL 캡쳐/0건 침묵/top-N=5), post-impl OK + "기준: 일일 전체 audit (delta 아님)" 라인 권고 반영.
+
+---
+
+## 9. task-3 완료 기록 (2026-05-20 20:20 KST)
 
 V1~V4 실검증 PASS. 세부는 [`project-plan/phase-6/task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) "검증 결과" 섹션. 코덱스 review session: `019e4514-e802`.
 

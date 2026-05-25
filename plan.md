@@ -1,7 +1,7 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
 > 작성일: 2026-05-20
-> 최신 갱신: 2026-05-21 23:28 KST (PR #23 audit auto-register merged. Live verify created PR #25; next is PR #25 body/check follow-up and merge.)
+> 최신 갱신: 2026-05-25 22:30 KST (검출 결손 3종 해소: PR #131 신규 frame compliance + PR #132 audit→slack live. 다음: Phase 2 PR-B 슬랙 본문 강화.)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
 > 외부 디자인 시스템 입력: `/Users/juhee/Work/Test/awesome-design-md/design-md/apple`
 
@@ -13,12 +13,18 @@
 | 보완 작업 (Claude–Codex 합의) | ✅ 완료 (5/5) | `project-plan/archive/supplementary-2026-05-20/` |
 | Pesse 라이브 데모 트랙 | ✅ 완료 (7/7 + 확장 3건) | `project-plan/archive/pesse-demo/` |
 | **데모 검증 사이클** | **✅ 완료 (2026-05-20)** | `.automation/demo-compare/` |
-| **Codex consult 검증** | **✅ 완료 (`019e4407-9f23`)** | — |
-| **Phase 6 — Phase A 실서비스화** | **🚧 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, audit auto-register PR #23 ✅, PR #25 follow-up 필요, task-10-C 남음** | `project-plan/phase-6/` |
+| **Phase 6 — Phase A 실서비스화** | **🚧 검출 시스템 완성, UX 강화 단계** | `project-plan/phase-6/` |
 | **Phase 7 — Phase B 재사용 추출** | **⏳ Phase 6 종료 후** | `project-plan/phase-7/` |
 
-**현재 액션**: auto-register PR #25를 마무리한다. PR diff는 맞지만 body에서 `test2`가 누락됐고, dispatch validation run은 성공했지만 PR `statusCheckRollup`이 empty다. 권장 순서: PR #25 body/check association 확인 또는 fix → #25 merge → Task 10 Phase B/Phase C 재개. 세부: [audit-auto-register handoff](./project-plan/phase-6/audit-auto-register-handoff-2026-05-21.md).
-**블로커**: Claude 세션 한도 도달로 live verify 후속 조사가 중단됐다. Slack 알림은 이미 동작 중. Cloudflare는 task-5에서 외부 준비 시작.
+**검출 시스템 완성도 (2026-05-25)**:
+- ✅ pipeline delta: text / component-props / token / layout / structure
+- ✅ pipeline compliance delta: detached-style / new-frame / image-change (등록 frame 내부)
+- ✅ **신규 frame 첫 cycle compliance**: PR #131로 `!beforeNode` 분기 보강
+- ✅ audit absolute count: detached-style 절대량 + top violator (figma-audit daily)
+- ✅ **audit absolute slack 알림**: PR #132 (매일 09:00 KST)
+- ✅ designer-approval workflow: manifest 전이 + baseline-promote production + PR auto-merge
+
+**현재 액션**: Phase 2 (PR-B) — `post-run-actions.ts buildLocalizedSummary()`에 raw class 라인 추가 + 영향 화면 top-3 + cap 정책. 본문이 viewer 없이도 80% 이해 가능한 수준으로.
 **보류 항목**: 다른 팀 공유는 Phase 7 완료 전까지 금지 (Codex 권고).
 
 ---

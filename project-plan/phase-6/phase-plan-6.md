@@ -2,7 +2,7 @@
 
 > 시작: 2026-05-20
 > 목표 완료: 2026-06-03 (2주)
-> 최신 갱신: 2026-05-21 16:55 KST — 세션 종료 정리. schema-compatible baseline `.automation/baseline/2026-05-21T07-43-40.json`이 `614dfc8`로 main에 push됨. Phase B live 검증은 artifact 다운로드 성공 후 apply 단계까지 진입했고, 다음 병목은 repo Actions workflow 권한(`default_workflow_permissions=read`, PR 생성 허용 false).
+> 최신 갱신: 2026-05-25 22:30 KST — **검출 결손 3종 해소.** PR #131 `!beforeNode` compliance + PR #132 audit→slack 두 PR 모두 머지 + live 확인. 다음은 Phase 2 (PR-B): figma-pipeline 슬랙 본문에 raw class 라인 + 영향 화면 top-3 + cap 정책.
 > 의사결정 근거: Codex consult (`session 019e4407-9f23`) 진입 검증, Codex review (`session 019e4514-e802`) task-3 evidence 검증 PASS.
 > 자세는: **설계-추출-용이** — 단일 repo로 동작하지만, Phase 7(템플릿 추출)이 싼 형태
 
@@ -42,7 +42,10 @@
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 | 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 검증 + PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./task-9-report-ux-labels.md) | 2-3시간 | — |
-| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟠 Phase A live 완료. Phase B 코드 merged + artifact handoff fix live download 확인. PR 생성 권한 fix 후 재검증 대기. Phase C 미시작. | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | A+B: ~11h+ |
+| 10 | Designer Review → Auto-Edit → Dev Merge Workflow | ✅ Phase A·B·C live, baseline-promote production flip (#80) | [`task-10-designer-workflow-design.md`](./task-10-designer-workflow-design.md) | 15.5-22.5시간 | A+B+C: live |
+| 11 | new-frame compliance (PR #131) | ✅ `!beforeNode` 분기에 `diffCompliance` wire-up. 신규 frame DS 미사용/descendant/image-ref가 첫 cycle에 검출 | — | 2시간 | 2시간 |
+| 12 | audit → slack daily notification (PR #132) | ✅ `lib/audit-slack.ts` + `audit-notify.ts` + workflow step. 절대량 1295건이 매일 슬랙. | — | 2시간 | 2시간 |
+| 13 | Phase 2 (PR-B) — figma-pipeline slack 본문 강화 | 🔵 다음 세션 우선순위. raw class 라인 + 영향 화면 top-3 + cap 정책 | TODO.md §2 참조 | 2-3시간 | — |
 
 **의존성**: 1 → 2 → 3 → 4 (병렬 가능: 5, 6, 7은 2 완료 후 순서 무관). 8은 완료. 9의 report/label 범위는 10 Phase A에 대부분 흡수됐으므로 필요 시 label/Slack summary 보강만 분리한다.
 
