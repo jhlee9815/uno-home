@@ -1,4 +1,4 @@
-# Active Handoff — Pesse Phase 6 (2026-05-23)
+# Active Handoff — Pesse Phase 6 (2026-05-25)
 
 > 아래의 기존 UNO HOME handoff는 archive 트랙 정보가 많다. 현재 작업 기준은 이 상단 섹션과 `plan.md` / `TODO.md` / `project-plan/phase-6/phase-plan-6.md`를 우선한다.
 
@@ -6,19 +6,28 @@
 |---|---|
 | 활성 repo | `jhlee9815/design-review-bot` (구 `uno-home`, PR #36으로 리네임) — local: `/Users/juhee/Work/Test/design-test/uno-home` |
 | 활성 Figma file | `9cevQvPHlQ5vZv5Pz3QaLL` (Pesse Apple Demo) |
-| 활성 mapping | `config/figma-mapping.yaml` — **8 entries** (`figma_appleInspiredDesignSystemGeneratedPreview_2_2` 제거됨, PR #74) |
-| 최신 main | `feat/baseline-promote`(#67) 머지됨. manifest auto-merge(#63), token App(#28/#45), Korean labels + cascade(#33), 리네임(#36) 모두 land |
-| 완료 | Phase 6 task-1/2/3/4/7/8/10 Phase A·B ✅, audit auto-register ✅, manifest PR auto-merge ✅, baseline-promote 자동화 (**dry-run mode**) ✅ |
-| 다음 권장 | 1) baseline-promote `FIGMA_PROMOTE_DRY_RUN: '1' → '0'` flip · 2) test_clean_* auto-register 확인 · 3) report-only/structure reason 한국어화 · 4) audit Issue dedup |
+| 활성 mapping | `config/figma-mapping.yaml` — 8 entries (DS preview 2:2/79:306 제외, PR #74/#81) |
+| 최신 main | **#131 new-frame compliance** + **#132 audit→slack** 머지 (2026-05-25). 그 이전: #80 promote prod flip, #81 DS preview exclude, #86 Korean reasons, #67 baseline-promote dry-run, #63 manifest auto-merge, #28/#45 designer-bot App token, #33 Korean labels + cascade, #36 rename |
+| 완료 | Phase 6 task-1/2/3/4/7/8/10 ✅, audit auto-register ✅, manifest PR auto-merge ✅, baseline-promote production ✅, **신규 frame compliance 검출 ✅**, **audit 절대량 슬랙 알림 ✅** |
+| 다음 권장 | **Phase 2 (PR-B)** — figma-pipeline 슬랙 본문에 raw class 라인 + cap (구조 변경/타이포/이미지 등 별도 라인, 영향 화면 top-3 inline) |
+| 후순위 | audit Issue dedup, stale manual-edit PR(#20/#40/#64/#71) 정리, baseline 디렉토리 prune, Phase 3.1 audit trend (`▲N vs 어제`) |
 | 대안 | task-5 Cloudflare Worker → Figma webhook → 즉시 트리거 |
 
-## 현재 디자이너/개발자 워크플로우 (2026-05-23 기준)
+## 현재 디자이너/개발자 워크플로우 (2026-05-25 기준)
 
-1. **Figma 변경 감지**: figma-pipeline cron(2h 간격) + figma-audit(daily) + workflow_dispatch 수동. audit 완료 시 figma-pipeline cascade로 자동 trigger.
-2. **검출 매트릭스**: registered 화면 내부의 `text/component-props/layout/structure`는 delta diff로, top-level frame 등록 여부 + DS detached-style 절대량은 audit가 잡는다. structure/report-only는 자동 코드 수정 안 됨 — 디자이너 검토만.
-3. **디자이너 승인**: GitHub Issue에 `designer-approved` 라벨 → designer-approval workflow가 (a) manifest pending→designer-approved 전이 (b) **baseline-promote dry-run 로그** (c) manifest 전이 PR + 디자이너 사본 PR 생성. designer-bot App token으로 PR 작성.
-4. **머지 자동화**: manifest PR과 baseline-promote PR(향후 production flip 시) 모두 `enablePullRequestAutoMerge` 호출 → `validate` 통과 시 자동 squash merge.
-5. **baseline-promote dry-run live 증거 (2026-05-23 05:48 UTC)**: Issue #68 `cs-2026-05-23T05-45-46` 라벨링 → designer-approval run `26324997509` success → `[promote-baseline] DRY-RUN would create .automation/baseline/2026-05-23T05-48-23.json (848269 bytes, prev baseline: 2026-05-21T07-43-40)`. promote 결정 path 정상 작동, baseline 디렉토리 안 건드림.
+1. **Figma 변경 감지**: figma-pipeline cron(2h 간격) + figma-audit(daily 09:00 KST) + workflow_dispatch 수동. audit 완료 시 figma-pipeline cascade로 자동 trigger.
+2. **검출 매트릭스**:
+   - 등록 화면 내부 delta: `text/component-props/token/layout/structure`는 figma-pipeline이 잡음
+   - 등록 화면 내부 compliance delta: `detached-style/new-frame/image-change`도 같이 잡음 (Task 8)
+   - **신규 frame 첫 cycle**: `!beforeNode` 분기에서도 compliance 검사 → detached-style/new-frame/image-change 포함 (PR #131, 2026-05-25)
+   - 미등록 top-level frame 등록 여부 + DS detached-style **절대량**: figma-audit이 잡음
+3. **알림 채널**:
+   - figma-pipeline → slack: change-set별 카테고리 라인 + 전체 카운트
+   - **figma-audit → slack: 매일 절대량 + top-5 위반 화면 (PR #132, 2026-05-25)**
+   - audit Issue: 위반 있을 때 자동 생성, 직전 issue close
+4. **디자이너 승인**: GitHub Issue에 `designer-approved` 라벨 → designer-approval workflow가 (a) manifest pending→designer-approved 전이 (b) **baseline-promote production**으로 `.automation/baseline/*.json` 생성 + PR auto-merge (c) manifest PR + 디자이너 사본 PR 생성. designer-bot App token으로 PR 작성.
+5. **머지 자동화**: manifest PR / baseline-promote PR 모두 `enablePullRequestAutoMerge` → `validate` 통과 시 squash merge.
+6. **2026-05-25 audit 첫 슬랙 live 증거 (run `26402360291`)**: `[audit-slack] notified` — 본문 `🎨 일일 DS 컴플라이언스 audit — 2026-05-25 · 전체 detached style: 1295건 (색상 72·타이포 1223) · 상위 위반 화면 top-5`. Issue #133 링크 포함.
 
 ## 바로 읽을 문서
 
