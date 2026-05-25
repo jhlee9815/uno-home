@@ -127,15 +127,36 @@ export function diffSnapshots(
     const afterNode = head.nodes[key];
 
     if (!beforeNode) {
-      changes.push({
+      const compliance = diffCompliance(undefined, afterNode);
+      const classes: ChangeClass[] = ['structure'];
+      const reasons: string[] = [`Node '${key}' missing from base snapshot`];
+      if (compliance.newDetachedStyles.length > 0) {
+        classes.push('detached-style');
+        reasons.push(`${compliance.newDetachedStyles.length} new detached style(s) on newly added node`);
+      }
+      if (compliance.newFrames.length > 0) {
+        classes.push('new-frame');
+        reasons.push(`${compliance.newFrames.length} new descendant frame(s) on newly added node`);
+      }
+      if (compliance.changedImageRefs.length > 0) {
+        classes.push('image-change');
+        reasons.push(`${compliance.changedImageRefs.length} image asset(s) on newly added node`);
+      }
+      const hasCompliance =
+        compliance.newDetachedStyles.length > 0 ||
+        compliance.newFrames.length > 0 ||
+        compliance.changedImageRefs.length > 0;
+      const change: DiffChange = {
         key,
         nodeId: afterNode.id,
         nodeName: afterNode.name,
-        classes: ['structure'],
-        reasons: [`Node '${key}' missing from base snapshot`],
+        classes,
+        reasons,
         before: {},
         after: summarizeNode(afterNode),
-      });
+      };
+      if (hasCompliance) change.compliance = compliance;
+      changes.push(change);
       continue;
     }
 

@@ -263,6 +263,82 @@ run('classify: image-change for component mapped as auto → still report-only',
   assert.equal(change.decision, 'report-only');
 });
 
+run('classify: !beforeNode new frame with detached/new-frame/image classes → all subcategories derived', () => {
+  // Simulates the diff-snapshot.ts !beforeNode branch output for a newly added
+  // top-level frame that brings in detached styles, descendant frames, and
+  // image assets in its first cycle.
+  const newFrameDiff: DiffFile = {
+    stage: 'diff',
+    generatedAt: '2026-05-25T00:00:00.000Z',
+    fileKey: 'file-1',
+    comparisonMode: 'baseline',
+    baseTs: '2026-05-25T00:00:00.000Z',
+    headTs: '2026-05-25T01:00:00.000Z',
+    basePath: 'b.json',
+    headPath: 'h.json',
+    changes: [
+      {
+        key: 'home',
+        nodeId: '2:1',
+        nodeName: 'Home screen',
+        classes: ['structure', 'detached-style', 'new-frame', 'image-change'],
+        reasons: [
+          `Node 'home' missing from base snapshot`,
+          '1 new detached style(s) on newly added node',
+          '1 new descendant frame(s) on newly added node',
+          '1 image asset(s) on newly added node',
+        ],
+        before: {},
+        after: {},
+        compliance: {
+          newDetachedStyles: [
+            {
+              nodeId: '2:1:9',
+              nodeName: 'Pill',
+              nodePath: ['Home', 'Pill'],
+              kind: 'color',
+              property: 'fill',
+              rawValue: { r: 1, g: 0, b: 0, a: 1 },
+              suggestedToken: null,
+              evidence: { hasNodeBoundVariables: false, styleId: null },
+            },
+          ],
+          newFrames: [
+            {
+              nodeId: '99:1',
+              nodeName: 'Promo',
+              nodePath: ['Home', 'Promo'],
+              name: 'Promo',
+              parentRegisteredKey: 'home',
+            },
+          ],
+          changedImageRefs: [
+            {
+              before: null,
+              after: {
+                nodeId: '2:1:7',
+                nodeName: 'Hero',
+                nodePath: ['Home', 'Hero'],
+                kind: 'image',
+                paintIndex: 0,
+                ref: 'img-new',
+              },
+            },
+          ],
+        },
+      },
+    ],
+  };
+  const c = classifyDiff(newFrameDiff, mapping);
+  assert.equal(c.summary.total, 1);
+  assert.equal(c.summary.reportOnly, 1);
+  const change = c.changes[0];
+  assert.equal(change.decision, 'report-only');
+  const subs = [...change.subcategories].sort();
+  // 'structure' doesn't map to a subcategory; the other three do.
+  assert.deepEqual(subs, ['detached-style', 'image-change', 'new-frame']);
+});
+
 run('classify: original sample (no compliance) → subcategories array still present', () => {
   // The first 5 changes from the original sample (tokens, button text, home text, unknown, button layout)
   for (const c of classified.changes) {

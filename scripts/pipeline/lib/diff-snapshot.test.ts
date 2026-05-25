@@ -342,6 +342,140 @@ run('diffSnapshots: compliance-only change emits DiffChange (no text/props chang
   assert.equal(change.compliance.newFrames.length, 1);
 });
 
+run('diffSnapshots: !beforeNode with head detachedStyles → classes include detached-style + compliance attached', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-25T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {},
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-25T01:00:00.000Z',
+    nodes: {
+      brand_new_frame: mkSnapshotNode({
+        id: '99:1',
+        name: 'Phone · Brand New',
+        detachedStyles: [
+          mkDetachedStyle({ nodeId: '99:1:1', property: 'fill' }),
+          mkDetachedStyle({ nodeId: '99:1:2', kind: 'typography', property: 'fontSize', rawValue: 18 }),
+        ],
+      }),
+    },
+  };
+  const d = diffSnapshots(base, head, {
+    comparisonMode: 'baseline',
+    basePath: 'b.json',
+    headPath: 'h.json',
+  });
+  const change = d.changes.find(c => c.key === 'brand_new_frame');
+  assert.ok(change);
+  assert.ok(change.classes.includes('structure'));
+  assert.ok(change.classes.includes('detached-style'), `expected detached-style, got [${change.classes.join(',')}]`);
+  assert.ok(change.compliance);
+  assert.equal(change.compliance.newDetachedStyles.length, 2);
+  assert.match(change.reasons.join('\n'), /2 new detached style/);
+});
+
+run('diffSnapshots: !beforeNode with clean head → only structure, no compliance attached (regression guard)', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-25T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {},
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-25T01:00:00.000Z',
+    nodes: {
+      clean_new_frame: mkSnapshotNode({ id: '99:2', name: 'Phone · Clean New' }),
+    },
+  };
+  const d = diffSnapshots(base, head, {
+    comparisonMode: 'baseline',
+    basePath: 'b.json',
+    headPath: 'h.json',
+  });
+  const change = d.changes.find(c => c.key === 'clean_new_frame');
+  assert.ok(change);
+  assert.deepEqual(change.classes, ['structure']);
+  assert.equal(change.compliance, undefined);
+});
+
+run('diffSnapshots: !beforeNode with descendantFrames + assetRefs → classes include new-frame + image-change', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-25T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {},
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-25T01:00:00.000Z',
+    nodes: {
+      new_frame_with_extras: mkSnapshotNode({
+        id: '99:3',
+        name: 'Phone · Extras',
+        descendantFrames: [mkFrame({ nodeId: '99:3:f1', name: 'Inner Frame' })],
+        assetRefs: [mkAsset({ nodeId: '99:3:a1', paintIndex: 0, ref: 'img-fresh' })],
+      }),
+    },
+  };
+  const d = diffSnapshots(base, head, {
+    comparisonMode: 'baseline',
+    basePath: 'b.json',
+    headPath: 'h.json',
+  });
+  const change = d.changes.find(c => c.key === 'new_frame_with_extras');
+  assert.ok(change);
+  assert.ok(change.classes.includes('new-frame'));
+  assert.ok(change.classes.includes('image-change'));
+  assert.ok(change.compliance);
+  assert.equal(change.compliance.newFrames.length, 1);
+  assert.equal(change.compliance.changedImageRefs.length, 1);
+  assert.equal(change.compliance.changedImageRefs[0].before, null);
+});
+
+run('diffSnapshots: !beforeNode with legacy head (no compliance arrays) → only structure', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-25T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {},
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-25T01:00:00.000Z',
+    nodes: {
+      legacy_new_frame: {
+        id: '99:4',
+        name: 'Phone · Legacy New',
+        lastModified: '2026-05-25T01:00:00.000Z',
+        visible: true,
+        boundingBox: { x: 0, y: 0, width: 100, height: 100 },
+        textHash: 'sha256:t',
+        propsHash: 'sha256:p',
+        componentPropsHash: 'sha256:c',
+        texts: [],
+        componentProps: [],
+      },
+    },
+  };
+  const d = diffSnapshots(base, head, {
+    comparisonMode: 'baseline',
+    basePath: 'b.json',
+    headPath: 'h.json',
+  });
+  const change = d.changes.find(c => c.key === 'legacy_new_frame');
+  assert.ok(change);
+  assert.deepEqual(change.classes, ['structure']);
+  assert.equal(change.compliance, undefined);
+});
+
 run('diffSnapshots: text change + compliance change → both classes attached', () => {
   const base: SnapshotFile = {
     fileKey: 'file-x',
