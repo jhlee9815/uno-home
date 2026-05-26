@@ -221,6 +221,11 @@ jobs:
           AUDIT_JSON: ${{ steps.audit.outputs.audit_json }}
           ISSUE_URL: ${{ steps.audit_issue.outputs.issue_url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # Trend inputs — empty on first-ever run / cache miss, in which
+          # case audit-notify silently omits the trend line.
+          PREV_DETACHED: ${{ steps.audit.outputs.prev_detached_total }}
+          PREV_UNREGISTERED: ${{ steps.audit.outputs.prev_unregistered_total }}
+          PREV_RECORDED_AT: ${{ steps.audit.outputs.prev_recorded_at }}
         run: npm run figma:audit:notify
 
       - name: Upload audit artifact

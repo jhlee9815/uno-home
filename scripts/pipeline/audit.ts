@@ -23,6 +23,7 @@ import {
   saveAuditState,
   updateAuditState,
   pickAutoRegisterCandidates,
+  recordRunCounts,
 } from './lib/audit-state.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -148,9 +149,16 @@ async function main(): Promise<void> {
     generatedAt,
   });
 
-  // 4. Update audit-state.json (sighting counter for unregistered frames)
+  // 4. Update audit-state.json (sighting counter + trend tracking)
+  // Capture the prior run's counts BEFORE we overwrite them so audit-notify
+  // can read the trend off the same state file without re-loading.
   const prevState = loadAuditState(AUDIT_STATE_PATH);
-  const nextState = updateAuditState(prevState, report.unregisteredTopLevelFrames, generatedAt);
+  const sightingState = updateAuditState(prevState, report.unregisteredTopLevelFrames, generatedAt);
+  const nextState = recordRunCounts(sightingState, {
+    detached: report.totalDetachedStyles,
+    unreg: report.totalUnregisteredTopLevelFrames,
+    now: generatedAt,
+  });
   saveAuditState(AUDIT_STATE_PATH, nextState);
 
   const candidates = pickAutoRegisterCandidates(nextState, {
@@ -182,6 +190,17 @@ async function main(): Promise<void> {
 
   // 6. Surface output paths so callers (CI / Slack) can consume
   if (process.env.GITHUB_OUTPUT) {
+    // Trend inputs: previous run's counts (BEFORE we overwrote them above).
+    // audit-notify reads these via env to render "어제 대비 ▲N" without
+    // re-loading state (which now reflects the current run).
+    const prevCounts = prevState.lastRunCounts;
+    const trendLines = prevCounts
+      ? [
+          `prev_detached_total=${prevCounts.detached}`,
+          `prev_unregistered_total=${prevCounts.unreg}`,
+          `prev_recorded_at=${prevCounts.recordedAt}`,
+        ]
+      : [];
     const out = [
       `audit_md=${mdPath}`,
       `audit_json=${jsonPath}`,
@@ -191,6 +210,7 @@ async function main(): Promise<void> {
       `detached_total=${report.totalDetachedStyles}`,
       `unregistered_total=${report.totalUnregisteredTopLevelFrames}`,
       `auto_register_count=${candidates.length}`,
+      ...trendLines,
     ].join('\n');
     try {
       const cur = existsSync(process.env.GITHUB_OUTPUT) ? readFileSync(process.env.GITHUB_OUTPUT, 'utf-8') : '';
