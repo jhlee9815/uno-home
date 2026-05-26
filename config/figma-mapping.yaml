@@ -31,7 +31,7 @@ compositions: {}
 # Screens reset on 2026-05-26 — all previously registered screens (Pesse demo +
 # auto-registered test/mo frames) became stale after Figma file restructure.
 # figma-audit re-registers any currently-living top-level frames automatically.
-screens: {}
+screens:
   # Auto-registered by figma-audit on 2026-05-26 (sighted 2 times, first seen 2026-05-26)
   auto_phone_home_balance_81_302:
     figmaNodeId: "81:302"
