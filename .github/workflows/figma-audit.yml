@@ -32,6 +32,9 @@ jobs:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
       FIGMA_CONFIG_DIR: ${{ vars.FIGMA_CONFIG_DIR }}
+      # Optional override. Empty string when the repo variable isn't set,
+      # in which case audit.ts falls back to its built-in default (2).
+      FIGMA_AUDIT_REGISTER_THRESHOLD: ${{ vars.FIGMA_AUDIT_REGISTER_THRESHOLD }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - uses: actions/checkout@v4
