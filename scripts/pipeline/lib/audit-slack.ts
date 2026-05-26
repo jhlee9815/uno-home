@@ -12,6 +12,26 @@ export interface BuildAuditSlackMessageOptions {
   issueUrl?: string;
   runUrl?: string;
   topN?: number;
+  /** Counts from the immediately previous audit run; used to render a
+   *  "어제 대비 ▲N detached" line so designers see the trend at a glance. */
+  previousCounts?: { detached: number; unreg: number; recordedAt: string };
+}
+
+// Visible at module scope so the test can assert exact wording without
+// duplicating the string literal.
+export function formatTrendLine(
+  current: { detached: number; unreg: number },
+  previous: { detached: number; unreg: number; recordedAt: string }
+): string {
+  const dDet = current.detached - previous.detached;
+  const dUnreg = current.unreg - previous.unreg;
+  const fmt = (delta: number, label: string): string => {
+    if (delta > 0) return `${label} ▲${delta}`;
+    if (delta < 0) return `${label} ▼${-delta}`;
+    return `${label} →`;
+  };
+  const prevDate = previous.recordedAt.slice(0, 10);
+  return `• 직전 audit(${prevDate}) 대비: ${fmt(dDet, 'detached')} · ${fmt(dUnreg, '미등록')}`;
 }
 
 export interface AuditSlackMessage {
@@ -57,6 +77,18 @@ export function buildAuditSlackMessage(
   const kindSuffix = kindParts.length > 0 ? ` (${kindParts.join('·')})` : '';
   lines.push(`• 전체 detached style: ${report.totalDetachedStyles}건${kindSuffix}`);
   lines.push(`• 미등록 top-level frame: ${report.totalUnregisteredTopLevelFrames}건`);
+
+  if (opts.previousCounts) {
+    lines.push(
+      formatTrendLine(
+        {
+          detached: report.totalDetachedStyles,
+          unreg: report.totalUnregisteredTopLevelFrames,
+        },
+        opts.previousCounts
+      )
+    );
+  }
 
   const violators = report.byRegisteredRoot
     .filter(root => root.detachedStyles.total > 0)

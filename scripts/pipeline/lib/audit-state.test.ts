@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   updateAuditState,
   pickAutoRegisterCandidates,
+  recordRunCounts,
   type AuditState,
   type FrameSighting,
 } from './audit-state.ts';
@@ -108,6 +109,44 @@ import type { UnregisteredTopLevelFrame } from './audit-aggregator.ts';
   const candidates = pickAutoRegisterCandidates(state, { thresholdSightings: 2 });
   const ids = candidates.map(c => c.nodeId).sort();
   assert.deepEqual(ids, ['35:244', '35:382']);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// recordRunCounts + updateAuditState lastRunCounts preservation
+// ─────────────────────────────────────────────────────────────────────────────
+
+{
+  // recordRunCounts overwrites lastRunCounts with current run's totals
+  const prev: AuditState = { unregisteredFrames: {} };
+  const next = recordRunCounts(prev, { detached: 1295, unreg: 0, now: '2026-05-26T00:00:00Z' });
+  assert.equal(next.lastRunCounts?.detached, 1295);
+  assert.equal(next.lastRunCounts?.unreg, 0);
+  assert.equal(next.lastRunCounts?.recordedAt, '2026-05-26T00:00:00Z');
+}
+
+{
+  // updateAuditState preserves lastRunCounts from prev — sighting update
+  // must not erase trend tracking written by the previous recordRunCounts.
+  const prev: AuditState = {
+    unregisteredFrames: {},
+    lastRunCounts: { detached: 1280, unreg: 1, recordedAt: '2026-05-25T00:00:00Z' },
+  };
+  const next = updateAuditState(prev, [], '2026-05-26T00:00:00Z');
+  assert.equal(next.lastRunCounts?.detached, 1280);
+  assert.equal(next.lastRunCounts?.unreg, 1);
+  assert.equal(next.lastRunCounts?.recordedAt, '2026-05-25T00:00:00Z');
+}
+
+{
+  // recordRunCounts after updateAuditState replaces prior lastRunCounts
+  const prev: AuditState = {
+    unregisteredFrames: {},
+    lastRunCounts: { detached: 1280, unreg: 1, recordedAt: '2026-05-25T00:00:00Z' },
+  };
+  const afterUpdate = updateAuditState(prev, [], '2026-05-26T00:00:00Z');
+  const final = recordRunCounts(afterUpdate, { detached: 1295, unreg: 0, now: '2026-05-26T00:00:00Z' });
+  assert.equal(final.lastRunCounts?.detached, 1295);
+  assert.equal(final.lastRunCounts?.recordedAt, '2026-05-26T00:00:00Z');
 }
 
 console.log('audit-state tests passed');

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { buildAuditSlackMessage } from './audit-slack.ts';
+import { buildAuditSlackMessage, formatTrendLine } from './audit-slack.ts';
 import type { AuditReport, RegisteredRootAudit } from './audit-aggregator.ts';
 
 function mkRoot(over: Partial<RegisteredRootAudit> = {}): RegisteredRootAudit {
@@ -121,6 +121,65 @@ run('renders top-N violators in descending order with explicit count line', () =
   assert.equal(/6\. Screen 5/.test(m.text), false);
   // 'remaining' line lists the 2 left over
   assert.match(m.text, /외 2개 화면/);
+});
+
+run('trend line: detached up, unreg unchanged', () => {
+  const line = formatTrendLine(
+    { detached: 1295, unreg: 0 },
+    { detached: 1280, unreg: 0, recordedAt: '2026-05-25T00:00:00Z' }
+  );
+  assert.equal(line, '• 직전 audit(2026-05-25) 대비: detached ▲15 · 미등록 →');
+});
+
+run('trend line: detached down, unreg up', () => {
+  const line = formatTrendLine(
+    { detached: 1280, unreg: 2 },
+    { detached: 1295, unreg: 0, recordedAt: '2026-05-25T00:00:00Z' }
+  );
+  assert.equal(line, '• 직전 audit(2026-05-25) 대비: detached ▼15 · 미등록 ▲2');
+});
+
+run('trend line: both unchanged', () => {
+  const line = formatTrendLine(
+    { detached: 1295, unreg: 0 },
+    { detached: 1295, unreg: 0, recordedAt: '2026-05-25T00:00:00Z' }
+  );
+  assert.equal(line, '• 직전 audit(2026-05-25) 대비: detached → · 미등록 →');
+});
+
+run('buildAuditSlackMessage includes trend line when previousCounts provided', () => {
+  const m = buildAuditSlackMessage(
+    mkReport({
+      hasViolations: true,
+      totalDetachedStyles: 1295,
+      totalUnregisteredTopLevelFrames: 0,
+      byRegisteredRoot: [
+        mkRoot({
+          key: 'r',
+          nodeName: 'R',
+          detachedStyles: { total: 1295, byKind: { color: 1295, typography: 0, effect: 0 }, byProperty: {}, topNodes: [] },
+        }),
+      ],
+    }),
+    { previousCounts: { detached: 1280, unreg: 0, recordedAt: '2026-05-25T00:00:00Z' } }
+  );
+  assert.match(m.text, /직전 audit\(2026-05-25\) 대비: detached ▲15/);
+});
+
+run('buildAuditSlackMessage omits trend line when previousCounts absent', () => {
+  const m = buildAuditSlackMessage(
+    mkReport({
+      hasViolations: true,
+      totalDetachedStyles: 1,
+      byRegisteredRoot: [
+        mkRoot({
+          key: 'r', nodeName: 'R',
+          detachedStyles: { total: 1, byKind: { color: 1, typography: 0, effect: 0 }, byProperty: {}, topNodes: [] },
+        }),
+      ],
+    })
+  );
+  assert.equal(/직전 audit/.test(m.text), false);
 });
 
 run('includes issueUrl and runUrl when provided', () => {
