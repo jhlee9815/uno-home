@@ -27,7 +27,7 @@ export const CATEGORY_EMOJI: Record<ComplianceSubcategory, string> = {
 // 분류" summary doesn't count them), but the viewer still surfaces them as
 // per-change tags so designers see structural risk that doesn't fit the five
 // compliance buckets.
-const RAW_CLASS_LABEL_KO: Record<string, string> = {
+export const RAW_CLASS_LABEL_KO: Record<string, string> = {
   text: '텍스트 변경',
   'component-props': '속성 변경',
   token: '디자인 토큰 변경',
@@ -35,7 +35,7 @@ const RAW_CLASS_LABEL_KO: Record<string, string> = {
   asset: '에셋 변경',
   layout: '레이아웃 변경',
 };
-const RAW_CLASS_EMOJI: Record<string, string> = {
+export const RAW_CLASS_EMOJI: Record<string, string> = {
   text: '✏️',
   'component-props': '🧩',
   token: '🎨',
@@ -43,6 +43,24 @@ const RAW_CLASS_EMOJI: Record<string, string> = {
   asset: '📦',
   layout: '📐',
 };
+
+// Raw classes that do NOT roll up to a ComplianceSubcategory bucket — these
+// are the only raw classes the Slack/Discord summary should count as separate
+// lines (`token`, `structure`, `layout`, `asset`). Compliance-mapped raw
+// classes (`text`, `component-props`, `detached-style`, `new-frame`,
+// `image-change`) are already covered by the compliance bucket lines.
+export const UNBUCKETED_RAW_CLASSES: readonly ('token' | 'structure' | 'layout' | 'asset')[] = [
+  'token',
+  'structure',
+  'layout',
+  'asset',
+] as const;
+
+export type UnbucketedRawClass = (typeof UNBUCKETED_RAW_CLASSES)[number];
+
+export function isUnbucketedRawClass(c: string): c is UnbucketedRawClass {
+  return (UNBUCKETED_RAW_CLASSES as readonly string[]).includes(c);
+}
 
 // Mirror of classify-diff.ts `CLASS_TO_SUBCATEGORY`. Kept here so designer-
 // facing surfaces (Slack summary, viewer) can normalize raw class names
