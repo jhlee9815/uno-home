@@ -70,14 +70,14 @@
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./project-plan/phase-6/task-2-actions-workflow.md) |
 | 3 | `post-run-actions.ts` 라우팅 스크립트 (PR/Issue/Slack) | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./project-plan/phase-6/task-3-post-run-actions.md) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./project-plan/phase-6/task-4-codeowners-governance.md) |
-| 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
+| 5 | Cloudflare Worker Figma webhook 프록시 | 🔵 옵션 (adopter용, repo 운영자는 미사용) | [`task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) |
 | 6 | Resend 이메일 통합 | ⏭ SKIPPED (Slack로 대체, 2026-05-21) | [`task-6-email-resend.md`](./project-plan/phase-6/task-6-email-resend.md) |
 | 7 | Codex 발견 버그 수정 + env var 추출 + Node 24 강제 | ✅ | [`task-7-bugfixes.md`](./project-plan/phase-6/task-7-bugfixes.md) |
 | 8 | DS Compliance Detection Core (detached / image / new frames) + audit auto-register | ✅ PR #9 merged (`6d4cd94`), PR #23 merged (`bcb7e98`), PR #25 follow-up 필요 | [`task-8-ds-compliance-detection.md`](./project-plan/phase-6/task-8-ds-compliance-detection.md) |
 | 9 | Report UX + Labels (task-8 후속) | ↘ Task 10에 대부분 흡수, label/summary 보강만 선택 | [`task-9-report-ux-labels.md`](./project-plan/phase-6/task-9-report-ux-labels.md) |
 | 10 | Designer Review → Auto-Edit → Dev Merge Workflow | 🟠 Phase A live 완료, Phase B artifact download 검증 완료. PR 생성/manifest `pr-open` 재검증 대기. Phase C 미시작. | [`task-10-designer-workflow-design.md`](./project-plan/phase-6/task-10-designer-workflow-design.md) |
 
-현재 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, audit auto-register code ✅. 잔여 핵심은 PR #25 후속 확인/merge → task-10 Phase B PR 생성 재검증 → Phase C. task-5는 운영 지연 해소용 optional.
+현재 task-1/2/3/4/7/8 ✅, task-6 ⏭ SKIPPED, task-5 🔵 adopter 옵션 (운영자 미사용), audit auto-register code ✅. 잔여 핵심은 PR #25 후속 확인/merge → task-10 Phase B PR 생성 재검증 → Phase C.
 
 ### 2026-05-20 16:58 KST — Codex 병렬 진행 기록
 

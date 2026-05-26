@@ -1,5 +1,7 @@
 # Task 6-5 — Cloudflare Worker: Figma Webhook → GitHub Dispatch
 
+> 🔵 **상태 (2026-05-26)**: 이 repo 운영자(jhlee9815)는 이 옵션을 사용하지 않기로 결정. 기본 2시간 cron으로 충분히 운영. 이 문서는 adopter(다른 팀 fork)가 즉시 트리거가 필요할 때 그대로 따라 셋업할 수 있도록 보존됨.
+>
 > **목표**: Figma `FILE_UPDATE` webhook을 받아 GitHub repository_dispatch 호출
 > **예상 시간**: 1~2시간 (옵션 `/slack` 엔드포인트 추가 시 +30분)
 > **선행**: task-2 (workflow가 `repository_dispatch: [figma-file-update]` 받음)

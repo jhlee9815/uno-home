@@ -66,7 +66,20 @@ Figma → 코드 디자인 변경을 자동으로 감지·분류·알리는 GitH
 **왜 audit는 daily이고 pipeline은 2h인가**:
 - audit의 절대량은 하루 단위 변화가 의미 있는 트렌드 지표 — 2시간마다 봐도 노이즈만 늘어남
 - 새 화면 자동 등록은 **2회 연속 sighting**(약 24h) 안전장치 — daily가 자연스러움
-- pipeline은 디자이너 편집을 빨리 잡기 위한 polling — 본래 webhook 즉시 트리거가 답이지만, webhook 누락 안전망으로 2시간 cron 유지 (task-5 Cloudflare Worker 머지 시 webhook + cron 안전망 2단 구조 완성 예정)
+- pipeline은 디자이너 편집을 빨리 잡기 위한 polling — 본래 webhook 즉시 트리거가 가장 빠르지만, 운영 단순화를 위해 기본은 2시간 cron만 사용. 즉시 반응이 필요한 팀은 아래 "고급: 즉시 트리거" 섹션 참고
+
+### 고급: 즉시 트리거 (옵션, adopter용)
+
+기본 2시간 cron이 부담스럽고 **Figma 편집 → 수 초 내 알림**이 필요하면 Cloudflare Worker(또는 Vercel Edge / AWS Lambda)로 Figma webhook 프록시를 두면 됩니다.
+
+```
+Figma 편집 → Figma webhook POST → Cloudflare Worker → GitHub repository_dispatch → figma-pipeline 즉시 실행
+```
+
+- 이미 `figma-pipeline.yml`은 `repository_dispatch: [figma-file-update]` 트리거를 받게 설계돼 있어, Worker만 만들면 됩니다.
+- 설계 문서: [`project-plan/phase-6/task-5-webhook-proxy.md`](./project-plan/phase-6/task-5-webhook-proxy.md) — Worker 소스, wrangler 설정, Figma webhook 등록 명령어 포함
+- 비용: Cloudflare Workers 무료 tier로 충분 (월 10만 req)
+- **이 repo 운영자(jhlee9815)는 사용하지 않습니다.** 옵션이 필요한 adopter만 셋업하세요.
 
 ### cascade — 1일 1회 통합 알림
 

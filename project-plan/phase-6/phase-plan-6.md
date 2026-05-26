@@ -37,7 +37,7 @@
 | 2 | `.github/workflows/figma-pipeline.yml` 작성 | ✅ | [`task-2-actions-workflow.md`](./task-2-actions-workflow.md) | 1시간 | 45분 |
 | 3 | `scripts/pipeline/post-run-actions.ts` 라우팅 스크립트 | ✅ V1~V4 실검증 통과 (V5 task-4 이후) | [`task-3-post-run-actions.md`](./task-3-post-run-actions.md) | 2시간 | ~2시간 (claude 초안 + codex 보강 + 실검증) |
 | 4 | CODEOWNERS + PR/Issue 거버넌스 룰 | ✅ (branch protection은 task-5 후) | [`task-4-codeowners-governance.md`](./task-4-codeowners-governance.md) | 30분 | 25분 |
-| 5 | Cloudflare Worker Figma webhook 프록시 | ⏳ | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
+| 5 | Cloudflare Worker Figma webhook 프록시 | 🔵 옵션 (adopter용, 운영자 미사용, 2026-05-26 결정) | [`task-5-webhook-proxy.md`](./task-5-webhook-proxy.md) | 1~2시간 | — |
 | 6 | Resend 이메일 통합 | ⏭ SKIPPED (Slack 알림 + GitHub 공식 Slack 앱으로 충분) | [`task-6-email-resend.md`](./task-6-email-resend.md) | 1시간 | — |
 | 7 | `promote-dev.ts` 스모크 키 버그 수정 + env override | ✅ | [`task-7-bugfixes.md`](./task-7-bugfixes.md) | 30분 | 20분 |
 | 8 | DS Compliance Detection Core (detached styles / image / new frames) | ✅ Stage 6 검증 + PR #9 merged (`6d4cd94`) | [`task-8-ds-compliance-detection.md`](./task-8-ds-compliance-detection.md) | 7-9시간 | 2.5시간+ |

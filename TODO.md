@@ -121,11 +121,12 @@ npm run build
 
 ## 5. 끼워넣기 옵션 — Task 5 Cloudflare Worker (단계 2 즉시 트리거)
 
-디자이너가 "Figma 편집 후 2시간 기다리는 문제"에 답답해할 때 1-2h로 추가. 지금은 Phase B handoff fix가 더 직접적인 병목이다.
+🔵 **adopter 옵션 (이 repo 운영자는 미사용)**. 다른 팀이 fork 후 즉시 반응을 원하면 셋업하라고 안내. 운영자 자신은 2시간 cron으로 충분히 운영하기로 결정 (2026-05-26).
 
 - 필요: Cloudflare 계정, `wrangler` CLI, GitHub fine-grained PAT 또는 repository dispatch 권한, Figma webhook passcode/signature 검증.
 - 목표: Figma 편집 → Figma webhook → Cloudflare Worker → GitHub `repository_dispatch` → `figma-pipeline.yml` 즉시 실행.
 - 부수 옵션: 같은 Worker에 `/slack` 엔드포인트 추가하면 Slack slash command 트리거 가능 (Slack Workflow Builder 대체).
+- 설계 문서는 `task-5-webhook-proxy.md`에 그대로 보존 — adopter가 그대로 따라 셋업 가능.
 
 ---
 
