@@ -1,5 +1,9 @@
 # Active Handoff — Pesse Phase 6 (2026-05-25)
 
+> ⚠️ **SUPERSEDED — 이 문서는 더 이상 활성 핸드오프가 아닙니다.**
+> 현재 운영 상태와 디자이너 워크플로 요약은 [`STATUS.md`](./STATUS.md) §4를 보세요.
+> 이 파일은 2026-05-26 통합 작업으로 SUPERSEDED 처리됐고 다음 정리 세션에서 삭제될 수 있습니다. 상단(Active Handoff)은 STATUS.md에 흡수됐고, 하단(UNO HOME Design System)은 옛 디자인 시스템 핸드오프로 보존.
+
 > 아래의 기존 UNO HOME handoff는 archive 트랙 정보가 많다. 현재 작업 기준은 이 상단 섹션과 `plan.md` / `TODO.md` / `project-plan/phase-6/phase-plan-6.md`를 우선한다.
 
 | 항목 | 현재 값 |

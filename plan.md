@@ -1,5 +1,10 @@
 # UNO HOME × Apple-inspired Design System 실험 계획
 
+> ⚠️ **SUPERSEDED — 이 문서는 더 이상 source of truth가 아닙니다.**
+> 현재 운영 상태는 [`STATUS.md`](./STATUS.md)를 보세요.
+> 이 파일은 2026-05-26 통합 작업으로 SUPERSEDED 처리됐고 다음 정리 세션에서 삭제될 수 있습니다. 히스토리 참고용으로만 보존됨.
+> Phase 1-5 구현 흐름 + Phase 6 진행 로그를 기록한 옛 master plan.
+
 > 작성일: 2026-05-20
 > 최신 갱신: 2026-05-25 22:30 KST (검출 결손 3종 해소: PR #131 신규 frame compliance + PR #132 audit→slack live. 다음: Phase 2 PR-B 슬랙 본문 강화.)
 > 프로젝트 위치: `/Users/juhee/Work/Test/design-test/uno-home`
