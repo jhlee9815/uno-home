@@ -6,7 +6,7 @@
 > **예상 시간**: 1~2시간 (옵션 `/slack` 엔드포인트 추가 시 +30분)
 > **선행**: task-2 (workflow가 `repository_dispatch: [figma-file-update]` 받음)
 > **블록 해제**: branch protection rule 적용 (외부 webhook 들어오기 시작하는 시점)
-> **관련**: [`slack-integration.md`](./slack-integration.md) — 경로 B(`/slack` 엔드포인트)를 본 task에 합칠지 분리할지 결정.
+> **관련**: 부수 옵션으로 같은 Worker에 `/slack` 엔드포인트를 추가하면 Slack slash command 트리거 가능. (옛 `slack-integration.md` 가이드는 정리 세션에서 삭제됨 — `git log -- project-plan/phase-6/slack-integration.md`로 원본 조회 가능)
 
 ## 설계 의도
 

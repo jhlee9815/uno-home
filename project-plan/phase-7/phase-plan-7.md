@@ -168,6 +168,6 @@ npx figma-design-sync init --migrate-from-legacy
 
 ## 참고
 
-- 상위 마스터: [`../../plan.md`](../../plan.md)
-- 직전 단계: [`../phase-6/phase-plan-6.md`](../phase-6/phase-plan-6.md)
+- 운영 상태: [`../../STATUS.md`](../../STATUS.md)
+- Phase 6 (완료) 히스토리: `git log -- project-plan/phase-6/phase-plan-6.md` 또는 PR #135-#142 커밋 로그
 - Codex 검증 세션: `019e4407-9f23-7190-b963-60fd7ba11d4b`

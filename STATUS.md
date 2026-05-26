@@ -1,7 +1,7 @@
 # 운영 상태 (Operations Status)
 
 > 최신 갱신: 2026-05-26
-> 이 문서는 [`plan.md`](./plan.md) + [`TODO.md`](./TODO.md) + [`handoff.md`](./handoff.md)를 통합한 **현재 운영 상태의 단일 source of truth**입니다. 옛 3개 파일은 SUPERSEDED 배너가 붙어 있고 다음 정리 세션에서 삭제될 예정입니다.
+> 이 문서는 옛 `plan.md` + `TODO.md` + `handoff.md` 3개 파일을 통합한 **현재 운영 상태의 단일 source of truth**입니다. 옛 파일들은 정리 세션(이 커밋 직전 PR)에서 삭제됐고, 히스토리는 `git log -- plan.md` 등으로 조회 가능합니다.
 
 ---
 
@@ -176,12 +176,20 @@ Phase 6 시점의 9가지 차단점 중 4개는 해소(env override), 나머지 
 
 ## 9. 히스토리 / 옛 문서
 
-이 repo의 옛 구현 기록은 다음 경로에 그대로 보존돼 있습니다 (다음 정리 세션에서 일부 삭제 검토):
+옛 구현 기록 70+ 개 파일은 정리 세션에서 삭제됐습니다. 필요시 git log로 복구 가능:
 
-- `phase1/`~`phase5/` — Pesse Apple-inspired DS 트랙의 phase별 구현 노트
-- `phase6/`, `phase7/` — phase 6/7 진행 노트 (skill이 phase6-2.md / phase7/ 참조 중)
-- `docs/phase5-8.md` — 옛 phase 5 launchd 가이드
-- `figma-automation-guide.md` — README §"설치"로 대체된 옛 가이드
-- `project-plan/archive/` — Phase 1-5 archive + Pesse 데모 + 보완 작업 기록
-- `project-plan/phase-6/task-1` ~ `task-10` — 완료된 task별 구현 기록
-- `plan.md`, `TODO.md`, `handoff.md` — 이 STATUS.md에 흡수됨 (SUPERSEDED 배너 부착)
+```bash
+git log --diff-filter=D --summary -- "plan.md"
+git log --all --oneline -- phase1 phase2 phase3 phase4 phase5
+```
+
+git에 남아있는 메타 문서:
+- `STATUS.md` (이 문서) — 운영 상태
+- `README.md` — 사용/설치 가이드
+- `design-system.md` — DS 스펙 (uno SKILL 참조)
+- `phase6/phase6-2.md` — token sync 매핑 (uno SKILL + src/index.css 참조)
+- `phase7/{phase7,phase7-1,phase7-2}.md` — 컴포넌트 사양 (uno SKILL 참조)
+- `project-plan/archive/phase-2/{apple-tokens.json, source-summary.md}` — apple SKILL 참조
+- `project-plan/phase-6/task-5-webhook-proxy.md` — adopter용 webhook 레시피 (README 참조)
+- `project-plan/phase-7/phase-plan-7.md` — 미래 Phase 7 설계 문서
+- `design-systems/apple/{checklist-example,source-index,token-mapping}.md` — Apple DS 참고

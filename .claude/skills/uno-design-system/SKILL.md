@@ -59,7 +59,7 @@ These are applied AFTER the pipeline's auto-apply / report-only split.
 | `auto-apply` | any | tokens / components / compositions | **Auto-applied** | Already safe. Pipeline output is the truth. |
 | `report-only` | `token` | tokens | **Claude review** | Token value drift — usually a single CSS variable change, summarize and flag downstream usage. |
 | `report-only` | `text` | components / compositions | **Claude review** | Text content change without `figma:text` marker — Claude can suggest the exact code edit. |
-| `report-only` | `text` | screens | **Human review** | Screen text is permanent designer-edit policy (handoff.md). Do not suggest code edits. |
+| `report-only` | `text` | screens | **Human review** | Screen text is permanent designer-edit policy (see STATUS.md §4 designer workflow). Do not suggest code edits. |
 | `report-only` | `component-props` | components / compositions | **Claude review** | Variant changes — list which prop changed and which screen consumers exist. |
 | `report-only` | `layout` / `structure` | any | **Human review** | Layout/structure auto-apply is Phase 5-4 M4 (currently deferred). |
 | `report-only` | `asset` / `unknown` | any | **Human review** | Lucide icons (asset) and unknown classes are always manual. |
@@ -88,7 +88,7 @@ If the diff introduces a value that does not match any token, flag as "token-out
 | Card / Toast / Text / Switch / Chip | report-only | Newer additions (Phase 7-2). Marker coverage may be incomplete. |
 | StatusBar / Icon | report-only | StatusBar is system-level. Icon uses Lucide (asset class — always human review). |
 | OTPGroup | partial | 6-cell state machine — full visual diff required for any token change. |
-| BottomNav | **not implemented** | `plan.md` Phase 7-2 explicitly marks deferred. Any BottomNav change → Human review with note "no code target yet". |
+| BottomNav | **not implemented** | No code target — historical Phase 7-2 design defers it. Any BottomNav change → Human review with note "no code target yet". |
 
 ## Page mapping reminder
 

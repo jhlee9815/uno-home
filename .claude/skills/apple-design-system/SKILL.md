@@ -4,7 +4,7 @@ description: Translate Apple-inspired Markdown design system changes into develo
 metadata:
   source: Apple-inspired Markdown DS (awesome-design-md/design-md/apple, adapted to design-systems/apple/)
   schemaVersion: 1
-  parentTrack: Apple-inspired DS experiment (project-plan/phase-1..5)
+  parentTrack: Apple-inspired DS experiment (project-plan/archive/phase-1..5)
   disclaimer: Apple-inspired only. Not official Apple Design System. Not affiliated with Apple Inc.
 ---
 
@@ -28,8 +28,8 @@ The two Skills share output shape on purpose, so a single reviewer (the wrapper 
 | `design-systems/apple/apple-tokens.json` | Authoritative Apple-inspired token JSON (DTCG-style). |
 | `design-systems/apple/token-mapping.md` | UNO ↔ Apple correspondence + risk table. |
 | `design-systems/apple/preview.html` | Visual reference for hero / typography / dark mode. |
-| `project-plan/phase-2/apple-tokens.json` | Mirror under phase folder. Same content. |
-| `project-plan/phase-2/source-summary.md` | Phase 2 record. |
+| `project-plan/archive/phase-2/apple-tokens.json` | Mirror under archived phase folder. Same content. |
+| `project-plan/archive/phase-2/source-summary.md` | Phase 2 record (archived). |
 | External (read-only): `/Users/juhee/Work/Test/awesome-design-md/design-md/apple/DESIGN.md` | Original Markdown source. Cite, do not edit. |
 
 Since there is no Figma snapshot, the "diff" input for this Skill is a hand-authored or wrapper-generated change list comparing `apple-tokens.json` between two timestamps (or between `apple-tokens.json` and the current UNO `index.css`).
