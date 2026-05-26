@@ -15,6 +15,8 @@ function mkChange(over: Partial<SummaryChange> = {}): SummaryChange {
     classes: over.classes,
     subcategories: over.subcategories,
     reasons: over.reasons,
+    before: over.before,
+    after: over.after,
     compliance: over.compliance,
   };
 }
@@ -182,8 +184,8 @@ run('T7 structure sub-kind from reasons', () => {
   assert.match(lines[0], /구조 변경: 1건 \(추가 3·삭제 2\)/);
 });
 
-// ----- T8: structure boundingBox toggle -----
-run('T8 structure toggle from boundingBox reason', () => {
+// ----- T8: structure boundingBox toggle — direction unknown -----
+run('T8 structure toggle without before/after → 표시토글', () => {
   const input = mkInput([
     mkChange({
       nodeId: '7:2', nodeName: 'Pesse', classes: ['structure'],
@@ -194,6 +196,65 @@ run('T8 structure toggle from boundingBox reason', () => {
   assert.equal(c.structureSubKinds.toggle, 1);
   const lines = buildLocalizedSummary(input);
   assert.match(lines[0], /구조 변경: 1건 \(표시토글 1\)/);
+});
+
+// ----- T8a: bbox toggle reason + before-present after-null → 삭제 -----
+run('T8a structure toggle with before bbox + after null → 삭제', () => {
+  const input = mkInput([
+    mkChange({
+      nodeId: '7:3', nodeName: 'Phone · Home', classes: ['structure'],
+      reasons: ["Node 7:3 boundingBox changed to or from null"],
+      before: { boundingBox: { x: 0, y: 0, width: 390, height: 780 } },
+      after: { boundingBox: null },
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const c = categoryCounts(input);
+  assert.equal(c.structureSubKinds.removed, 1);
+  assert.equal(c.structureSubKinds.toggle, 0);
+  const lines = buildLocalizedSummary(input);
+  assert.match(lines[0], /구조 변경: 1건 \(삭제 1\)/);
+});
+
+// ----- T8b: bbox toggle reason + before-null after-present → 추가 -----
+run('T8b structure toggle with before null + after bbox → 추가', () => {
+  const input = mkInput([
+    mkChange({
+      nodeId: '7:9', nodeName: 'New Screen', classes: ['structure'],
+      reasons: ["Node 7:9 boundingBox changed to or from null"],
+      before: { boundingBox: null },
+      after: { boundingBox: { x: 0, y: 0, width: 390, height: 780 } },
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const c = categoryCounts(input);
+  assert.equal(c.structureSubKinds.added, 1);
+  assert.equal(c.structureSubKinds.toggle, 0);
+  const lines = buildLocalizedSummary(input);
+  assert.match(lines[0], /구조 변경: 1건 \(추가 1\)/);
+});
+
+// ----- T8c: cs-2026-05-26T05-59-50 regression — 10 deletions in one cs -----
+run('T8c real-world: 10 screens vanish via bbox null → 삭제 10', () => {
+  const changes: SummaryChange[] = [];
+  for (let i = 0; i < 10; i++) {
+    changes.push(mkChange({
+      nodeId: `n:${i}`, nodeName: `Screen ${i}`,
+      classes: ['text', 'component-props', 'asset', 'structure'],
+      subcategories: ['text-change', 'props-change'],
+      reasons: [
+        'textHash changed',
+        'componentPropsHash changed',
+        'propsHash changed',
+        'boundingBox changed to or from null',
+      ],
+      before: { boundingBox: { x: 0, y: 0, width: 390, height: 780 } },
+      after: { boundingBox: null },
+    }));
+  }
+  const input = mkInput(changes, { total: 10, reportOnly: 10 });
+  const c = categoryCounts(input);
+  assert.equal(c.structureSubKinds.removed, 10);
+  assert.equal(c.structureSubKinds.added, 0);
+  assert.equal(c.structureSubKinds.toggle, 0);
 });
 
 // ----- T9: legacy classes only — token -----

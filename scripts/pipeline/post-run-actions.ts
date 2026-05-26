@@ -77,6 +77,8 @@ const classified = JSON.parse(readFileSync(classifiedPath, 'utf-8')) as {
     classes: string[];
     subcategories?: string[];
     reasons?: string[];
+    before?: { boundingBox?: unknown };
+    after?: { boundingBox?: unknown };
     decision: 'auto-apply' | 'report-only';
     target?: { section?: string };
     compliance?: {

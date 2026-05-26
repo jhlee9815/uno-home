@@ -34,6 +34,13 @@ export interface SummaryChange {
   classes?: string[];
   subcategories?: string[];
   reasons?: string[];
+  // boundingBox states from diff-snapshot. Used to disambiguate the
+  // "boundingBox changed to or from null" structure reason — when before
+  // had a bbox and after is null, the node has effectively been removed
+  // (Figma API returned the registered node with an empty render), so we
+  // label it 삭제 rather than the vague 표시토글.
+  before?: { boundingBox?: unknown };
+  after?: { boundingBox?: unknown };
   compliance?: {
     newDetachedStyles?: unknown[];
     newFrames?: unknown[];
@@ -130,11 +137,34 @@ export function categoryCounts(input: SummaryInput): CategoryBreakdown {
     }
 
     // 4. structure sub-kinds via anchored reason patterns.
+    //
+    // "boundingBox changed to or from null" is ambiguous on its own — it
+    // fires whether the node appeared or disappeared. Look at the actual
+    // before/after.boundingBox to pick the user-facing label:
+    //
+    //   before bbox present + after null → 삭제 (effectively removed)
+    //   before null + after bbox present → 추가 (effectively added)
+    //   neither / both null                → 표시토글 (true ambiguous toggle)
+    //
+    // When before/after metadata is unavailable (legacy fixtures), fall
+    // back to the toggle bucket so we don't silently miscount.
     if ((change.classes ?? []).includes('structure')) {
       for (const r of change.reasons ?? []) {
-        if (STRUCTURE_ADDED_RE.test(r)) out.structureSubKinds.added++;
-        else if (STRUCTURE_REMOVED_RE.test(r)) out.structureSubKinds.removed++;
-        else if (STRUCTURE_TOGGLE_RE.test(r)) out.structureSubKinds.toggle++;
+        if (STRUCTURE_ADDED_RE.test(r)) {
+          out.structureSubKinds.added++;
+        } else if (STRUCTURE_REMOVED_RE.test(r)) {
+          out.structureSubKinds.removed++;
+        } else if (STRUCTURE_TOGGLE_RE.test(r)) {
+          const beforeBbox = change.before?.boundingBox;
+          const afterBbox = change.after?.boundingBox;
+          if (beforeBbox != null && afterBbox == null) {
+            out.structureSubKinds.removed++;
+          } else if (beforeBbox == null && afterBbox != null) {
+            out.structureSubKinds.added++;
+          } else {
+            out.structureSubKinds.toggle++;
+          }
+        }
       }
     }
   }
