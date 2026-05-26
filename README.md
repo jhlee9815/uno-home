@@ -12,17 +12,33 @@ Figma → 코드 디자인 변경을 자동으로 감지·분류·알리는 GitH
 
 스케줄러가 한 번 돌면 디자이너는 보통 이 3가지를 받습니다:
 
-1. **Slack 통합 알림** (1일 1회 기준):
+1. **Slack 통합 알림** — cs마다 한 번씩 (cron 2시간 또는 audit cascade 직후 1회):
+
+   **예시 A — DS 미사용/새 화면 등 compliance 변경이 많은 경우**:
    ```
    🎨 Figma 변경 감지 — cs-2026-05-22T01-12-45
+   • 🎨 디자인 시스템 미사용: 1083건 (상세는 viewer 참조)
    • 🆕 새 화면 추가: 2건
-   • 🎨 디자인 시스템 미사용: 1083건 (색상 980, 타이포 100, 효과 3)
    • 🖼️ 이미지 변경: 5건
    • 전체: 1090건 (자동 반영 후보 0건, 디자이너 검토 1090건)
+   • 영향 화면 top-3: Phone · Cards (412) · Phone · Home (320) · Phone · Send (108)
    • 오늘의 audit Issue: Issue #31
    • 새 화면 등록 PR: PR #30
    • 리뷰 viewer: cs-2026-05-22T01-12-45
    ```
+
+   **예시 B — 구조·토큰·레이아웃 등 raw 변경 위주인 경우**:
+   ```
+   🎨 Figma 변경 감지 — cs-2026-05-25T11-44-34
+   • 🧱 구조 변경: 5건 (추가 3·삭제 2)
+   • 🎨 디자인 토큰 변경: 2건
+   • 📐 레이아웃 변경: 1건
+   • 전체: 8건 (자동 반영 후보 0건, 디자이너 검토 8건)
+   • 영향 화면 top-3: Pesse Apple-inspired (4) · Phone · Home (3) · test1 (1)
+   • 리뷰 viewer: cs-2026-05-25T11-44-34
+   ```
+
+   `(상세는 viewer 참조)` 표기는 카테고리당 50건 이상일 때 자동 첨부됩니다. Slack(3500자) / Discord(1800자) 채널별 본문 길이 cap도 적용돼, 본문이 truncated되더라도 `• 전체:` headline은 항상 보존됩니다.
 
 2. **GitHub Issue** (`audit` 라벨): 감지된 미사용/미등록 항목을 표로 정리한 Markdown 리포트.
 
@@ -34,12 +50,23 @@ Figma → 코드 디자인 변경을 자동으로 감지·분류·알리는 GitH
 
 ## 작동 방식 (How it works)
 
-### 워크플로 2개로 분리
+### 워크플로 2개로 분리 — "전체 점검" vs "변경 추적"
 
-| 워크플로 | 일정 | 역할 |
+이 봇은 서로 다른 목적의 워크플로 2개로 나뉩니다. 한쪽은 디자인 시스템 위생을 매일 점검하고, 다른 한쪽은 디자이너가 편집한 변경을 자주 추적합니다.
+
+| 항목 | **figma-audit** (위생 점검) | **figma-pipeline** (변경 추적) |
 |---|---|---|
-| `figma-audit.yml` | 매일 00:00 UTC (09:00 KST) | 디자인 시스템 미사용 + 새 top-level 화면 감지 → Issue / 자동 등록 PR |
-| `figma-pipeline.yml` | 2시간마다 + audit 완료 후 cascade | baseline 스냅샷 비교 → cs-* 리포트 + viewer + Slack |
+| **언제 도는가** | 매일 1회 00:00 UTC (09:00 KST) | 2시간마다 (02·04·06·…·22 UTC) + audit 직후 cascade |
+| **횟수/일** | 1회 | 12회 |
+| **보는 것** | Figma 파일 **전체 절대량** (스냅샷 한 장) | baseline ↔ 현재 **델타** (전후 비교) |
+| **잡아내는 것** | ① DS 토큰 미사용 raw 색상/타이포/효과의 **총 개수**<br>② 등록 안 된 top-level 화면 후보 (2-sighting 누적) | ① 텍스트/속성/구조/레이아웃 변경<br>② 등록 화면 내부의 detached-style/new-frame/image 변경 |
+| **결과물** | • GitHub Issue (`audit` 라벨)<br>• 자동 등록 PR (2-sighting 누적 후)<br>• Slack 일간 절대량 알림 | • `cs-{timestamp}` 리포트<br>• before/after viewer (GitHub Pages)<br>• cs별 Slack 알림 + GitHub Issue<br>• 자동 적용 Draft PR (auto-apply 한정) |
+| **목적** | "어제보다 detached가 줄었나?" 추세 점검 | "Figma에서 뭐가 바뀌었나?" 즉시 알림 |
+
+**왜 audit는 daily이고 pipeline은 2h인가**:
+- audit의 절대량은 하루 단위 변화가 의미 있는 트렌드 지표 — 2시간마다 봐도 노이즈만 늘어남
+- 새 화면 자동 등록은 **2회 연속 sighting**(약 24h) 안전장치 — daily가 자연스러움
+- pipeline은 디자이너 편집을 빨리 잡기 위한 polling — 본래 webhook 즉시 트리거가 답이지만, webhook 누락 안전망으로 2시간 cron 유지 (task-5 Cloudflare Worker 머지 시 webhook + cron 안전망 2단 구조 완성 예정)
 
 ### cascade — 1일 1회 통합 알림
 
@@ -81,6 +108,24 @@ Figma → 코드 디자인 변경을 자동으로 감지·분류·알리는 GitH
 
 **원천적으로 불가능**:
 - 디자인 시스템이 Figma 측에 등록돼 있지 않으면 "미사용"을 판단할 기준이 없습니다. 컬러/타이포 변수, 컴포넌트, 스타일을 먼저 Figma에서 정리하세요.
+
+### 다른 프로젝트에 적용할 때의 한계 (Phase 7 미해결 차단점)
+
+이 봇은 **Pesse Apple-inspired demo (모바일 React)** 기준으로 개발됐고, 일반 fork 가능한 도구로의 추출은 Phase 7 작업 범위입니다. 지금 시점에 다른 프로젝트에 도입할 때 직접 손봐야 할 부분:
+
+| 차단점 | 현재 상태 | 어떻게 해야 하나 |
+|---|---|---|
+| **mapping이 Pesse 전용** | `config/figma-mapping.yaml`은 비워두고 시작 가능하지만, `scripts/pipeline/promote-dev.ts` 등 일부 코드에 Pesse 화면 키(`home/family`)가 default로 남음 | `FIGMA_SMOKE_KEYS` env var로 override 또는 빈 값으로 비활성화 |
+| **마커가 React 전용** | `figma:text` / `figma:prop` 주석 형식이 JSX 안 주석 기준 | Vue/Svelte/Flutter 등 다른 프레임워크는 marker parsing을 직접 수정 필요 |
+| **viewport 390×844 (모바일 고정)** | visual diff 해상도 하드코딩 | 데스크탑 앱은 별도 패치 (Phase 7에서 config화 예정) |
+| **package.json 일부 잔여** | `design-review-bot`으로 리네임 됐으나 일부 스크립트가 옛 이름 가능 | grep으로 확인 후 수정 |
+
+도입 가능한 시나리오:
+- ✅ 모바일 React (Vite/CRA) + Figma file + Slack/Discord = 그대로 따라 하면 동작
+- 🟡 데스크탑 React = viewport만 수정하면 동작
+- ❌ Vue / Svelte / Flutter / 모바일 네이티브 = marker 파서 직접 작성 필요
+
+→ 본격 다른 팀 공유는 **Phase 7 완료 후** 권장. 현재는 같은 스택의 sibling 프로젝트에 한해 PoC 도입 가능.
 
 ---
 
@@ -205,6 +250,49 @@ gh workflow run figma-pipeline.yml
 ## GitHub App
 
 이 봇은 자동 PR 생성에 GitHub App `designer-bot`을 사용합니다. App 이름은 사용자가 변경해도 됩니다(설치할 때 임의의 이름을 줄 수 있음). 워크플로 코드에는 App 이름이 하드코드되어 있지 않고 `AUDIT_APP_ID` / `AUDIT_APP_PRIVATE_KEY` secret 값으로 인증합니다.
+
+---
+
+## 트러블슈팅 (Troubleshooting)
+
+### "알림이 안 와요"
+
+1. **변경이 없으면 알림도 없습니다** — figma-pipeline은 `Changes: 0`이면 post-run-actions 스텝 자체가 skip됩니다. Slack 본문 누락이 아니라 정상 동작입니다. 확인:
+   ```bash
+   gh run view <run-id> --log | grep -E "Changes:|cs-id"
+   ```
+   `cs-id: none`이면 변경이 0건이라 알림이 발생하지 않은 것.
+
+2. **Slack webhook URL이 없거나 만료**:
+   ```bash
+   gh secret list                         # SLACK_WEBHOOK_URL이 있는지
+   gh run view <run-id> --log | grep slack
+   ```
+   `[slack] skipped (SLACK_WEBHOOK_URL not set)`이 보이면 secret 등록 필요.
+
+3. **`workflow_run` cascade가 안 도는 경우**: audit이 GitHub Actions UI에서 success인데 pipeline이 안 이어졌다면, `figma-pipeline.yml`의 `workflow_run` 트리거가 비활성화됐을 가능성. main 브랜치 기준으로만 cascade가 동작합니다.
+
+### "audit Issue가 매일 새로 생성돼서 노이즈"
+
+현재 audit Issue는 직전 카운트와 동일해도 매일 close-and-create 됩니다. 향후 dedup 작업 예정 (TODO.md §2.후순위). 디자이너가 `audit` 라벨로 필터링해 보거나, Slack 채널에 audit 알림(매일 1회)만 구독하는 게 임시 대응.
+
+### "viewer 페이지가 404"
+
+`figma-pipeline.yml`의 `Publish designer review viewer` 스텝이 실패했거나 Pages가 활성화되지 않았을 가능성. 확인:
+```bash
+gh run view <run-id> --log | grep -E "Pages|viewer-publish"
+```
+Repository → Settings → Pages → source가 "GitHub Actions"로 돼있는지 확인.
+
+### "자동 등록 PR이 안 만들어져요"
+
+새 top-level 화면은 **2회 연속 sighting** 후에만 자동 등록됩니다 (약 24h). 직후엔 안 나옵니다. `.automation/audit-state.json`에 sighting count가 기록됩니다 — 매일 audit 후 PR이 나올 때까지 1일 더 대기.
+
+또한 `AUDIT_APP_ID` / `AUDIT_APP_PRIVATE_KEY` secret이 없으면 `GITHUB_TOKEN` fallback이 되는데, 이 경우 PR은 만들어지지만 `pull_request: opened` cascade가 안 됩니다 ([README §5 GitHub App 설치](#5-github-app-설치-자동-등록-pr용)).
+
+### "본문이 잘려요"
+
+Slack은 4000자, Discord는 2000자 한도가 있어 본문이 채널별 cap(3500/1800)을 넘으면 자동 truncation됩니다. 끝에 `• … (상세는 viewer 참조)` marker가 붙고 viewer 링크는 항상 보존됩니다. 전체 상세는 viewer 페이지에서 확인.
 
 ---
 
