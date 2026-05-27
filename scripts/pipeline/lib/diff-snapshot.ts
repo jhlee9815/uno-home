@@ -1,4 +1,4 @@
-import type { SnapshotNodeEntry } from './snapshot-node.ts';
+import type { SnapshotNodeEntry, SnapshotTextLeaf } from './snapshot-node.ts';
 import type {
   AssetRefChange,
   ComplianceDiffSummary,
@@ -40,6 +40,14 @@ export interface SnapshotPair {
   headFile: string;
 }
 
+export interface TextLeafChange {
+  nodeId: string;
+  nodeName: string;
+  path: string[];
+  before: string | null;
+  after: string | null;
+}
+
 export interface DiffChange {
   key: string;
   nodeId: string | null;
@@ -49,6 +57,7 @@ export interface DiffChange {
   before: Record<string, unknown>;
   after: Record<string, unknown>;
   compliance?: ComplianceDiffSummary;
+  textChanges?: TextLeafChange[];
 }
 
 export interface DiffFile {
@@ -175,10 +184,18 @@ export function diffSnapshots(
 
     const classes: ChangeClass[] = [];
     const reasons: string[] = [];
+    let textChanges: TextLeafChange[] | undefined;
 
     if (hashChanged(beforeNode.textHash, afterNode.textHash)) {
       classes.push('text');
-      reasons.push('textHash changed');
+      textChanges = diffTextLeaves(beforeNode.texts, afterNode.texts);
+      if (textChanges && textChanges.length > 0) {
+        for (const reason of textChangeReasons(textChanges)) {
+          reasons.push(reason);
+        }
+      } else {
+        reasons.push('textHash changed');
+      }
     }
 
     if (hashChanged(beforeNode.componentPropsHash, afterNode.componentPropsHash)) {
@@ -230,6 +247,7 @@ export function diffSnapshots(
         after: summarizeNode(afterNode),
       };
       if (hasCompliance) change.compliance = compliance;
+      if (textChanges && textChanges.length > 0) change.textChanges = textChanges;
       changes.push(change);
     }
   }
@@ -274,6 +292,55 @@ function sameBoundingBox(
 
 function hashChanged(before: string | undefined, after: string | undefined): boolean {
   return typeof before === 'string' && typeof after === 'string' && before !== after;
+}
+
+// Legacy snapshots predate per-leaf `texts[]` storage. When either side is
+// missing the array we can detect *that* something changed (textHash) but
+// not the leaf-level before/after, so we leave textChanges undefined and the
+// caller falls back to the generic "textHash changed" reason.
+function diffTextLeaves(
+  before: SnapshotTextLeaf[] | undefined,
+  after: SnapshotTextLeaf[] | undefined
+): TextLeafChange[] | undefined {
+  if (!Array.isArray(before) || !Array.isArray(after)) return undefined;
+  const byBefore = new Map(before.map(leaf => [leaf.nodeId, leaf]));
+  const byAfter = new Map(after.map(leaf => [leaf.nodeId, leaf]));
+  const ids = new Set<string>();
+  for (const id of byBefore.keys()) ids.add(id);
+  for (const id of byAfter.keys()) ids.add(id);
+  const changes: TextLeafChange[] = [];
+  for (const id of [...ids].sort()) {
+    const b = byBefore.get(id);
+    const a = byAfter.get(id);
+    if (b && a && b.value === a.value) continue;
+    changes.push({
+      nodeId: id,
+      nodeName: a?.nodeName ?? b?.nodeName ?? id,
+      path: a?.path ?? b?.path ?? [],
+      before: b?.value ?? null,
+      after: a?.value ?? null,
+    });
+  }
+  return changes;
+}
+
+// Surface up to MAX leaf changes verbatim in reasons[] so designers reading
+// the viewer can see exactly what shifted without opening the diff JSON.
+// Past MAX we collapse to "외 N건" to keep cards readable.
+const TEXT_REASON_MAX = 5;
+function textChangeReasons(changes: TextLeafChange[]): string[] {
+  const out: string[] = [];
+  const head = changes.slice(0, TEXT_REASON_MAX);
+  for (const c of head) {
+    const label = c.nodeName || c.path.at(-1) || c.nodeId;
+    const before = c.before === null ? '(없음)' : JSON.stringify(c.before);
+    const after = c.after === null ? '(삭제됨)' : JSON.stringify(c.after);
+    out.push(`텍스트 변경 — ${label}: ${before} → ${after}`);
+  }
+  if (changes.length > TEXT_REASON_MAX) {
+    out.push(`외 ${changes.length - TEXT_REASON_MAX}건의 텍스트 변경`);
+  }
+  return out;
 }
 
 function sortedUniqueKeys(

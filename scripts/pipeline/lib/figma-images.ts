@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { basename, dirname, resolve } from 'node:path';
 import { fetchFigmaJson } from './figma-api.ts';
 
 export interface FigmaImagesResponse {
@@ -62,6 +62,37 @@ export function saveImageBuffer(path: string, buffer: Buffer): string {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, buffer);
   return 'sha256:' + createHash('sha256').update(buffer).digest('hex');
+}
+
+// Read-only counterpart to `promoteSnapshotImagesToBaseline` — returns the
+// nodeIds that WOULD be promoted without touching the filesystem. Used by
+// dry-run paths that must report intent without mutating the working tree
+// (e.g. CI dry-runs that assert no diff after running the pipeline).
+export function listSnapshotImageNodeIdsForCs(repoRoot: string, csId: string): string[] {
+  const sourceDir = resolve(repoRoot, '.automation/images/snapshots', csId);
+  if (!existsSync(sourceDir)) return [];
+  return readdirSync(sourceDir)
+    .filter(entry => entry.endsWith('.png'))
+    .map(entry => basename(entry, '.png'));
+}
+
+// Copy every PNG captured during a cs into the baseline image directory so
+// that promoting a cs's snapshot.json as the new design baseline also updates
+// the matching reference images. Without this, the baseline JSON drifts ahead
+// of the images and `viewer-gen` keeps rendering stale (or missing) "before"
+// thumbnails for nodes whose first capture happened mid-cycle.
+export function promoteSnapshotImagesToBaseline(repoRoot: string, csId: string): string[] {
+  const sourceDir = resolve(repoRoot, '.automation/images/snapshots', csId);
+  if (!existsSync(sourceDir)) return [];
+  const baselineDir = resolve(repoRoot, '.automation/images/baseline');
+  mkdirSync(baselineDir, { recursive: true });
+  const copied: string[] = [];
+  for (const entry of readdirSync(sourceDir)) {
+    if (!entry.endsWith('.png')) continue;
+    copyFileSync(resolve(sourceDir, entry), resolve(baselineDir, entry));
+    copied.push(basename(entry, '.png'));
+  }
+  return copied;
 }
 
 export async function fetchAndSaveFigmaImages(input: {

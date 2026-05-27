@@ -476,6 +476,190 @@ run('diffSnapshots: !beforeNode with legacy head (no compliance arrays) → only
   assert.equal(change.compliance, undefined);
 });
 
+run('diffSnapshots: text change emits textChanges with leaf-level before/after', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-21T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {
+      pesse_home: mkSnapshotNode({
+        id: '81:302',
+        name: 'Phone · Home',
+        textHash: 'sha256:text-old',
+        texts: [
+          { nodeId: '81:303', nodeName: 'Balance', path: ['Phone', 'Balance'], value: '$25,521,098.31' },
+          { nodeId: '81:304', nodeName: 'Greeting', path: ['Phone', 'Greeting'], value: 'Pessse' },
+          { nodeId: '81:305', nodeName: 'Stable', path: ['Phone', 'Stable'], value: 'unchanged' },
+        ],
+      }),
+    },
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-21T01:00:00.000Z',
+    nodes: {
+      pesse_home: mkSnapshotNode({
+        id: '81:302',
+        name: 'Phone · Home',
+        textHash: 'sha256:text-new',
+        texts: [
+          { nodeId: '81:303', nodeName: 'Balance', path: ['Phone', 'Balance'], value: '$23,521,098.31' },
+          { nodeId: '81:304', nodeName: 'Greeting', path: ['Phone', 'Greeting'], value: 'Pesse' },
+          { nodeId: '81:305', nodeName: 'Stable', path: ['Phone', 'Stable'], value: 'unchanged' },
+        ],
+      }),
+    },
+  };
+  const d = diffSnapshots(base, head, {
+    comparisonMode: 'baseline',
+    basePath: 'b.json',
+    headPath: 'h.json',
+  });
+  const change = d.changes.find(c => c.key === 'pesse_home');
+  assert.ok(change);
+  assert.ok(change.classes.includes('text'));
+  assert.ok(change.textChanges, 'expected textChanges field on text-class DiffChange');
+  assert.equal(change.textChanges.length, 2, 'unchanged leaf must not appear');
+  const byNodeId = new Map(change.textChanges.map(t => [t.nodeId, t]));
+  const balance = byNodeId.get('81:303');
+  assert.ok(balance);
+  assert.equal(balance.before, '$25,521,098.31');
+  assert.equal(balance.after, '$23,521,098.31');
+  assert.equal(balance.nodeName, 'Balance');
+  const greeting = byNodeId.get('81:304');
+  assert.ok(greeting);
+  assert.equal(greeting.before, 'Pessse');
+  assert.equal(greeting.after, 'Pesse');
+  assert.match(
+    change.reasons.join('\n'),
+    /Balance.*\$25,521,098\.31.*\$23,521,098\.31/s,
+    'reasons should carry a human-readable line for changed leaf'
+  );
+});
+
+run('diffSnapshots: text leaf added (no match in base) → textChange with before:null', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-21T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {
+      home: mkSnapshotNode({
+        id: '7:1',
+        name: 'Home',
+        textHash: 'sha256:text-a',
+        texts: [{ nodeId: '7:2', nodeName: 'Title', path: ['Home', 'Title'], value: 'Hello' }],
+      }),
+    },
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-21T01:00:00.000Z',
+    nodes: {
+      home: mkSnapshotNode({
+        id: '7:1',
+        name: 'Home',
+        textHash: 'sha256:text-b',
+        texts: [
+          { nodeId: '7:2', nodeName: 'Title', path: ['Home', 'Title'], value: 'Hello' },
+          { nodeId: '7:9', nodeName: 'Subtitle', path: ['Home', 'Subtitle'], value: 'World' },
+        ],
+      }),
+    },
+  };
+  const d = diffSnapshots(base, head, { comparisonMode: 'baseline', basePath: 'b.json', headPath: 'h.json' });
+  const change = d.changes.find(c => c.key === 'home');
+  assert.ok(change);
+  assert.ok(change.textChanges);
+  assert.equal(change.textChanges.length, 1);
+  assert.equal(change.textChanges[0].nodeId, '7:9');
+  assert.equal(change.textChanges[0].before, null);
+  assert.equal(change.textChanges[0].after, 'World');
+});
+
+run('diffSnapshots: text leaf removed (no match in head) → textChange with after:null', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-21T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {
+      home: mkSnapshotNode({
+        id: '7:1',
+        name: 'Home',
+        textHash: 'sha256:text-a',
+        texts: [
+          { nodeId: '7:2', nodeName: 'Title', path: ['Home', 'Title'], value: 'Hello' },
+          { nodeId: '7:9', nodeName: 'Subtitle', path: ['Home', 'Subtitle'], value: 'World' },
+        ],
+      }),
+    },
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-21T01:00:00.000Z',
+    nodes: {
+      home: mkSnapshotNode({
+        id: '7:1',
+        name: 'Home',
+        textHash: 'sha256:text-b',
+        texts: [{ nodeId: '7:2', nodeName: 'Title', path: ['Home', 'Title'], value: 'Hello' }],
+      }),
+    },
+  };
+  const d = diffSnapshots(base, head, { comparisonMode: 'baseline', basePath: 'b.json', headPath: 'h.json' });
+  const change = d.changes.find(c => c.key === 'home');
+  assert.ok(change);
+  assert.ok(change.textChanges);
+  assert.equal(change.textChanges.length, 1);
+  assert.equal(change.textChanges[0].nodeId, '7:9');
+  assert.equal(change.textChanges[0].before, 'World');
+  assert.equal(change.textChanges[0].after, null);
+});
+
+run('diffSnapshots: textHash changed but missing texts arrays (legacy snapshot) → no textChanges, no crash', () => {
+  const base: SnapshotFile = {
+    fileKey: 'file-x',
+    timestamp: '2026-05-21T00:00:00.000Z',
+    source: 'figma-rest',
+    tokensHash: 'sha256:tok',
+    nodes: {
+      legacy: {
+        id: '5:1',
+        name: 'Legacy',
+        lastModified: '2026-05-21T00:00:00.000Z',
+        visible: true,
+        boundingBox: { x: 0, y: 0, width: 10, height: 10 },
+        textHash: 'sha256:text-a',
+        propsHash: 'sha256:p',
+        componentPropsHash: 'sha256:c',
+      },
+    },
+  };
+  const head: SnapshotFile = {
+    ...base,
+    timestamp: '2026-05-21T01:00:00.000Z',
+    nodes: {
+      legacy: {
+        id: '5:1',
+        name: 'Legacy',
+        lastModified: '2026-05-21T01:00:00.000Z',
+        visible: true,
+        boundingBox: { x: 0, y: 0, width: 10, height: 10 },
+        textHash: 'sha256:text-b',
+        propsHash: 'sha256:p',
+        componentPropsHash: 'sha256:c',
+      },
+    },
+  };
+  const d = diffSnapshots(base, head, { comparisonMode: 'baseline', basePath: 'b.json', headPath: 'h.json' });
+  const change = d.changes.find(c => c.key === 'legacy');
+  assert.ok(change);
+  assert.ok(change.classes.includes('text'));
+  assert.equal(change.textChanges, undefined);
+});
+
 run('diffSnapshots: text change + compliance change → both classes attached', () => {
   const base: SnapshotFile = {
     fileKey: 'file-x',

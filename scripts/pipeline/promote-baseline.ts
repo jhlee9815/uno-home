@@ -8,6 +8,7 @@ import {
   buildPromotePrTitle,
   decideBaselinePromote,
 } from './lib/baseline-promote.ts';
+import { listSnapshotImageNodeIdsForCs, promoteSnapshotImagesToBaseline } from './lib/figma-images.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -67,6 +68,10 @@ async function main(): Promise<void> {
     console.log(
       `[promote-baseline] DRY-RUN would create ${decision.newBaselineRelPath} (${decision.snapshotContent.length} bytes, prev baseline: ${decision.currentBaseline ?? '<none>'})`,
     );
+    const wouldCopy = listSnapshotImageNodeIdsForCs(process.cwd(), csId);
+    if (wouldCopy.length > 0) {
+      console.log(`[promote-baseline] DRY-RUN would refresh ${wouldCopy.length} baseline image(s): ${wouldCopy.join(', ')}`);
+    }
     return;
   }
 
@@ -86,10 +91,18 @@ async function main(): Promise<void> {
   mkdirSync(dirname(decision.newBaselineRelPath), { recursive: true });
   writeFileSync(decision.newBaselineRelPath, decision.snapshotContent, 'utf-8');
 
+  const copiedImages = promoteSnapshotImagesToBaseline(process.cwd(), csId);
+  if (copiedImages.length > 0) {
+    console.log(`[promote-baseline] refreshed ${copiedImages.length} baseline image(s): ${copiedImages.join(', ')}`);
+  }
+
   exec('git config user.name "designer-bot[bot]"');
   exec('git config user.email "designer-bot[bot]@users.noreply.github.com"');
   exec(`git remote set-url origin ${JSON.stringify(`https://x-access-token:${token}@github.com/${repoFull}.git`)}`);
   exec(`git add ${JSON.stringify(decision.newBaselineRelPath)}`);
+  if (copiedImages.length > 0) {
+    exec('git add .automation/images/baseline');
+  }
   exec(`git commit -m ${JSON.stringify(`Promote baseline from ${csId}`)} || true`);
   exec(`git push origin ${JSON.stringify(branch)} --force-with-lease`);
 

@@ -1,5 +1,13 @@
 import { labelForClass, emojiForClass, RAW_CLASSES_WITH_SUBCATEGORY } from './category-labels.ts';
 
+export interface ViewerTextChange {
+  nodeId: string;
+  nodeName: string;
+  path: string[];
+  before: string | null;
+  after: string | null;
+}
+
 export interface ViewerChange {
   key: string;
   nodeId: string | null;
@@ -14,6 +22,7 @@ export interface ViewerChange {
   decision: string;
   decisionReasons: string[];
   target?: { code?: string | null };
+  textChanges?: ViewerTextChange[];
 }
 
 export interface ViewerClassifiedDiff {
@@ -55,6 +64,10 @@ export function buildViewerHtml(input: {
     const figmaUrl = nodeId
       ? `https://www.figma.com/design/${encodeURIComponent(input.fileKey)}/?node-id=${encodeURIComponent(nodeId.replace(':', '-'))}`
       : '#';
+    const textChangeBlock = renderTextChanges(change.textChanges);
+    const beforeEmptyMessage = images.after && !images.before
+      ? 'baseline 이미지 미등록 — 추적 시작 직후라 비교할 이전 시점이 없습니다.<br><span class="muted">다음 baseline-promote 후 cycle부터 비교됩니다.</span>'
+      : '이전 baseline 이미지 없음';
     const codePath = normalizeCodePath(change.target?.code ?? null);
     // Render tags so designers see every signal the classifier surfaced.
     //   - When subcategories[] is present: union of subcategories and any
@@ -96,13 +109,14 @@ export function buildViewerHtml(input: {
   <div class="compare">
     <figure>
       <figcaption>이전 (Before)</figcaption>
-      ${images.before ? `<img src="${escapeHtml(images.before)}" alt="이전 ${escapeHtml(change.nodeName)}">` : '<div class="empty">이전 baseline 이미지 없음</div>'}
+      ${images.before ? `<img src="${escapeHtml(images.before)}" alt="이전 ${escapeHtml(change.nodeName)}">` : `<div class="empty">${beforeEmptyMessage}</div>`}
     </figure>
     <figure>
       <figcaption>현재 (After)</figcaption>
       ${images.after ? `<img src="${escapeHtml(images.after)}" alt="현재 ${escapeHtml(change.nodeName)}">` : '<div class="empty">현재 스냅샷 이미지 없음</div>'}
     </figure>
   </div>
+  ${textChangeBlock}
   <dl>
     <dt>Key</dt><dd><code>${escapeHtml(change.key)}</code></dd>
     <dt>코드 경로</dt><dd>${codePath ? `<code>${escapeHtml(codePath)}</code>` : '<span class="muted">매핑된 코드 경로 없음</span>'}</dd>
@@ -135,7 +149,18 @@ main { max-width: 1180px; margin: 0 auto; padding: 24px; }
 figure { margin: 0; }
 figcaption { font-weight: 700; margin-bottom: 8px; }
 img { width: 100%; max-height: 720px; object-fit: contain; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; }
-.empty { min-height: 180px; display: grid; place-items: center; border: 1px dashed #d1d5db; border-radius: 10px; color: #6b7280; background: #f9fafb; }
+.empty { min-height: 180px; display: grid; place-items: center; padding: 16px; text-align: center; border: 1px dashed #d1d5db; border-radius: 10px; color: #6b7280; background: #f9fafb; line-height: 1.5; }
+.text-changes { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 18px; margin: 0 0 16px; }
+.text-changes h3 { margin: 0 0 10px; font-size: 14px; color: #374151; }
+.text-changes ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.text-changes li { padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; }
+.text-label { font-weight: 700; font-size: 13px; color: #111827; }
+.text-path { display: block; font-size: 11px; color: #6b7280; margin-top: 2px; }
+.text-diff { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12px; flex-wrap: wrap; }
+.text-before { background: #fef2f2; color: #991b1b; padding: 2px 8px; border-radius: 4px; text-decoration: line-through; }
+.text-after { background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 4px; }
+.text-arrow { color: #6b7280; }
+.text-empty { color: #9ca3af; font-style: italic; padding: 2px 8px; }
 dl { display: grid; grid-template-columns: 90px 1fr; gap: 8px 12px; }
 dt { font-weight: 700; color: #374151; }
 dd { margin: 0; }
@@ -165,6 +190,27 @@ a { color: #2563eb; }
 function normalizeCodePath(code: string | null): string | null {
   if (!code) return null;
   return code.replace(/^\.\.\//, '');
+}
+
+function renderTextChanges(textChanges: ViewerTextChange[] | undefined): string {
+  if (!textChanges || textChanges.length === 0) return '';
+  const rows = textChanges.map(tc => {
+    const label = tc.nodeName || tc.path.at(-1) || tc.nodeId;
+    const beforeCell = tc.before === null
+      ? '<span class="text-empty">(없음)</span>'
+      : `<span class="text-before">${escapeHtml(tc.before)}</span>`;
+    const afterCell = tc.after === null
+      ? '<span class="text-empty">(삭제됨)</span>'
+      : `<span class="text-after">${escapeHtml(tc.after)}</span>`;
+    const pathHint = tc.path.length > 1
+      ? `<span class="text-path">${escapeHtml(tc.path.slice(0, -1).join(' › '))}</span>`
+      : '';
+    return `<li><span class="text-label">${escapeHtml(label)}</span>${pathHint}<div class="text-diff">${beforeCell}<span class="text-arrow">→</span>${afterCell}</div></li>`;
+  }).join('');
+  return `<section class="text-changes">
+    <h3>텍스트 변경 ${textChanges.length}건</h3>
+    <ul>${rows}</ul>
+  </section>`;
 }
 
 const DECISION_LABEL_KO: Record<string, string> = {

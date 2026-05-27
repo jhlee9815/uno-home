@@ -136,14 +136,19 @@ jobs:
           # No open auto-register PR. If today's branch exists from an earlier
           # run on the same day with no PR (rare — e.g. PR was force-closed),
           # force-update it. Otherwise create fresh.
+          # auto-register.ts also fetches a baseline PNG for every freshly
+          # registered node so the *next* cycle has a real Before. Without
+          # staging .automation/images/baseline here, the PNGs would never
+          # land in the PR and the viewer would keep showing the missing-
+          # baseline placeholder after the mapping change merges.
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             git checkout -B "$BRANCH"
-            git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
+            git add "${MAPPING_PATH:-config/figma-mapping.yaml}" .automation/images/baseline 2>/dev/null || git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
             git commit -m "chore(audit): refresh auto-register $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
             git push -f origin "$BRANCH"
           else
             git checkout -b "$BRANCH"
-            git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
+            git add "${MAPPING_PATH:-config/figma-mapping.yaml}" .automation/images/baseline 2>/dev/null || git add "${MAPPING_PATH:-config/figma-mapping.yaml}"
             git commit -m "chore(audit): auto-register ${REGISTERED_COUNT} frame(s)"
             git push origin "$BRANCH"
           fi

@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createLogger } from './lib/logger.ts';
+import { loadFigmaConfig } from './lib/config-loader.ts';
+import { baselineImagePath, fetchAndSaveFigmaImages } from './lib/figma-images.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '../..');
@@ -71,7 +73,41 @@ function yamlScalar(value: string): string {
   return JSON.stringify(value);
 }
 
-function main(): void {
+// Best-effort: capture a baseline image for every freshly-registered node at
+// the moment of registration. Without this, the next diff cycle compares a
+// "before image" the viewer can't render (no PNG on disk) and the designer
+// review card shows "이전 baseline 이미지 없음" instead of an actual
+// before/after pair. Failures are non-fatal — registration must still
+// complete so the mapping change lands; the next baseline-promote will
+// backfill the image anyway.
+async function bootstrapBaselineImagesForCandidates(registered: Candidate[]): Promise<void> {
+  if (registered.length === 0) return;
+  if (!process.env.FIGMA_TOKEN) {
+    logger.info('FIGMA_TOKEN not set — skipping baseline image bootstrap for new candidates');
+    return;
+  }
+  let fileKey: string;
+  try {
+    fileKey = loadFigmaConfig().figma.fileKey;
+  } catch (err) {
+    logger.warn(`Could not load figma config for baseline image bootstrap: ${String(err)}`);
+    return;
+  }
+  try {
+    const hashes = await fetchAndSaveFigmaImages({
+      fileKey,
+      nodeIds: registered.map(c => c.nodeId),
+      pathForNode: nodeId => baselineImagePath(REPO_ROOT, nodeId),
+    });
+    const ok = registered.filter(c => hashes[c.nodeId]).length;
+    const missing = registered.length - ok;
+    logger.success(`Baseline images bootstrapped: ${ok} saved${missing > 0 ? `, ${missing} missing from Figma response` : ''}`);
+  } catch (err) {
+    logger.warn(`Baseline image bootstrap failed (non-fatal): ${String(err)}`);
+  }
+}
+
+async function main(): Promise<void> {
   if (!existsSync(CANDIDATES_PATH)) {
     logger.info('No candidates file. Run figma:audit first.');
     process.exit(0);
@@ -127,6 +163,7 @@ function main(): void {
     logger.info(`  + ${generateMappingKey(c)} → ${c.nodeId}  (${c.name})`);
   }
 
+  await bootstrapBaselineImagesForCandidates(registered);
   surfaceOutput(registered, skipped);
 }
 
@@ -160,4 +197,9 @@ function surfaceOutput(registered: Candidate[], skipped: string[]): void {
   }
 }
 
-if (isEntryPoint()) main();
+if (isEntryPoint()) {
+  main().catch(err => {
+    logger.error(String(err));
+    process.exit(1);
+  });
+}
