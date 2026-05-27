@@ -46,16 +46,13 @@ export interface SummaryChange {
   // human-readable sample so designers can glance at the alert and decide
   // whether to open the viewer.
   textChanges?: Array<{ nodeId?: string; nodeName?: string; before: string | null; after: string | null }>;
+  // Kept as `unknown[]` so callers (e.g. post-run-actions.ts) can pass the
+  // raw JSON.parse output without a shape-compatible cast. Narrowing happens
+  // inside the sample-extraction helpers below.
   compliance?: {
-    newDetachedStyles?: Array<{
-      nodeId?: string;
-      nodeName?: string;
-      kind?: string;
-      property?: string;
-      rawValue?: unknown;
-    }>;
-    newFrames?: Array<{ nodeId?: string; nodeName?: string; name?: string }>;
-    changedImageRefs?: Array<{ before?: { ref?: string } | null; after?: { ref?: string; nodeName?: string; paintIndex?: number } }>;
+    newDetachedStyles?: unknown[];
+    newFrames?: unknown[];
+    changedImageRefs?: unknown[];
   };
 }
 
@@ -300,8 +297,20 @@ function categorySamples(input: SummaryInput): CategorySamples {
   return out;
 }
 
-function formatDetachedSample(entry: NonNullable<SummaryChange['compliance']>['newDetachedStyles'] extends Array<infer E> ? E : never): string | undefined {
-  if (!entry) return undefined;
+// Sample helper input shape — narrowed from the upstream `unknown` payload.
+// Kept inline so the public SummaryChange.compliance can stay generic at the
+// formatter boundary (see comment on that field).
+interface DetachedSampleEntry {
+  nodeId?: string;
+  nodeName?: string;
+  kind?: string;
+  property?: string;
+  rawValue?: unknown;
+}
+
+function formatDetachedSample(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const entry = raw as DetachedSampleEntry;
   const label = entry.nodeName || entry.nodeId || '(이름 없음)';
   const property = entry.property ?? '';
   const value = formatDetachedValue(entry.kind, entry.rawValue);
