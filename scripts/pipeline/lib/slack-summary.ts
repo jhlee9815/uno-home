@@ -41,6 +41,14 @@ export interface SummaryChange {
   // label it 삭제 rather than the vague 표시토글.
   before?: { boundingBox?: unknown };
   after?: { boundingBox?: unknown };
+  // Leaf-level text changes produced by diff-snapshot when both base and
+  // head carry the new `texts[]` field. Slack uses the first leaf as a
+  // human-readable sample so designers can glance at the alert and decide
+  // whether to open the viewer.
+  textChanges?: Array<{ nodeId?: string; nodeName?: string; before: string | null; after: string | null }>;
+  // Kept as `unknown[]` so callers (e.g. post-run-actions.ts) can pass the
+  // raw JSON.parse output without a shape-compatible cast. Narrowing happens
+  // inside the sample-extraction helpers below.
   compliance?: {
     newDetachedStyles?: unknown[];
     newFrames?: unknown[];
@@ -237,18 +245,123 @@ export interface SummaryOptions {
 
 const DEFAULT_TOP_N = 3;
 const DEFAULT_DETAIL_HINT_THRESHOLD = 50;
+// One value side of an inline text-change sample. Two of these plus
+// labels and arrow comfortably fit in a Slack line under 200 chars.
+const SAMPLE_VALUE_MAX = 40;
+
+// Locate the first inlinable sample for each compliance subcategory that
+// has rich upstream data. Returns undefined when no usable sample exists
+// (e.g. legacy snapshot with no textChanges, props-change with no detail
+// arrays in the diff). Always picks the first entry in document order so
+// the sample is stable across cycles.
+interface CategorySamples {
+  textChangeSample?: string;
+  textChangeLeafCount?: number;
+  detachedSample?: string;
+  detachedTotal?: number;
+}
+
+function categorySamples(input: SummaryInput): CategorySamples {
+  const out: CategorySamples = {};
+  let textLeafTotal = 0;
+  let firstTextSample: string | undefined;
+  let detachedTotal = 0;
+  let firstDetachedSample: string | undefined;
+
+  for (const change of input.changes) {
+    if (change.textChanges && change.textChanges.length > 0) {
+      textLeafTotal += change.textChanges.length;
+      if (!firstTextSample) {
+        const leaf = change.textChanges[0];
+        const label = leaf.nodeName || leaf.nodeId || '(이름 없음)';
+        const before = leaf.before === null ? '(없음)' : `"${truncate(leaf.before, SAMPLE_VALUE_MAX)}"`;
+        const after = leaf.after === null ? '(삭제됨)' : `"${truncate(leaf.after, SAMPLE_VALUE_MAX)}"`;
+        firstTextSample = `${label}: ${before} → ${after}`;
+      }
+    }
+    const detached = change.compliance?.newDetachedStyles ?? [];
+    detachedTotal += detached.length;
+    if (!firstDetachedSample && detached.length > 0) {
+      firstDetachedSample = formatDetachedSample(detached[0]);
+    }
+  }
+
+  if (textLeafTotal > 0) {
+    out.textChangeLeafCount = textLeafTotal;
+    out.textChangeSample = firstTextSample;
+  }
+  if (detachedTotal > 0) {
+    out.detachedTotal = detachedTotal;
+    out.detachedSample = firstDetachedSample;
+  }
+  return out;
+}
+
+// Sample helper input shape — narrowed from the upstream `unknown` payload.
+// Kept inline so the public SummaryChange.compliance can stay generic at the
+// formatter boundary (see comment on that field).
+interface DetachedSampleEntry {
+  nodeId?: string;
+  nodeName?: string;
+  kind?: string;
+  property?: string;
+  rawValue?: unknown;
+}
+
+function formatDetachedSample(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const entry = raw as DetachedSampleEntry;
+  const label = entry.nodeName || entry.nodeId || '(이름 없음)';
+  const property = entry.property ?? '';
+  const value = formatDetachedValue(entry.kind, entry.rawValue);
+  const propertyHint = property ? ` · ${property}` : '';
+  return `${label}${propertyHint} · ${value}`;
+}
+
+function formatDetachedValue(kind: string | undefined, raw: unknown): string {
+  if (kind === 'color' && raw && typeof raw === 'object') {
+    const c = raw as { r?: number; g?: number; b?: number; a?: number };
+    if (typeof c.r === 'number' && typeof c.g === 'number' && typeof c.b === 'number') {
+      const a = typeof c.a === 'number' ? c.a : 1;
+      const hex = `#${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}${a < 1 ? hex2(a) : ''}`;
+      return hex.toUpperCase();
+    }
+  }
+  if (typeof raw === 'number') {
+    return kind === 'typography' && !Number.isNaN(raw) ? `${raw}` : String(raw);
+  }
+  return raw === undefined || raw === null ? '(미설정)' : String(raw);
+}
+
+function hex2(n: number): string {
+  const clamped = Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0;
+  return Math.round(clamped * 255).toString(16).padStart(2, '0');
+}
+
+function truncate(s: string, max: number): string {
+  return s.length <= max ? s : s.slice(0, max - 1) + '…';
+}
 
 export function buildLocalizedSummary(input: SummaryInput, opts: SummaryOptions = {}): string[] {
   const topN = opts.topN ?? DEFAULT_TOP_N;
   const threshold = opts.detailHintThreshold ?? DEFAULT_DETAIL_HINT_THRESHOLD;
   const counts = categoryCounts(input);
+  const samples = categorySamples(input);
   const lines: string[] = [];
+
+  // text-change count from tag-level can undercount when each change carries
+  // multiple leaf changes (e.g. one DiffChange with 5 textChanges). Prefer
+  // the leaf total when we have it so the Slack alert headline matches what
+  // the viewer card shows ("텍스트 변경 5건" not "1건").
+  if (samples.textChangeLeafCount !== undefined && samples.textChangeLeafCount > (counts.compliance['text-change'] ?? 0)) {
+    counts.compliance['text-change'] = samples.textChangeLeafCount;
+  }
 
   // 1. compliance lines (fixed order)
   for (const k of COMPLIANCE_ORDER) {
     const n = counts.compliance[k];
     if (!n) continue;
-    lines.push(formatComplianceLine(k, n, threshold));
+    lines.push(formatComplianceLine(k, n, threshold, samples));
   }
 
   // 2. raw class lines (fixed order)
@@ -280,11 +393,33 @@ function formatComplianceLine(
   k: ComplianceSubcategory,
   n: number,
   threshold: number,
+  samples: CategorySamples,
 ): string {
   const emoji = CATEGORY_EMOJI[k];
   const label = CATEGORY_LABEL_KO[k];
-  const hint = n >= threshold ? ' (상세는 viewer 참조)' : '';
-  return `• ${emoji} ${label}: ${n}건${hint}`;
+  // Above the viewer-redirect threshold the sample only inflates the line —
+  // designers will open the viewer anyway, so we suppress the inline sample
+  // and keep the existing "(상세는 viewer 참조)" hint.
+  if (n >= threshold) {
+    return `• ${emoji} ${label}: ${n}건 (상세는 viewer 참조)`;
+  }
+  const sample = sampleFor(k, samples);
+  if (!sample) return `• ${emoji} ${label}: ${n}건`;
+  const remaining = sample.coveredCount > 1 ? `, +${sample.coveredCount - 1}건` : '';
+  return `• ${emoji} ${label}: ${n}건 (${sample.text}${remaining})`;
+}
+
+function sampleFor(
+  k: ComplianceSubcategory,
+  samples: CategorySamples,
+): { text: string; coveredCount: number } | undefined {
+  if (k === 'text-change' && samples.textChangeSample && samples.textChangeLeafCount) {
+    return { text: samples.textChangeSample, coveredCount: samples.textChangeLeafCount };
+  }
+  if (k === 'detached-style' && samples.detachedSample && samples.detachedTotal) {
+    return { text: samples.detachedSample, coveredCount: samples.detachedTotal };
+  }
+  return undefined;
 }
 
 function formatRawLine(

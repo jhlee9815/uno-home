@@ -17,6 +17,7 @@ function mkChange(over: Partial<SummaryChange> = {}): SummaryChange {
     reasons: over.reasons,
     before: over.before,
     after: over.after,
+    textChanges: over.textChanges,
     compliance: over.compliance,
   };
 }
@@ -421,6 +422,116 @@ run('T19 truncation drops affected-screen line first, preserves total', () => {
   assert.equal(capped.some(l => l.startsWith('• 영향 화면 top-')), false, 'top-N dropped first');
   assert.ok(capped.some(l => l.startsWith('• 전체:')), 'total line preserved');
   assert.equal(capped[capped.length - 1], '• … (상세는 viewer 참조)', 'truncation marker is last');
+});
+
+// ----- T-sample: text-change line surfaces first leaf sample -----
+run('T-sample text-change shows first leaf inline + remaining count', () => {
+  const input = mkInput([
+    mkChange({
+      nodeId: '81:302', nodeName: 'Phone · Home — Balance',
+      classes: ['text'], subcategories: ['text-change'],
+      textChanges: [
+        { nodeId: '81:303', nodeName: 'Balance', before: '$25,521,098.31', after: '$23,521,098.31' },
+        { nodeId: '81:304', nodeName: 'Greeting', before: 'Pessse', after: 'Pesse' },
+        { nodeId: '81:305', nodeName: 'Subtitle', before: 'Hello', after: 'Hi' },
+      ],
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const lines = buildLocalizedSummary(input);
+  const textLine = lines.find(l => l.includes('텍스트 변경'));
+  assert.ok(textLine, 'expected a text-change line');
+  // Count must reflect total leaf changes, not change-count
+  assert.match(textLine, /3건/);
+  // Sample must include first leaf nodeName + before → after
+  assert.match(textLine, /Balance/);
+  assert.match(textLine, /\$25,521,098\.31/);
+  assert.match(textLine, /\$23,521,098\.31/);
+  // Remaining-count tail when more than one leaf
+  assert.match(textLine, /\+2건/);
+});
+
+run('T-sample text-change with only one leaf hides +N suffix', () => {
+  const input = mkInput([
+    mkChange({
+      nodeId: '7:1', nodeName: 'Home',
+      classes: ['text'], subcategories: ['text-change'],
+      textChanges: [{ nodeId: '7:2', nodeName: 'Title', before: 'Hello', after: 'Hi' }],
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const lines = buildLocalizedSummary(input);
+  const textLine = lines.find(l => l.includes('텍스트 변경'));
+  assert.ok(textLine);
+  assert.match(textLine, /1건/);
+  assert.match(textLine, /Title/);
+  assert.doesNotMatch(textLine, /\+\d+건/);
+});
+
+run('T-sample text-change long value truncates so the line stays Slack-readable', () => {
+  const longBefore = 'A'.repeat(200);
+  const longAfter = 'B'.repeat(200);
+  const input = mkInput([
+    mkChange({
+      nodeId: '7:1', nodeName: 'Home',
+      classes: ['text'], subcategories: ['text-change'],
+      textChanges: [{ nodeId: '7:2', nodeName: 'Long', before: longBefore, after: longAfter }],
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const lines = buildLocalizedSummary(input);
+  const textLine = lines.find(l => l.includes('텍스트 변경'));
+  assert.ok(textLine);
+  assert.ok(textLine.length < 200, `expected truncation, got len=${textLine.length}`);
+  assert.match(textLine, /…/);
+});
+
+run('T-sample text-change suppresses sample when count >= detailHintThreshold', () => {
+  // Hitting the threshold means "(상세는 viewer 참조)" — sample becomes redundant
+  // and would just inflate the line, so we drop it.
+  const many: SummaryChange[] = [];
+  for (let i = 0; i < 60; i++) {
+    many.push(mkChange({
+      nodeId: `7:${i}`, nodeName: `Node${i}`,
+      classes: ['text'], subcategories: ['text-change'],
+      textChanges: [{ nodeId: `7:${i}:1`, nodeName: `Leaf${i}`, before: 'old', after: 'new' }],
+    }));
+  }
+  const input = mkInput(many, { total: 60, reportOnly: 60 });
+  const lines = buildLocalizedSummary(input);
+  const textLine = lines.find(l => l.includes('텍스트 변경'));
+  assert.ok(textLine);
+  assert.match(textLine, /상세는 viewer 참조/);
+  assert.doesNotMatch(textLine, /Leaf0\b/);
+});
+
+run('T-sample detached-style shows nodeName + property + value sample', () => {
+  const input = mkInput([
+    mkChange({
+      nodeId: '7:1', nodeName: 'Home',
+      classes: ['detached-style'], subcategories: ['detached-style'],
+      compliance: {
+        newDetachedStyles: [
+          {
+            nodeId: '7:101', nodeName: 'Balance text', nodePath: ['Home', 'Balance text'],
+            kind: 'color', property: 'fill',
+            rawValue: { r: 1, g: 0.2, b: 0.4, a: 1 },
+            suggestedToken: null, evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+          {
+            nodeId: '7:102', nodeName: 'Subtitle', nodePath: ['Home', 'Subtitle'],
+            kind: 'typography', property: 'fontSize',
+            rawValue: 15,
+            suggestedToken: null, evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+        ],
+      },
+    }),
+  ], { total: 1, reportOnly: 1 });
+  const lines = buildLocalizedSummary(input);
+  const line = lines.find(l => l.includes('디자인 시스템 미사용'));
+  assert.ok(line);
+  assert.match(line, /2건/);
+  assert.match(line, /Balance text/);
+  assert.match(line, /#FF3366/);
+  assert.match(line, /\+1건/);
 });
 
 // ----- result -----
