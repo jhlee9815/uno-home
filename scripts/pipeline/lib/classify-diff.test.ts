@@ -230,6 +230,27 @@ const complianceDiff: DiffFile = {
 
 const complianceClassified = classifyDiff(complianceDiff, mapping);
 
+run('classify: compliance metadata passthrough to ClassifiedChange', () => {
+  // Viewer renders detached/new-frame/image-change detail directly off
+  // ClassifiedChange.compliance. The classifier uses `...change` spread, so
+  // this assertion is the gate that catches anyone refactoring it into an
+  // explicit field-by-field copy that silently drops compliance.
+  const c0 = complianceClassified.changes[0];
+  assert.ok(c0.compliance, 'compliance should pass through classifier untouched');
+  assert.equal(c0.compliance.newFrames.length, 1);
+  assert.equal(c0.compliance.newFrames[0].nodeId, '99:1');
+
+  const c1 = complianceClassified.changes[1];
+  assert.ok(c1.compliance);
+  assert.equal(c1.compliance.newDetachedStyles.length, 1);
+  assert.equal(c1.compliance.newDetachedStyles[0].kind, 'color');
+
+  const c2 = complianceClassified.changes[2];
+  assert.ok(c2.compliance);
+  assert.equal(c2.compliance.changedImageRefs.length, 1);
+  assert.equal(c2.compliance.changedImageRefs[0].after.ref, 'img-new');
+});
+
 run('classify: new-frame class → report-only regardless of mapping apply mode', () => {
   const change = complianceClassified.changes[0];
   assert.equal(change.decision, 'report-only');
