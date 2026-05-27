@@ -6,6 +6,7 @@ import {
   baselineImagePath,
   buildFigmaImagesUrl,
   imageFileNameForNodeId,
+  listSnapshotImageNodeIdsForCs,
   promoteSnapshotImagesToBaseline,
   saveImageBuffer,
   snapshotImagePath,
@@ -54,6 +55,27 @@ assert.equal(readFileSync(baseline, 'utf-8'), 'png-data');
   // Graceful: no snapshot dir → empty list, no throw.
   const emptyRoot = mkdtempSync(join(tmpdir(), 'figma-images-empty-'));
   assert.deepEqual(promoteSnapshotImagesToBaseline(emptyRoot, 'cs-missing'), []);
+}
+
+// listSnapshotImageNodeIdsForCs: dry-run/preview path — reports which nodeIds
+// WOULD be promoted without touching the filesystem. Prevents the dry-run
+// regression Codex flagged where the working tree mutated even when the
+// caller only intended to log "would refresh".
+{
+  const previewRoot = mkdtempSync(join(tmpdir(), 'figma-images-preview-'));
+  const csId = 'cs-2026-05-27T01-00-00';
+  saveImageBuffer(snapshotImagePath(previewRoot, csId, '81:302'), Buffer.from('a'));
+  saveImageBuffer(snapshotImagePath(previewRoot, csId, '7:3'), Buffer.from('b'));
+  const ids = listSnapshotImageNodeIdsForCs(previewRoot, csId);
+  assert.deepEqual(ids.sort(), ['7-3', '81-302']);
+  // Baseline dir must NOT exist yet — listing must not mkdir.
+  assert.equal(
+    existsSync(baselineImagePath(previewRoot, '81:302')),
+    false,
+    'listing must not write any file to the baseline dir'
+  );
+  // Missing source dir → empty, no throw.
+  assert.deepEqual(listSnapshotImageNodeIdsForCs(previewRoot, 'cs-missing'), []);
 }
 
 console.log('figma-images PASS');

@@ -8,7 +8,7 @@ import {
   buildPromotePrTitle,
   decideBaselinePromote,
 } from './lib/baseline-promote.ts';
-import { promoteSnapshotImagesToBaseline } from './lib/figma-images.ts';
+import { listSnapshotImageNodeIdsForCs, promoteSnapshotImagesToBaseline } from './lib/figma-images.ts';
 
 const csId = process.argv[2];
 if (!csId) {
@@ -68,7 +68,7 @@ async function main(): Promise<void> {
     console.log(
       `[promote-baseline] DRY-RUN would create ${decision.newBaselineRelPath} (${decision.snapshotContent.length} bytes, prev baseline: ${decision.currentBaseline ?? '<none>'})`,
     );
-    const wouldCopy = promoteSnapshotImagesToBaseline(process.cwd(), csId);
+    const wouldCopy = listSnapshotImageNodeIdsForCs(process.cwd(), csId);
     if (wouldCopy.length > 0) {
       console.log(`[promote-baseline] DRY-RUN would refresh ${wouldCopy.length} baseline image(s): ${wouldCopy.join(', ')}`);
     }

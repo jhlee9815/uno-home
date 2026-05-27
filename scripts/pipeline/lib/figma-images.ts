@@ -64,6 +64,18 @@ export function saveImageBuffer(path: string, buffer: Buffer): string {
   return 'sha256:' + createHash('sha256').update(buffer).digest('hex');
 }
 
+// Read-only counterpart to `promoteSnapshotImagesToBaseline` — returns the
+// nodeIds that WOULD be promoted without touching the filesystem. Used by
+// dry-run paths that must report intent without mutating the working tree
+// (e.g. CI dry-runs that assert no diff after running the pipeline).
+export function listSnapshotImageNodeIdsForCs(repoRoot: string, csId: string): string[] {
+  const sourceDir = resolve(repoRoot, '.automation/images/snapshots', csId);
+  if (!existsSync(sourceDir)) return [];
+  return readdirSync(sourceDir)
+    .filter(entry => entry.endsWith('.png'))
+    .map(entry => basename(entry, '.png'));
+}
+
 // Copy every PNG captured during a cs into the baseline image directory so
 // that promoting a cs's snapshot.json as the new design baseline also updates
 // the matching reference images. Without this, the baseline JSON drifts ahead
