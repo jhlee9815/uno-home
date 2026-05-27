@@ -229,6 +229,181 @@ const partialHtml = buildViewerHtml({
 assert.match(partialHtml, /\(없음\)/, 'addition slot should show 없음');
 assert.match(partialHtml, /\(삭제됨\)/, 'removal slot should show 삭제됨');
 
+// Compliance detail block: when a change carries the upstream
+// ComplianceDiffSummary (detached styles, new descendant frames, changed image
+// refs), the viewer must surface a developer-readable detail row per entry so
+// devs can see WHICH sub-node is off-system, WHAT property is detached, and
+// click straight into Figma at that node. Previously the card only showed
+// terse count lines like "4 new descendant frame(s)" and the dev had to open
+// the Figma file and hunt.
+const complianceClassified = {
+  summary: { total: 1, autoApply: 0, reportOnly: 1, unknown: 0 },
+  changes: [
+    {
+      key: 'pesse_home',
+      nodeId: '81:302',
+      nodeName: 'Phone · Home',
+      classes: ['detached-style', 'new-frame', 'image-change'],
+      reasons: [],
+      decision: 'report-only',
+      decisionReasons: ['manual only'],
+      target: { code: '../src/screens/PesseHomeScreen.tsx', section: 'screens' },
+      subcategories: ['detached-style', 'new-frame', 'image-change'],
+      compliance: {
+        newDetachedStyles: [
+          {
+            nodeId: '81:401',
+            nodeName: 'Balance text',
+            nodePath: ['Phone', 'Home', 'AccountCard', 'Balance text'],
+            kind: 'color',
+            property: 'fill',
+            rawValue: { r: 1, g: 0.2, b: 0.4, a: 1 },
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+          {
+            nodeId: '81:402',
+            nodeName: 'Subtitle',
+            nodePath: ['Phone', 'Home', 'AccountCard', 'Subtitle'],
+            kind: 'color',
+            property: 'fill',
+            rawValue: { r: 0.1, g: 0.1, b: 0.1, a: 0.25 },
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+          {
+            nodeId: '81:403',
+            nodeName: 'Balance text',
+            nodePath: ['Phone', 'Home', 'AccountCard', 'Balance text'],
+            kind: 'typography',
+            property: 'fontSize',
+            rawValue: 15,
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+        ],
+        newFrames: [
+          {
+            nodeId: '81:501',
+            nodeName: 'Promo banner',
+            nodePath: ['Phone', 'Home', 'Body', 'Promo banner'],
+            name: 'Promo banner',
+            parentRegisteredKey: 'pesse_home',
+          },
+        ],
+        changedImageRefs: [
+          {
+            before: { nodeId: '81:601', nodeName: 'Hero', nodePath: ['Phone', 'Home', 'Hero'], kind: 'image', paintIndex: 0, ref: 'oldhash1234567' },
+            after: { nodeId: '81:601', nodeName: 'Hero', nodePath: ['Phone', 'Home', 'Hero'], kind: 'image', paintIndex: 0, ref: 'newhash9876543' },
+          },
+        ],
+      },
+    },
+  ],
+};
+const complianceHtml = buildViewerHtml({
+  csId: 'cs-compliance',
+  fileKey: 'figma-file',
+  classified: complianceClassified,
+  imageRefs: {},
+});
+assert.match(complianceHtml, /<details class="compliance-details"/, 'compliance block must render');
+// Total findings: 3 + 1 + 1 = 5 > 3 → default collapsed (no `open` attribute on the details tag itself)
+assert.doesNotMatch(complianceHtml, /<details class="compliance-details"[^>]*\sopen[\s>]/);
+assert.match(complianceHtml, /detached 3/, 'summary should show detached count');
+assert.match(complianceHtml, /new frames 1/);
+assert.match(complianceHtml, /images 1/);
+// Color row: hex swatch + uppercase hex string. alpha = 1 → no alpha component.
+assert.match(complianceHtml, /#FF3366/);
+// Color with alpha 0.25 → 8-digit hex.
+assert.match(complianceHtml, /#1A1A1A40/);
+// Typography row: raw value + token-not-bound copy. Must NOT invent a token name.
+assert.match(complianceHtml, /fontSize/);
+assert.match(complianceHtml, /15px/);
+assert.match(complianceHtml, /토큰 미바인딩/);
+// New frame row: name + parent key.
+assert.match(complianceHtml, /Promo banner/);
+assert.match(complianceHtml, /parent.*pesse_home/);
+// Image row: paint index + ref before → after (truncated).
+assert.match(complianceHtml, /paint\[0\]/);
+assert.match(complianceHtml, /oldhash/);
+assert.match(complianceHtml, /newhash/);
+// nodePath rendered with separator. Long paths should compact.
+assert.match(complianceHtml, /AccountCard.*Balance text/);
+// Each violation row links to its OWN nodeId, not the card root.
+assert.match(complianceHtml, /node-id=81-401/);
+assert.match(complianceHtml, /node-id=81-501/);
+
+// Few-findings auto-open: total = 2 → details opens by default.
+const fewClassified = {
+  summary: { total: 1, autoApply: 0, reportOnly: 1, unknown: 0 },
+  changes: [
+    {
+      key: 'small',
+      nodeId: '7:1',
+      nodeName: 'Small',
+      classes: ['detached-style'],
+      reasons: [],
+      decision: 'report-only',
+      decisionReasons: [],
+      target: { code: null },
+      subcategories: ['detached-style'],
+      compliance: {
+        newDetachedStyles: [
+          {
+            nodeId: '7:2',
+            nodeName: 'Label',
+            nodePath: ['Small', 'Label'],
+            kind: 'typography',
+            property: 'fontWeight',
+            rawValue: 700,
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+          {
+            nodeId: '7:3',
+            nodeName: 'Bar',
+            nodePath: ['Small', 'Bar'],
+            kind: 'color',
+            property: 'stroke',
+            rawValue: { r: 0, g: 0, b: 0, a: 1 },
+            suggestedToken: null,
+            evidence: { hasNodeBoundVariables: false, styleId: null },
+          },
+        ],
+        newFrames: [],
+        changedImageRefs: [],
+      },
+    },
+  ],
+};
+const fewHtml = buildViewerHtml({ csId: 'cs-few', fileKey: 'figma-file', classified: fewClassified, imageRefs: {} });
+assert.match(fewHtml, /<details class="compliance-details"[^>]*\sopen[\s>]/, 'few findings should auto-open');
+
+// Regression: change with no compliance field must not crash and must not render the block.
+const noComplianceHtml = buildViewerHtml({
+  csId: 'cs-no-compliance',
+  fileKey: 'figma-file',
+  classified: {
+    summary: { total: 1, autoApply: 0, reportOnly: 1, unknown: 0 },
+    changes: [
+      {
+        key: 'plain',
+        nodeId: '1:1',
+        nodeName: 'Plain',
+        classes: ['text'],
+        reasons: ['text changed'],
+        decision: 'report-only',
+        decisionReasons: [],
+        target: { code: null },
+        subcategories: ['text-change'],
+      },
+    ],
+  },
+  imageRefs: {},
+});
+assert.doesNotMatch(noComplianceHtml, /<details class="compliance-details"/);
+
 // Regression: when both baseline and snapshot are missing, fall back to the
 // short legacy message (not the longer remediation hint) since there is no
 // "after" to compare against either.
