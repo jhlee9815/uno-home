@@ -1,0 +1,46 @@
+{
+  "csId": "cs-2026-05-30T14-59-32",
+  "createdAt": "2026-05-30T14:59:44.308Z",
+  "fileKey": "9cevQvPHlQ5vZv5Pz3QaLL",
+  "baseSnapshotPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/baseline/2026-05-26T07-36-10.json",
+  "headSnapshotPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/snapshots/2026-05-30T14-59-31.json",
+  "classifiedDiffPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/diffs/2026-05-30T14-59-32-classified.json",
+  "reportPath": "/home/runner/work/design-review-bot/design-review-bot/.automation/reports/cs-2026-05-30T14-59-32.md",
+  "classifiedDiffSha256": "sha256:351315f105d1dd2b623e76daefe13ec4b3e04f1ad0e64915ee5f5759c7749d12",
+  "headSnapshotSha256": "sha256:8e67a52977282fa86cbccd5099d23695d5e1266e72e6ba889ae0e6f046d30856",
+  "imageRefs": {
+    "81:388": {
+      "before": null,
+      "after": "sha256:62455a92b1036af3b7b1d62b495f221e9c1461d844ad233f749304ca2b49b382"
+    },
+    "81:302": {
+      "before": null,
+      "after": "sha256:302bbe638afa56698a47254e6684636208772f1c8b717d1e9178c5a9ce682269"
+    },
+    "81:494": {
+      "before": null,
+      "after": "sha256:dab1eed77f247e4a8fe06a77b9aea567097531673c085669b6a795235a705e16"
+    },
+    "81:429": {
+      "before": null,
+      "after": "sha256:a0dfd3613db55d67bfcf05fdd85a717c6980b22033d779f7e1a122cf412715e3"
+    },
+    "35:244": {
+      "before": null,
+      "after": "sha256:5635ebf1dddeb4434b4ad9221ea8799dcc7724e7f337856207c58fced7542bb2"
+    }
+  },
+  "runId": "26686986910",
+  "state": "pending",
+  "stateHistory": [
+    {
+      "state": "pending",
+      "at": "2026-05-30T14:59:44.308Z",
+      "by": "jhlee9815",
+      "via": "report-generation"
+    }
+  ],
+  "viewerUrl": "https://jhlee9815.github.io/design-review-bot/cs/cs-2026-05-30T14-59-32/",
+  "githubIssueNumber": 225,
+  "githubIssueUrl": "https://github.com/jhlee9815/design-review-bot/issues/225"
+}
